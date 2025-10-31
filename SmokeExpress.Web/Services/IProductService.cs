@@ -19,3 +19,4 @@ public interface IProductService
     Task RemoverAsync(int id, CancellationToken cancellationToken = default);
 }
 
+

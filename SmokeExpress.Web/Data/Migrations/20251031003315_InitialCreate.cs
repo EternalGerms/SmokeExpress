@@ -9,6 +9,11 @@ namespace SmokeExpress.Web.Data.Migrations
     /// <inheritdoc />
     public partial class InitialCreate : Migration
     {
+        private const string AdminRoleId = "bdf4a40f-8344-45c3-8c1e-4d5c52a3d790";
+        private const string UserRoleId = "f1a1c619-aa0c-4f6c-aabd-bf8770c5f8be";
+        private const string AdminUserId = "6e9cc04c-1f27-4fc9-8725-8b7cbdeb18f1";
+        private const string AdminEmail = "admin@smokeexpress.com";
+
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -301,16 +306,21 @@ namespace SmokeExpress.Web.Data.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
-            var adminRoleId = Guid.NewGuid().ToString();
-            var adminUserId = Guid.NewGuid().ToString();
+            var adminRoleConcurrencyStamp = Guid.NewGuid().ToString();
+            var userRoleConcurrencyStamp = Guid.NewGuid().ToString();
             var adminConcurrencyStamp = Guid.NewGuid().ToString();
             var adminSecurityStamp = Guid.NewGuid().ToString();
             var adminPasswordHash = BCryptNet.EnhancedHashPassword("Admin@123");
+            var adminNormalizedEmail = AdminEmail.ToUpperInvariant();
 
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
-                columns: new[] { "Id", "Name", "NormalizedName", "ConcurrencyStamp" },
-                values: new object[] { adminRoleId, "Admin", "ADMIN", Guid.NewGuid().ToString() });
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[,]
+                {
+                    { AdminRoleId, adminRoleConcurrencyStamp, "Admin", "ADMIN" },
+                    { UserRoleId, userRoleConcurrencyStamp, "User", "USER" }
+                });
 
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
@@ -337,30 +347,34 @@ namespace SmokeExpress.Web.Data.Migrations
                 },
                 values: new object[]
                 {
-                    adminUserId,
+                    AdminUserId,
                     0,
                     adminConcurrencyStamp,
                     new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-                    "admin@smokeexpress.local",
+                    AdminEmail,
                     true,
                     "Rua Exemplo, 123 - Centro, Cidade/UF",
                     true,
                     null,
                     "Administrador Smoke Express",
-                    "ADMIN@SMOKEEXPRESS.LOCAL",
-                    "ADMIN@SMOKEEXPRESS.LOCAL",
+                    adminNormalizedEmail,
+                    adminNormalizedEmail,
                     adminPasswordHash,
                     null,
                     false,
                     adminSecurityStamp,
                     false,
-                    "admin@smokeexpress.local"
+                    AdminEmail
                 });
 
             migrationBuilder.InsertData(
                 table: "AspNetUserRoles",
                 columns: new[] { "UserId", "RoleId" },
-                values: new object[] { adminUserId, adminRoleId });
+                values: new object[,]
+                {
+                    { AdminUserId, AdminRoleId },
+                    { AdminUserId, UserRoleId }
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",

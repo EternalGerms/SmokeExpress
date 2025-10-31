@@ -24,3 +24,4 @@ public class ApplicationUser : IdentityUser
     public ICollection<Referral> IndicacoesRecebidas { get; set; } = new List<Referral>();
 }
 
+
