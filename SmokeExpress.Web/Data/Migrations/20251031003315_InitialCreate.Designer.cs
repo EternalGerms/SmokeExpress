@@ -240,48 +240,6 @@ namespace SmokeExpress.Web.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("SmokeExpress.Web.Models.BlogPost", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ApplicationUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Conteudo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("DataPublicacao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("Publicado")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Slug")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Titulo")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApplicationUserId");
-
-                    b.HasIndex("Slug")
-                        .IsUnique();
-
-                    b.ToTable("BlogPosts");
-                });
-
             modelBuilder.Entity("SmokeExpress.Web.Models.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -488,17 +446,6 @@ namespace SmokeExpress.Web.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SmokeExpress.Web.Models.BlogPost", b =>
-                {
-                    b.HasOne("SmokeExpress.Web.Models.ApplicationUser", "Autor")
-                        .WithMany("Posts")
-                        .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Autor");
-                });
-
             modelBuilder.Entity("SmokeExpress.Web.Models.Order", b =>
                 {
                     b.HasOne("SmokeExpress.Web.Models.ApplicationUser", "Cliente")
@@ -566,8 +513,6 @@ namespace SmokeExpress.Web.Data.Migrations
                     b.Navigation("IndicacoesRecebidas");
 
                     b.Navigation("Pedidos");
-
-                    b.Navigation("Posts");
                 });
 
             modelBuilder.Entity("SmokeExpress.Web.Models.Category", b =>

@@ -180,30 +180,6 @@ namespace SmokeExpress.Web.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "BlogPosts",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Titulo = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Conteudo = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Slug = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    DataPublicacao = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Publicado = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_BlogPosts", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_BlogPosts_AspNetUsers_ApplicationUserId",
-                        column: x => x.ApplicationUserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Orders",
                 columns: table => new
                 {
@@ -416,17 +392,6 @@ namespace SmokeExpress.Web.Data.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BlogPosts_ApplicationUserId",
-                table: "BlogPosts",
-                column: "ApplicationUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_BlogPosts_Slug",
-                table: "BlogPosts",
-                column: "Slug",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_OrderItems_OrderId",
                 table: "OrderItems",
                 column: "OrderId");
@@ -475,9 +440,6 @@ namespace SmokeExpress.Web.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
-
-            migrationBuilder.DropTable(
-                name: "BlogPosts");
 
             migrationBuilder.DropTable(
                 name: "OrderItems");

@@ -48,14 +48,6 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cUHJvZHVjdEFkbWluLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Blog/Index.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQmxvZ1xJbmRleC5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Blog/\[Slug\].razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQmxvZ1xbU2x1Z10ucmF6b3I=
-build_metadata.AdditionalFiles.CssScope = 
-
 [C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Counter.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ291bnRlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 

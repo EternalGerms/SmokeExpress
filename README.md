@@ -1,7 +1,7 @@
 # Smoke Express
 
 ## Visão Geral
-Smoke Express é uma plataforma de e-commerce premium especializada em produtos de tabacaria, desenvolvida com foco absoluto em crescimento orgânico. O projeto foi concebido como parte de um trabalho acadêmico e utiliza **Blazor Server** sobre **.NET 9** para garantir segurança, sigilo e controle de sessão no servidor. Toda a base foi construída respeitando os requisitos de marketing orgânico através de um blog interno e de um programa nativo de indicações.
+Smoke Express é uma plataforma de e-commerce premium especializada em produtos de tabacaria, desenvolvida com foco absoluto em crescimento orgânico. O projeto foi concebido como parte de um trabalho acadêmico e utiliza **Blazor Server** sobre **.NET 9** para garantir segurança, sigilo e controle de sessão no servidor. Toda a base foi construída respeitando os requisitos de marketing orgânico por meio de experiências de compra diferenciadas e de um programa nativo de indicações.
 
 Autores: **Bruno Bueno** e **Matheus Esposto**
 
@@ -9,7 +9,6 @@ Autores: **Bruno Bueno** e **Matheus Esposto**
 - Autenticação com **ASP.NET Core Identity** e hashing de senha via **BCrypt**.
 - Catálogo completo de produtos e categorias para administração interna.
 - Estrutura de pedidos (orders, order items) preparada para futuras integrações de checkout.
-- Módulo de conteúdo (blog) voltado a marketing orgânico, com suporte a Slug.
 - Programa "Indique um Amigo" para retenção e expansão orgânica.
 - Painel administrativo protegido por role `Admin`.
 
@@ -30,7 +29,7 @@ SmokeExpress.sln
 └─ SmokeExpress.Web/                 # Projeto Blazor Server
    ├─ Data/                          # DbContext, migrações e seeds futuros
    ├─ Models/                        # Entidades de domínio
-   ├─ Pages/                         # Páginas Blazor (Admin, Blog, Account, etc.)
+   ├─ Pages/                         # Páginas Blazor (Admin, Account, etc.)
    ├─ Services/                      # Serviços de domínio (ex.: ProductService)
    └─ Security/                      # Implementações de segurança (BCrypt password hasher)
 ```
@@ -70,8 +69,8 @@ SmokeExpress.sln
 - Roles pré-criadas: `Admin` e `User` (o administrador já está vinculado a ambas)
 
 ## Próximos Passos Recomendados
-- Criar seeds adicionais para categorias, produtos e conteúdos iniciais do blog.
-- Implementar páginas de manutenção (CRUD) para produtos, posts de blog e programa de indicações.
+- Criar seeds adicionais para categorias, produtos e fidelidade/indicação.
+- Implementar páginas de manutenção (CRUD) para produtos e programa de indicações.
 - Configurar pipelines de CI/CD e cobertura de testes automatizados.
 - Ajustar layout/branding conforme identidade visual da Smoke Express.
 

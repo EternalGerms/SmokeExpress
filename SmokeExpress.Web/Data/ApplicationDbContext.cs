@@ -19,8 +19,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
 
-    public DbSet<BlogPost> BlogPosts => Set<BlogPost>();
-
     public DbSet<Referral> Referrals => Set<Referral>();
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -104,25 +102,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.HasOne(oi => oi.Product)
                 .WithMany(p => p.ItensPedido)
                 .HasForeignKey(oi => oi.ProductId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
-
-        builder.Entity<BlogPost>(entity =>
-        {
-            entity.Property(bp => bp.Titulo)
-                .HasMaxLength(200)
-                .IsRequired();
-
-            entity.Property(bp => bp.Slug)
-                .HasMaxLength(200)
-                .IsRequired();
-
-            entity.HasIndex(bp => bp.Slug)
-                .IsUnique();
-
-            entity.HasOne(bp => bp.Autor)
-                .WithMany(u => u.Posts)
-                .HasForeignKey(bp => bp.ApplicationUserId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
