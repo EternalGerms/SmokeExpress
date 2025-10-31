@@ -1,0 +1,106 @@
+@page "/account/login"
+@using System.ComponentModel.DataAnnotations
+@inject SignInManager<ApplicationUser> SignInManager
+@inject NavigationManager Navigation
+@inject ILogger<Login> Logger
+
+@* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
+
+<h3 class="mb-4">Entrar na Smoke Express</h3>
+
+<p class="text-muted">Acesso seguro com cookies HttpOnly e gerenciamento centralizado no servidor.</p>
+
+<EditForm Model="_model" OnValidSubmit="EfetuarLoginAsync">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    @if (!string.IsNullOrEmpty(_mensagemErro))
+    {
+        <div class="alert alert-danger" role="alert">@_mensagemErro</div>
+    }
+
+    <div class="mb-3">
+        <label class="form-label" for="email">E-mail</label>
+        <InputText id="email" class="form-control" @bind-Value="_model.Email" />
+        <ValidationMessage For="() => _model.Email" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="senha">Senha</label>
+        <InputText id="senha" type="password" class="form-control" @bind-Value="_model.Senha" />
+        <ValidationMessage For="() => _model.Senha" />
+    </div>
+
+    <div class="form-check mb-3">
+        <InputCheckbox id="lembrar" class="form-check-input" @bind-Value="_model.LembrarMe" />
+        <label class="form-check-label" for="lembrar">Manter-me conectado</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary" disabled="@_processando">@(_processando ? "Entrando..." : "Entrar")</button>
+
+    <p class="mt-3">
+        Ainda não possui conta? <a href="/account/register">Cadastre-se</a>
+    </p>
+</EditForm>
+
+@code {
+    private readonly LoginInput _model = new();
+    private bool _processando;
+    private string? _mensagemErro;
+
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+        = "/";
+
+    private async Task EfetuarLoginAsync()
+    {
+        _mensagemErro = null;
+        _processando = true;
+
+        try
+        {
+            var resultado = await SignInManager.PasswordSignInAsync(
+                _model.Email,
+                _model.Senha,
+                _model.LembrarMe,
+                lockoutOnFailure: true);
+
+            if (resultado.Succeeded)
+            {
+                Navigation.NavigateTo(string.IsNullOrWhiteSpace(ReturnUrl) ? "/" : ReturnUrl!, forceLoad: false);
+            }
+            else if (resultado.IsLockedOut)
+            {
+                _mensagemErro = "Conta temporariamente bloqueada por tentativas inválidas. Tente novamente mais tarde.";
+            }
+            else
+            {
+                _mensagemErro = "Credenciais inválidas. Verifique o e-mail e a senha informados.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Erro ao efetuar login para {Email}", _model.Email);
+            _mensagemErro = "Ocorreu um erro inesperado ao tentar realizar o login.";
+        }
+        finally
+        {
+            _processando = false;
+        }
+    }
+
+    private sealed class LoginInput
+    {
+        [Required(ErrorMessage = "Informe um e-mail válido.")]
+        [EmailAddress(ErrorMessage = "Formato de e-mail inválido.")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Informe a senha.")]
+        [DataType(DataType.Password)]
+        public string Senha { get; set; } = string.Empty;
+
+        public bool LembrarMe { get; set; }
+            = false;
+    }
+}
+

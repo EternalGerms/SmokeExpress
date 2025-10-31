@@ -1,0 +1,72 @@
+@page "/admin/produtos"
+@attribute [Authorize(Roles = "Admin")]
+@inject IProductService ProductService
+
+@* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
+
+<h3 class="mb-4">Administração de Produtos</h3>
+
+@if (!string.IsNullOrEmpty(_mensagemErro))
+{
+    <div class="alert alert-danger" role="alert">@_mensagemErro</div>
+}
+else if (_carregando)
+{
+    <p>Carregando produtos...</p>
+}
+else if (_produtos.Count == 0)
+{
+    <div class="alert alert-info" role="alert">
+        Nenhum produto cadastrado no momento. Utilize a área administrativa para adicionar novos itens ao catálogo.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nome</th>
+                    <th>Categoria</th>
+                    <th>Preço</th>
+                    <th>Estoque</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var produto in _produtos)
+                {
+                    <tr>
+                        <td>@produto.Nome</td>
+                        <td>@produto.Categoria?.Nome</td>
+                        <td>@produto.Preco.ToString("C")</td>
+                        <td>@produto.Estoque</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private readonly List<Product> _produtos = new();
+    private bool _carregando = true;
+    private string? _mensagemErro;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var resultado = await ProductService.ListarAsync();
+            _produtos.AddRange(resultado);
+        }
+        catch (Exception ex)
+        {
+            _mensagemErro = $"Erro ao carregar os produtos: {ex.Message}";
+        }
+        finally
+        {
+            _carregando = false;
+        }
+    }
+}
+

@@ -1,0 +1,28 @@
+﻿@inherits LayoutComponentBase
+
+@* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
+
+<PageTitle>Smoke Express</PageTitle>
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4 d-flex justify-content-end align-items-center gap-3">
+            <AuthorizeView>
+                <Authorized Context="auth">
+                    <span class="text-muted">Bem-vindo, @auth.User.Identity?.Name</span>
+                </Authorized>
+                <NotAuthorized>
+                    <NavLink class="btn btn-sm btn-outline-light" href="account/register">Crie sua conta</NavLink>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>

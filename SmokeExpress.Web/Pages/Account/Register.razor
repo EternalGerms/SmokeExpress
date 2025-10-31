@@ -1,0 +1,148 @@
+@page "/account/register"
+@using System.ComponentModel.DataAnnotations
+@using System.Linq
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject NavigationManager Navigation
+@inject ILogger<Register> Logger
+
+@* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
+
+<h3 class="mb-4">Criar conta na Smoke Express</h3>
+
+<p class="text-muted">Informe seus dados para aproveitar uma experiência discreta e personalizada.</p>
+
+<EditForm Model="_model" OnValidSubmit="RegistrarAsync">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    @if (!string.IsNullOrEmpty(_mensagemErro))
+    {
+        <div class="alert alert-danger" role="alert">@_mensagemErro</div>
+    }
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label" for="nomeCompleto">Nome completo</label>
+            <InputText id="nomeCompleto" class="form-control" @bind-Value="_model.NomeCompleto" />
+            <ValidationMessage For="() => _model.NomeCompleto" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="email">E-mail</label>
+            <InputText id="email" class="form-control" @bind-Value="_model.Email" />
+            <ValidationMessage For="() => _model.Email" />
+        </div>
+        <div class="col-md-12">
+            <label class="form-label" for="endereco">Endereço completo</label>
+            <InputTextArea id="endereco" class="form-control" rows="3" @bind-Value="_model.Endereco" />
+            <ValidationMessage For="() => _model.Endereco" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="dataNascimento">Data de nascimento</label>
+            <InputDate id="dataNascimento" class="form-control" @bind-Value="_model.DataNascimento" />
+            <ValidationMessage For="() => _model.DataNascimento" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="senha">Senha</label>
+            <InputText id="senha" type="password" class="form-control" @bind-Value="_model.Senha" />
+            <ValidationMessage For="() => _model.Senha" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="confirmacaoSenha">Confirmar senha</label>
+            <InputText id="confirmacaoSenha" type="password" class="form-control" @bind-Value="_model.ConfirmacaoSenha" />
+            <ValidationMessage For="() => _model.ConfirmacaoSenha" />
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-success mt-4" disabled="@_processando">@(_processando ? "Criando conta..." : "Criar conta")</button>
+
+    <p class="mt-3">
+        Já possui cadastro? <a href="/account/login">Entre agora</a>
+    </p>
+</EditForm>
+
+@code {
+    private readonly RegisterInput _model = new();
+    private bool _processando;
+    private string? _mensagemErro;
+
+    private async Task RegistrarAsync()
+    {
+        _mensagemErro = null;
+
+        if (_model.Senha != _model.ConfirmacaoSenha)
+        {
+            _mensagemErro = "As senhas informadas não coincidem.";
+            return;
+        }
+
+        if (_model.DataNascimento > DateTime.UtcNow.AddYears(-18))
+        {
+            _mensagemErro = "É necessário ter ao menos 18 anos para criar uma conta.";
+            return;
+        }
+
+        _processando = true;
+
+        try
+        {
+            var usuario = new ApplicationUser
+            {
+                UserName = _model.Email,
+                Email = _model.Email,
+                NomeCompleto = _model.NomeCompleto,
+                Endereco = _model.Endereco,
+                DataNascimento = _model.DataNascimento,
+                EmailConfirmed = true // Confirmação manual para simplificar o fluxo acadêmico
+            };
+
+            var resultado = await UserManager.CreateAsync(usuario, _model.Senha);
+
+            if (resultado.Succeeded)
+            {
+                await SignInManager.SignInAsync(usuario, isPersistent: false);
+                Navigation.NavigateTo("/");
+                return;
+            }
+
+            _mensagemErro = string.Join(" ", resultado.Errors.Select(e => e.Description));
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Erro ao registrar usuário {Email}", _model.Email);
+            _mensagemErro = "Não foi possível concluir o cadastro. Tente novamente mais tarde.";
+        }
+        finally
+        {
+            _processando = false;
+        }
+    }
+
+    private sealed class RegisterInput
+    {
+        [Required(ErrorMessage = "Informe seu nome completo.")]
+        [StringLength(200, ErrorMessage = "O nome pode conter no máximo 200 caracteres.")]
+        public string NomeCompleto { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Informe um e-mail válido.")]
+        [EmailAddress(ErrorMessage = "Formato de e-mail inválido.")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Informe seu endereço completo.")]
+        [StringLength(500, ErrorMessage = "O endereço pode conter no máximo 500 caracteres.")]
+        public string Endereco { get; set; } = string.Empty;
+
+        [DataType(DataType.Date)]
+        public DateTime DataNascimento { get; set; } = DateTime.UtcNow.AddYears(-18);
+
+        [Required(ErrorMessage = "Informe uma senha válida.")]
+        [StringLength(100, MinimumLength = 8, ErrorMessage = "A senha deve possuir ao menos 8 caracteres.")]
+        [DataType(DataType.Password)]
+        public string Senha { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Confirme a senha.")]
+        [DataType(DataType.Password)]
+        public string ConfirmacaoSenha { get; set; } = string.Empty;
+    }
+}
+

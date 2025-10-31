@@ -1,0 +1,79 @@
+@page "/blog/{Slug}"
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext DbContext
+@inject NavigationManager Navigation
+
+@* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
+
+@if (!string.IsNullOrEmpty(_mensagemErro))
+{
+    <div class="alert alert-danger" role="alert">@_mensagemErro</div>
+}
+else if (_carregando)
+{
+    <p>Carregando artigo...</p>
+}
+else if (_post is null)
+{
+    <div class="alert alert-warning" role="alert">
+        Não encontramos o conteúdo solicitado. Que tal explorar outros artigos do nosso blog?
+    </div>
+    <button class="btn btn-primary" @onclick="IrParaBlog">Ver todos os artigos</button>
+}
+else
+{
+    <article class="blog-article">
+        <h1>@_post.Titulo</h1>
+        <p class="text-muted">
+            Publicado em @_post.DataPublicacao.ToLocalTime().ToString("dd/MM/yyyy") por @(_post.Autor?.NomeCompleto ?? _post.Autor?.Email)
+        </p>
+        <div class="mt-4" @onclick:stopPropagation="true">
+            @((MarkupString)_post.Conteudo)
+        </div>
+    </article>
+}
+
+@code {
+    [Parameter]
+    public string Slug { get; set; } = string.Empty;
+
+    private BlogPost? _post;
+    private bool _carregando = true;
+    private string? _mensagemErro;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _carregando = true;
+        _mensagemErro = null;
+        _post = null;
+
+        if (string.IsNullOrWhiteSpace(Slug))
+        {
+            _mensagemErro = "Slug inválido.";
+            _carregando = false;
+            return;
+        }
+
+        try
+        {
+            _post = await DbContext.BlogPosts
+                .Include(p => p.Autor)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Slug == Slug && p.Publicado);
+        }
+        catch (Exception ex)
+        {
+            _mensagemErro = $"Não foi possível carregar o artigo: {ex.Message}";
+        }
+        finally
+        {
+            _carregando = false;
+        }
+    }
+
+    private void IrParaBlog()
+    {
+        Navigation.NavigateTo("/blog");
+    }
+}
+
