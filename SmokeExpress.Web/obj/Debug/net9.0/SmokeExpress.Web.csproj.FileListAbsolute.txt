@@ -219,8 +219,6 @@ C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\compres
 C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\compressed\qew2fl2cq7-sjnzgf7e1h.gz
 C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\compressed\55t2xrbi20-5bzwdl5l6x.gz
 C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\compressed\4hfq75dm0b-zh9s866nx2.gz
-C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\compressed\tu1462bacl-6muudw9rff.gz
-C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\compressed\grgiffk0up-6muudw9rff.gz
 C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\staticwebassets.build.json
 C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\staticwebassets.build.json.cache
 C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\staticwebassets.development.json
@@ -231,3 +229,5 @@ C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\refint\
 C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\SmokeExpress.Web.pdb
 C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\SmokeExpress.Web.genruntimeconfig.cache
 C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\ref\SmokeExpress.Web.dll
+C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\compressed\tu1462bacl-0dxgn2cm07.gz
+C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\compressed\grgiffk0up-0dxgn2cm07.gz

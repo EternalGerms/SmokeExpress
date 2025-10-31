@@ -1,29 +1,15 @@
 @page "/account/logout"
 @attribute [Authorize]
-@inject SignInManager<ApplicationUser> SignInManager
-@inject NavigationManager Navigation
-@inject ILogger<Logout> Logger
 
 @* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
 
-<p>Saindo da sua conta com segurança...</p>
+<h3 class="mb-3">Deseja sair da Smoke Express?</h3>
+<p class="text-muted">Confirme abaixo para encerrar sua sessão com segurança.</p>
 
-@code {
-    protected override async Task OnInitializedAsync()
-    {
-        try
-        {
-            await SignInManager.SignOutAsync();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Erro ao realizar logout do usuário logado");
-        }
-        finally
-        {
-            Navigation.NavigateTo("/");
-        }
-    }
-}
+<form method="post" action="/account/logout" class="logout-form">
+    <button type="submit" class="btn btn-danger">Encerrar sessão</button>
+    <a class="btn btn-link" href="/">Cancelar</a>
+</form>
+
 
 

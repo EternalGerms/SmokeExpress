@@ -1,0 +1,58 @@
+# Diretórios de build e binários
+bin/
+obj/
+
+# Artefatos do Visual Studio/VSCode
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Arquivos gerados pelo Rider/JetBrains
+.idea/
+
+# Logs e relatórios temporários
+*.log
+*.tmp
+*.temp
+*.ds_store
+Thumbs.db
+
+# Resultados de testes
+TestResults/
+*.coverage
+*.coveragexml
+
+# Pacotes NuGet e dependências baixadas
+packages/
+*.nupkg
+*.snupkg
+
+# Certificados e assets sensíveis
+*.pfx
+*.p12
+
+# Configurações de usuário do ASP.NET
+appsettings.Development.*.json
+appsettings.Local.json
+
+# Arquivos publish / deploy
+publish/
+*.pubxml
+*.pubxml.user
+
+# Cache do Entity Framework
+Migrations/obj/
+
+# Diretórios específicos do projeto
+dist/
+logs/
+coverage/
+
+# Arquivos temporários do sistema
+~$*
+*.swp
+*.swn
+

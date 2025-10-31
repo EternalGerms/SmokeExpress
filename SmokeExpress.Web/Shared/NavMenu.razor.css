@@ -31,23 +31,35 @@
         padding-bottom: 1rem;
     }
 
-    .nav-item ::deep a {
+    .nav-item ::deep a,
+    .nav-item ::deep button.nav-link {
         color: #d7d7d7;
         border-radius: 4px;
         height: 3rem;
         display: flex;
         align-items: center;
         line-height: 3rem;
+        border: none;
+        background: transparent;
+        padding: 0 1rem;
+        text-align: left;
+        width: 100%;
     }
 
-.nav-item ::deep a.active {
+.nav-item ::deep a.active,
+.nav-item ::deep button.nav-link.active {
     background-color: rgba(255,255,255,0.25);
     color: white;
 }
 
-.nav-item ::deep a:hover {
+.nav-item ::deep a:hover,
+.nav-item ::deep button.nav-link:hover {
     background-color: rgba(255,255,255,0.1);
     color: white;
+}
+
+.logout-nav-form {
+    margin: 0;
 }
 
 @media (min-width: 641px) {
