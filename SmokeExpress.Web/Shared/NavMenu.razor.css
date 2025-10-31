@@ -1,80 +1,98 @@
-.navbar-toggler {
-    background-color: rgba(255, 255, 255, 0.1);
+
+.app-navbar {
+    background: linear-gradient(90deg, #0f5132 0%, #198754 80%, #20c997 100%);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+    padding-block: 0.6rem;
 }
 
-.top-row {
-    height: 3.5rem;
-    background-color: rgba(0,0,0,0.4);
+.app-navbar .navbar-brand {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #ffffff;
 }
 
-.navbar-brand {
-    font-size: 1.1rem;
+.app-navbar .navbar-brand:hover {
+    color: #f8f9fa;
 }
 
-.oi {
-    width: 2rem;
-    font-size: 1.1rem;
-    vertical-align: text-top;
-    top: -2px;
+.app-navbar .navbar-toggler {
+    border: none;
+    background-color: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
 }
 
-.nav-item {
-    font-size: 0.9rem;
-    padding-bottom: 0.5rem;
+.app-navbar .navbar-toggler:focus {
+    box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.35);
 }
 
-    .nav-item:first-of-type {
-        padding-top: 1rem;
-    }
-
-    .nav-item:last-of-type {
-        padding-bottom: 1rem;
-    }
-
-    .nav-item ::deep a,
-    .nav-item ::deep button.nav-link {
-        color: #d7d7d7;
-        border-radius: 4px;
-        height: 3rem;
-        display: flex;
-        align-items: center;
-        line-height: 3rem;
-        border: none;
-        background: transparent;
-        padding: 0 1rem;
-        text-align: left;
-        width: 100%;
-    }
-
-.nav-item ::deep a.active,
-.nav-item ::deep button.nav-link.active {
-    background-color: rgba(255,255,255,0.25);
-    color: white;
+.app-navbar .navbar-toggler-icon {
+    filter: invert(1);
 }
 
-.nav-item ::deep a:hover,
-.nav-item ::deep button.nav-link:hover {
-    background-color: rgba(255,255,255,0.1);
-    color: white;
+.app-navbar .nav-link {
+    color: #f1fff8;
+    font-weight: 600;
+    border-radius: 999px;
+    padding-inline: 1.2rem;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.app-navbar .nav-link:hover,
+.app-navbar .nav-link.active {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.28);
+}
+
+.navbar-actions .welcome-text {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.875rem;
+}
+
+.navbar-actions .btn-outline-light {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.75);
+}
+
+.navbar-actions .btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+.navbar-actions .btn-light {
+    color: #0f5132 !important;
+    border-color: transparent;
+}
+
+.navbar-actions .btn-light:hover {
+    background-color: #e8fff3;
+    color: #0f5132 !important;
 }
 
 .logout-nav-form {
     margin: 0;
 }
 
-@media (min-width: 641px) {
-    .navbar-toggler {
-        display: none;
+@media (max-width: 991.98px) {
+    .app-navbar .navbar-nav {
+        padding-top: 1rem;
+        gap: 0.5rem;
     }
 
-    .collapse {
-        /* Never collapse the sidebar for wide screens */
-        display: block;
+    .navbar-actions {
+        width: 100%;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.35);
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 0.75rem;
     }
-    
-    .nav-scrollable {
-        /* Allow sidebar to scroll for tall menus */
-        height: calc(100vh - 3.5rem);
-        overflow-y: auto;
+
+    .navbar-actions .welcome-text {
+        text-align: left;
+    }
+
+    .navbar-actions .btn {
+        width: 100%;
     }
 }

@@ -32,28 +32,8 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Account/Login.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxMb2dpbi5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Account/Logout.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxMb2dvdXQucmF6b3I=
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Account/Register.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxSZWdpc3Rlci5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Admin/ProductAdmin.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cUHJvZHVjdEFkbWluLnJhem9y
-build_metadata.AdditionalFiles.CssScope = 
-
 [C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Counter.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ291bnRlci5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Index.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXgucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/SurveyPrompt.razor]
@@ -63,6 +43,26 @@ build_metadata.AdditionalFiles.CssScope =
 [C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/_Imports.razor]
 build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Account/Login.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxMb2dpbi5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-t8211d5arr
+
+[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Account/Logout.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxMb2dvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-d1g229sxr8
+
+[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Account/Register.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxSZWdpc3Rlci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-q2sdvtuoqn
+
+[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Admin/ProductAdmin.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cUHJvZHVjdEFkbWluLnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-vbg0uotv9f
+
+[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXgucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-2y6i5438r4
 
 [C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/MainLayout.razor]
 build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE1haW5MYXlvdXQucmF6b3I=

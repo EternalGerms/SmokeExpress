@@ -1,6 +1,12 @@
 # Diretórios de build e binários
 bin/
 obj/
+**/bin/
+**/obj/
+**/bin/Debug/
+**/bin/Release/
+**/obj/Debug/
+**/obj/Release/
 
 # Artefatos do Visual Studio/VSCode
 .vs/
@@ -50,6 +56,10 @@ Migrations/obj/
 dist/
 logs/
 coverage/
+build/
+Build/
+builds/
+
 
 # Arquivos temporários do sistema
 ~$*

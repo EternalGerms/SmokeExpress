@@ -1,27 +1,17 @@
 ﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Web
 
 @* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
 
 <PageTitle>Smoke Express</PageTitle>
 
-<div class="page">
-    <div class="sidebar">
+<div class="app-layout">
+    <header class="app-header">
         <NavMenu />
-    </div>
+    </header>
 
-    <main>
-        <div class="top-row px-4 d-flex justify-content-end align-items-center gap-3">
-            <AuthorizeView>
-                <Authorized Context="auth">
-                    <span class="text-muted">Bem-vindo, @auth.User.Identity?.Name</span>
-                </Authorized>
-                <NotAuthorized>
-                    <NavLink class="btn btn-sm btn-outline-light" href="account/register">Crie sua conta</NavLink>
-                </NotAuthorized>
-            </AuthorizeView>
-        </div>
-
-        <article class="content px-4">
+    <main class="app-main">
+        <article class="content">
             @Body
         </article>
     </main>

@@ -229,5 +229,10 @@ C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\refint\
 C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\SmokeExpress.Web.pdb
 C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\SmokeExpress.Web.genruntimeconfig.cache
 C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\ref\SmokeExpress.Web.dll
-C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\compressed\tu1462bacl-0dxgn2cm07.gz
-C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\compressed\grgiffk0up-0dxgn2cm07.gz
+C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\scopedcss\Pages\Account\Login.razor.rz.scp.css
+C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\scopedcss\Pages\Account\Logout.razor.rz.scp.css
+C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\scopedcss\Pages\Account\Register.razor.rz.scp.css
+C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\scopedcss\Pages\Admin\ProductAdmin.razor.rz.scp.css
+C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\scopedcss\Pages\Index.razor.rz.scp.css
+C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\compressed\tu1462bacl-j8nps1k79y.gz
+C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\compressed\grgiffk0up-j8nps1k79y.gz
