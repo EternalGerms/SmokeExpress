@@ -33,9 +33,23 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .HasMaxLength(200)
                 .IsRequired();
 
-            entity.Property(u => u.Endereco)
-                .HasMaxLength(500)
+            entity.Property(u => u.Rua)
+                .HasMaxLength(200)
                 .IsRequired();
+
+            entity.Property(u => u.Numero)
+                .HasMaxLength(20);
+
+            entity.Property(u => u.Cidade)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(u => u.Bairro)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(u => u.Complemento)
+                .HasMaxLength(200);
 
             entity.Property(u => u.DataNascimento)
                 .HasColumnType("date");

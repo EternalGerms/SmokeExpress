@@ -1,4 +1,5 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
+using System.Linq;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -58,6 +59,55 @@ builder.Services.AddScoped<IProductService, ProductService>();
 
 var app = builder.Build();
 
+/// <summary>
+/// Valida se uma URL é local/relativa e segura para redirecionamento.
+/// Previne ataques de open redirect validando que a URL:
+/// - Não é absoluta (não começa com http:// ou https://)
+/// - Não é protocol-relative (não começa com //)
+/// - É relativa e começa com "/"
+/// - Não contém sequências perigosas (ex: "../")
+/// </summary>
+static bool IsLocalUrl(string? url)
+{
+    if (string.IsNullOrWhiteSpace(url))
+    {
+        return false;
+    }
+
+    // Rejeita URLs absolutas (http://, https://)
+    if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+        url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+    {
+        return false;
+    }
+
+    // Rejeita protocol-relative URLs (//)
+    if (url.StartsWith("//", StringComparison.Ordinal))
+    {
+        return false;
+    }
+
+    // Rejeita javascript: e outros protocolos perigosos
+    if (url.Contains(':', StringComparison.Ordinal) && !url.StartsWith("/", StringComparison.Ordinal))
+    {
+        return false;
+    }
+
+    // Aceita apenas URLs relativas que começam com "/"
+    if (!url.StartsWith("/", StringComparison.Ordinal))
+    {
+        return false;
+    }
+
+    // Rejeita sequências de directory traversal
+    if (url.Contains("../", StringComparison.Ordinal) || url.Contains("..\\", StringComparison.Ordinal))
+    {
+        return false;
+    }
+
+    return true;
+}
+
 app.MapPost("/account/login", async ([FromForm] LoginRequest login,
     SignInManager<ApplicationUser> signInManager) =>
     {
@@ -69,15 +119,15 @@ app.MapPost("/account/login", async ([FromForm] LoginRequest login,
 
         if (signInResult.Succeeded)
         {
-            var destination = string.IsNullOrWhiteSpace(login.ReturnUrl)
-                ? "/"
-                : login.ReturnUrl;
+            var destination = IsLocalUrl(login.ReturnUrl)
+                ? login.ReturnUrl!
+                : "/";
 
             return Results.Redirect(destination);
         }
 
         var errorCode = signInResult.IsLockedOut ? "locked" : "invalid";
-        var returnUrl = string.IsNullOrWhiteSpace(login.ReturnUrl) ? "/" : login.ReturnUrl;
+        var returnUrl = IsLocalUrl(login.ReturnUrl) ? login.ReturnUrl! : "/";
         return Results.Redirect($"/account/login?error={errorCode}&returnUrl={Uri.EscapeDataString(returnUrl)}");
     })
     .AllowAnonymous()
@@ -89,6 +139,58 @@ app.MapGet("/account/logout", async (SignInManager<ApplicationUser> signInManage
     return Results.Redirect("/");
 })
 .AllowAnonymous();
+
+app.MapPost("/account/register", async ([FromForm] RegisterRequest request,
+    UserManager<ApplicationUser> userManager,
+    SignInManager<ApplicationUser> signInManager,
+    ILogger<Program> logger) =>
+{
+    // Validação de data futura
+    if (request.DataNascimento > DateTime.UtcNow)
+    {
+        return Results.Redirect("/account/register?error=date&message=" + Uri.EscapeDataString("A data de nascimento não pode ser no futuro."));
+    }
+
+    // Validação de idade mínima
+    if (request.DataNascimento > DateTime.UtcNow.AddYears(-18))
+    {
+        return Results.Redirect("/account/register?error=age&message=" + Uri.EscapeDataString("É necessário ter ao menos 18 anos para criar uma conta."));
+    }
+
+    // Validação de senhas
+    if (request.Senha != request.ConfirmacaoSenha)
+    {
+        return Results.Redirect("/account/register?error=password&message=" + Uri.EscapeDataString("As senhas informadas não coincidem."));
+    }
+
+    var usuario = new ApplicationUser
+    {
+        UserName = request.Email,
+        Email = request.Email,
+        NomeCompleto = request.NomeCompleto,
+        Rua = request.Rua,
+        Numero = string.IsNullOrWhiteSpace(request.Numero) ? null : request.Numero,
+        Cidade = request.Cidade,
+        Bairro = request.Bairro,
+        Complemento = string.IsNullOrWhiteSpace(request.Complemento) ? null : request.Complemento,
+        DataNascimento = request.DataNascimento,
+        EmailConfirmed = true
+    };
+
+    var resultado = await userManager.CreateAsync(usuario, request.Senha);
+
+    if (resultado.Succeeded)
+    {
+        await signInManager.SignInAsync(usuario, isPersistent: false);
+        return Results.Redirect("/");
+    }
+
+    var errorMessage = string.Join(" ", resultado.Errors.Select(e => e.Description));
+    logger.LogError("Erro ao registrar usuário {Email}: {Errors}", request.Email, errorMessage);
+    return Results.Redirect("/account/register?error=registration&message=" + Uri.EscapeDataString(errorMessage));
+})
+.AllowAnonymous()
+.DisableAntiforgery();
 
 // Pipeline de requisições HTTP
 if (app.Environment.IsDevelopment())
@@ -115,3 +217,15 @@ app.MapFallbackToPage("/_Host");
 app.Run();
 
 internal sealed record LoginRequest(string Email, string Password, bool RememberMe = false, string? ReturnUrl = "/");
+
+internal sealed record RegisterRequest(
+    string NomeCompleto,
+    string Email,
+    string Rua,
+    string? Numero,
+    string Cidade,
+    string Bairro,
+    string? Complemento,
+    DateTime DataNascimento,
+    string Senha,
+    string ConfirmacaoSenha);
