@@ -54,8 +54,12 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddCascadingAuthenticationState();
 
+// HttpContextAccessor para serviços que precisam acessar HTTP context
+builder.Services.AddHttpContextAccessor();
+
 // Serviços de domínio
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IAgeVerificationService, AgeVerificationService>();
 
 var app = builder.Build();
 
@@ -188,6 +192,31 @@ app.MapPost("/account/register", async ([FromForm] RegisterRequest request,
     var errorMessage = string.Join(" ", resultado.Errors.Select(e => e.Description));
     logger.LogError("Erro ao registrar usuário {Email}: {Errors}", request.Email, errorMessage);
     return Results.Redirect("/account/register?error=registration&message=" + Uri.EscapeDataString(errorMessage));
+})
+.AllowAnonymous()
+.DisableAntiforgery();
+
+app.MapPost("/age-verification/consent", async ([FromForm] bool isAdult,
+    IAgeVerificationService ageVerificationService) =>
+{
+    await ageVerificationService.SetConsentAsync(isAdult);
+    
+    if (isAdult)
+    {
+        return Results.Redirect("/");
+    }
+    else
+    {
+        return Results.Redirect("/?blocked=true");
+    }
+})
+.AllowAnonymous()
+.DisableAntiforgery();
+
+app.MapPost("/age-verification/reset", async (IAgeVerificationService ageVerificationService) =>
+{
+    await ageVerificationService.ClearConsentAsync();
+    return Results.Redirect("/");
 })
 .AllowAnonymous()
 .DisableAntiforgery();

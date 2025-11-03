@@ -60,6 +60,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXgucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[A:/faculdade/computação/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/AgeVerificationModal.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEFnZVZlcmlmaWNhdGlvbk1vZGFsLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [A:/faculdade/computação/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/SurveyPrompt.razor]
 build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXFN1cnZleVByb21wdC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
