@@ -21,6 +21,35 @@ public class ProductService(ApplicationDbContext context) : IProductService
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<PagedResult<Product>> ListarPaginadoAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    {
+        // Validar parâmetros
+        if (pageNumber < 1) pageNumber = 1;
+        if (pageSize < 1) pageSize = 10;
+
+        var query = _context.Products
+            .Include(p => p.Categoria)
+            .AsNoTracking()
+            .OrderBy(p => p.Nome);
+
+        // Obter total de registros
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        // Aplicar paginação
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<Product>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+    }
+
     public async Task<Product?> ObterPorIdAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _context.Products

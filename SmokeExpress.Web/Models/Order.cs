@@ -22,9 +22,15 @@ public class Order
     [StringLength(50)]
     public string Status { get; set; } = "Processando";
 
-    [Required]
-    [StringLength(500)]
-    public string EnderecoEntrega { get; set; } = string.Empty;
+    public string Rua { get; set; } = string.Empty;
+
+    public string? Numero { get; set; }
+
+    public string Cidade { get; set; } = string.Empty;
+
+    public string Bairro { get; set; } = string.Empty;
+
+    public string? Complemento { get; set; }
 
     [Range(0, 1000000)]
     public decimal TotalPedido { get; set; }

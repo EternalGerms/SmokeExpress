@@ -1,6 +1,7 @@
 @page "/admin/produtos"
 @attribute [Authorize(Roles = "Admin")]
 @inject IProductService ProductService
+@inject NavigationManager Navigation
 
 @* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
 
@@ -14,13 +15,13 @@ else if (_carregando)
 {
     <p>Carregando produtos...</p>
 }
-else if (_produtos.Count == 0)
+else if (_resultado?.Items.Count == 0)
 {
     <div class="alert alert-info" role="alert">
         Nenhum produto cadastrado no momento. Utilize a área administrativa para adicionar novos itens ao catálogo.
     </div>
 }
-else
+else if (_resultado != null)
 {
     <div class="table-responsive">
         <table class="table table-striped table-hover align-middle">
@@ -33,7 +34,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var produto in _produtos)
+                @foreach (var produto in _resultado.Items)
                 {
                     <tr>
                         <td>@produto.Nome</td>
@@ -45,19 +46,66 @@ else
             </tbody>
         </table>
     </div>
+
+    @if (_resultado.TotalPages > 1)
+    {
+        <nav aria-label="Navegação de páginas">
+            <ul class="pagination justify-content-center mt-4">
+                <li class="page-item @(!_resultado.HasPreviousPage ? "disabled" : "")">
+                    <a class="page-link" href="@ObterUrlPagina(_resultado.PageNumber - 1)" aria-label="Anterior">
+                        <span aria-hidden="true">&laquo; Anterior</span>
+                    </a>
+                </li>
+                <li class="page-item active">
+                    <span class="page-link">
+                        Página @_resultado.PageNumber de @_resultado.TotalPages
+                    </span>
+                </li>
+                <li class="page-item @(!_resultado.HasNextPage ? "disabled" : "")">
+                    <a class="page-link" href="@ObterUrlPagina(_resultado.PageNumber + 1)" aria-label="Próxima">
+                        <span aria-hidden="true">Próxima &raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <p class="text-center text-muted mt-2">
+            Exibindo @((_resultado.PageNumber - 1) * _pageSize + 1) até @Math.Min(_resultado.PageNumber * _pageSize, _resultado.TotalCount) de @_resultado.TotalCount produtos
+        </p>
+    }
 }
 
 @code {
-    private readonly List<Product> _produtos = new();
+    [SupplyParameterFromQuery(Name = "page")]
+    public int? PageQuery { get; set; }
+
+    private PagedResult<Product>? _resultado;
     private bool _carregando = true;
     private string? _mensagemErro;
+    private const int _pageSize = 10;
+
+    private int PageNumber => PageQuery ?? 1;
 
     protected override async Task OnInitializedAsync()
     {
+        await CarregarProdutosAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (PageQuery.HasValue)
+        {
+            await CarregarProdutosAsync();
+        }
+    }
+
+    private async Task CarregarProdutosAsync()
+    {
+        _carregando = true;
+        _mensagemErro = null;
+
         try
         {
-            var resultado = await ProductService.ListarAsync();
-            _produtos.AddRange(resultado);
+            _resultado = await ProductService.ListarPaginadoAsync(PageNumber, _pageSize);
         }
         catch (Exception ex)
         {
@@ -67,6 +115,11 @@ else
         {
             _carregando = false;
         }
+    }
+
+    private string ObterUrlPagina(int pagina)
+    {
+        return $"/admin/produtos?page={pagina}";
     }
 }
 

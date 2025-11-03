@@ -16,16 +16,16 @@ else if (_carregando)
 {
     <p>Carregando artigos...</p>
 }
-else if (_posts.Count == 0)
+else if (_resultado?.Items.Count == 0)
 {
     <div class="alert alert-info" role="alert">
         Ainda não publicamos conteúdos. Em breve traremos novidades para alimentar nosso crescimento orgânico.
     </div>
 }
-else
+else if (_resultado != null)
 {
     <div class="row g-4">
-        @foreach (var post in _posts)
+        @foreach (var post in _resultado.Items)
         {
             <div class="col-md-6">
                 <div class="card h-100 shadow-sm">
@@ -41,25 +41,88 @@ else
             </div>
         }
     </div>
+
+    @if (_resultado.TotalPages > 1)
+    {
+        <nav aria-label="Navegação de páginas">
+            <ul class="pagination justify-content-center mt-4">
+                <li class="page-item @(!_resultado.HasPreviousPage ? "disabled" : "")">
+                    <a class="page-link" href="@ObterUrlPagina(_resultado.PageNumber - 1)" aria-label="Anterior">
+                        <span aria-hidden="true">&laquo; Anterior</span>
+                    </a>
+                </li>
+                <li class="page-item active">
+                    <span class="page-link">
+                        Página @_resultado.PageNumber de @_resultado.TotalPages
+                    </span>
+                </li>
+                <li class="page-item @(!_resultado.HasNextPage ? "disabled" : "")">
+                    <a class="page-link" href="@ObterUrlPagina(_resultado.PageNumber + 1)" aria-label="Próxima">
+                        <span aria-hidden="true">Próxima &raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <p class="text-center text-muted mt-2">
+            Exibindo @((_resultado.PageNumber - 1) * _pageSize + 1) até @Math.Min(_resultado.PageNumber * _pageSize, _resultado.TotalCount) de @_resultado.TotalCount artigos
+        </p>
+    }
 }
 
 @code {
-    private readonly List<BlogPost> _posts = new();
+    [SupplyParameterFromQuery(Name = "page")]
+    public int? PageQuery { get; set; }
+
+    private PagedResult<BlogPost>? _resultado;
     private bool _carregando = true;
     private string? _mensagemErro;
+    private const int _pageSize = 6;
+
+    private int PageNumber => PageQuery ?? 1;
 
     protected override async Task OnInitializedAsync()
     {
+        await CarregarPostsAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (PageQuery.HasValue)
+        {
+            await CarregarPostsAsync();
+        }
+    }
+
+    private async Task CarregarPostsAsync()
+    {
+        _carregando = true;
+        _mensagemErro = null;
+
         try
         {
-            var publicados = await DbContext.BlogPosts
+            var pageNumber = PageNumber;
+            if (pageNumber < 1) pageNumber = 1;
+
+            var query = DbContext.BlogPosts
                 .Where(p => p.Publicado)
                 .Include(p => p.Autor)
                 .AsNoTracking()
-                .OrderByDescending(p => p.DataPublicacao)
+                .OrderByDescending(p => p.DataPublicacao);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((pageNumber - 1) * _pageSize)
+                .Take(_pageSize)
                 .ToListAsync();
 
-            _posts.AddRange(publicados);
+            _resultado = new PagedResult<BlogPost>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = _pageSize
+            };
         }
         catch (Exception ex)
         {
@@ -69,6 +132,11 @@ else
         {
             _carregando = false;
         }
+    }
+
+    private string ObterUrlPagina(int pagina)
+    {
+        return $"/blog?page={pagina}";
     }
 
     private static string ObterResumo(string conteudo)

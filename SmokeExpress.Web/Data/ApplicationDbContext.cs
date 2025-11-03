@@ -92,9 +92,23 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .HasMaxLength(50)
                 .IsRequired();
 
-            entity.Property(o => o.EnderecoEntrega)
-                .HasMaxLength(500)
+            entity.Property(o => o.Rua)
+                .HasMaxLength(200)
                 .IsRequired();
+
+            entity.Property(o => o.Numero)
+                .HasMaxLength(20);
+
+            entity.Property(o => o.Cidade)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(o => o.Bairro)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(o => o.Complemento)
+                .HasMaxLength(200);
 
             entity.Property(o => o.TotalPedido)
                 .HasColumnType("decimal(18,2)");
