@@ -59,7 +59,9 @@ builder.Services.AddHttpContextAccessor();
 
 // Serviços de domínio
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IAgeVerificationService, AgeVerificationService>();
+builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
 
 var app = builder.Build();
 

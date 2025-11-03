@@ -135,8 +135,15 @@ public class ProductService(ApplicationDbContext context) : IProductService
     public async Task RemoverAsync(int id, CancellationToken cancellationToken = default)
     {
         var existente = await _context.Products
+            .Include(p => p.ItensPedido)
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken)
             ?? throw new KeyNotFoundException($"Produto com Id {id} não encontrado.");
+
+        // Verificar se o produto tem pedidos associados
+        if (existente.ItensPedido.Any())
+        {
+            throw new InvalidOperationException($"Não é possível excluir o produto '{existente.Nome}' pois ele possui pedidos associados.");
+        }
 
         _context.Products.Remove(existente);
         await _context.SaveChangesAsync(cancellationToken);

@@ -40,8 +40,36 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxSZWdpc3Rlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[A:/faculdade/computação/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Admin/Categories/CategoryForm.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cQ2F0ZWdvcmllc1xDYXRlZ29yeUZvcm0ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[A:/faculdade/computação/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Admin/Categories/Create.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cQ2F0ZWdvcmllc1xDcmVhdGUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[A:/faculdade/computação/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Admin/Categories/Edit.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cQ2F0ZWdvcmllc1xFZGl0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[A:/faculdade/computação/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Admin/Categories/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cQ2F0ZWdvcmllc1xJbmRleC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [A:/faculdade/computação/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Admin/ProductAdmin.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cUHJvZHVjdEFkbWluLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[A:/faculdade/computação/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Admin/Products/Create.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cUHJvZHVjdHNcQ3JlYXRlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[A:/faculdade/computação/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Admin/Products/Edit.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cUHJvZHVjdHNcRWRpdC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[A:/faculdade/computação/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Admin/Products/ProductForm.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cUHJvZHVjdHNcUHJvZHVjdEZvcm0ucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [A:/faculdade/computação/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Blog/Index.razor]

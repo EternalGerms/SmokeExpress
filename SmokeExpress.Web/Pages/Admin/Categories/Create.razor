@@ -1,0 +1,38 @@
+@page "/admin/categorias/novo"
+@attribute [Authorize(Roles = "Admin")]
+@inject ICategoryService CategoryService
+@inject NavigationManager Navigation
+@inject ILogger<Create> Logger
+
+@* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
+
+<h3 class="mb-4">Nova Categoria</h3>
+
+@if (!string.IsNullOrEmpty(_mensagemErro))
+{
+    <div class="alert alert-danger" role="alert">@_mensagemErro</div>
+}
+
+<CategoryForm OnSave="HandleSave" />
+
+@code {
+    private string? _mensagemErro;
+
+    private async Task HandleSave(Category categoria)
+    {
+        _mensagemErro = null;
+
+        try
+        {
+            await CategoryService.CriarAsync(categoria);
+            Navigation.NavigateTo("/admin/categorias?success=created");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Erro ao criar categoria");
+            _mensagemErro = $"Erro ao criar categoria: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+}
+

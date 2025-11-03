@@ -1,0 +1,38 @@
+@page "/admin/produtos/novo"
+@attribute [Authorize(Roles = "Admin")]
+@inject IProductService ProductService
+@inject NavigationManager Navigation
+@inject ILogger<Create> Logger
+
+@* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
+
+<h3 class="mb-4">Novo Produto</h3>
+
+@if (!string.IsNullOrEmpty(_mensagemErro))
+{
+    <div class="alert alert-danger" role="alert">@_mensagemErro</div>
+}
+
+<ProductForm OnSave="HandleSave" />
+
+@code {
+    private string? _mensagemErro;
+
+    private async Task HandleSave(Product produto)
+    {
+        _mensagemErro = null;
+
+        try
+        {
+            await ProductService.CriarAsync(produto);
+            Navigation.NavigateTo("/admin/produtos?success=created");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Erro ao criar produto");
+            _mensagemErro = $"Erro ao criar produto: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+}
+
