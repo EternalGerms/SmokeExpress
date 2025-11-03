@@ -83,6 +83,13 @@ app.MapPost("/account/login", async ([FromForm] LoginRequest login,
     .AllowAnonymous()
     .DisableAntiforgery();
 
+app.MapGet("/account/logout", async (SignInManager<ApplicationUser> signInManager) =>
+{
+    await signInManager.SignOutAsync();
+    return Results.Redirect("/");
+})
+.AllowAnonymous();
+
 // Pipeline de requisições HTTP
 if (app.Environment.IsDevelopment())
 {
