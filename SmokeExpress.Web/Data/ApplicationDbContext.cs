@@ -89,6 +89,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<Order>(entity =>
         {
             entity.Property(o => o.Status)
+                .HasConversion<string>()
                 .HasMaxLength(50)
                 .IsRequired();
 

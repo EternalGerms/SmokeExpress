@@ -18,9 +18,7 @@ public class Order
 
     public DateTime DataPedido { get; set; } = DateTime.UtcNow;
 
-    [Required]
-    [StringLength(50)]
-    public string Status { get; set; } = "Processando";
+    public OrderStatus Status { get; set; } = OrderStatus.Processando;
 
     public string Rua { get; set; } = string.Empty;
 
