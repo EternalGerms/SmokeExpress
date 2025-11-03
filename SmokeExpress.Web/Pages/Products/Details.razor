@@ -1,0 +1,133 @@
+@page "/produtos/{Id:int}"
+@inject IProductService ProductService
+@inject NavigationManager Navigation
+
+@* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
+
+@if (_carregando)
+{
+    <p>Carregando produto...</p>
+}
+else if (_produto == null)
+{
+    <div class="alert alert-warning" role="alert">
+        <h4>Produto não encontrado</h4>
+        <p>O produto solicitado não foi encontrado ou não está mais disponível.</p>
+        <a href="/produtos" class="btn btn-primary">Voltar para catálogo</a>
+    </div>
+}
+else
+{
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="/produtos">Produtos</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@_produto.Nome</li>
+        </ol>
+    </nav>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            @if (!string.IsNullOrWhiteSpace(_produto.ImagemUrl))
+            {
+                <img src="@_produto.ImagemUrl" class="img-fluid rounded shadow" alt="@_produto.Nome" />
+            }
+            else
+            {
+                <div class="bg-light d-flex align-items-center justify-content-center rounded shadow" style="height: 400px;">
+                    <span class="text-muted">Sem imagem disponível</span>
+                </div>
+            }
+        </div>
+        <div class="col-md-6">
+            <h1 class="display-5 mb-3">@_produto.Nome</h1>
+            
+            <p class="text-muted mb-3">
+                <span class="badge bg-secondary">@_produto.Categoria?.Nome</span>
+            </p>
+
+            <div class="mb-4">
+                <h2 class="text-primary mb-2">@_produto.Preco.ToString("C")</h2>
+                @if (_produto.Estoque > 0)
+                {
+                    <p class="text-success mb-0">
+                        <strong>Em estoque</strong> - @_produto.Estoque unidades disponíveis
+                    </p>
+                }
+                else
+                {
+                    <p class="text-danger mb-0">
+                        <strong>Sem estoque no momento</strong>
+                    </p>
+                }
+            </div>
+
+            <div class="mb-4">
+                <h3>Descrição</h3>
+                @if (!string.IsNullOrWhiteSpace(_produto.Descricao))
+                {
+                    <p class="text-muted">@_produto.Descricao</p>
+                }
+                else
+                {
+                    <p class="text-muted">Produto premium da Smoke Express com qualidade garantida.</p>
+                }
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex">
+                @if (_produto.Estoque > 0)
+                {
+                    <button class="btn btn-primary btn-lg flex-fill" disabled>
+                        Adicionar ao carrinho (em breve)
+                    </button>
+                }
+                else
+                {
+                    <button class="btn btn-secondary btn-lg flex-fill" disabled>
+                        Produto sem estoque
+                    </button>
+                }
+                <a href="/produtos" class="btn btn-outline-secondary btn-lg">Voltar</a>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Product? _produto;
+    private bool _carregando = true;
+    private string? _mensagemErro;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregarProdutoAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await CarregarProdutoAsync();
+    }
+
+    private async Task CarregarProdutoAsync()
+    {
+        _carregando = true;
+        _mensagemErro = null;
+
+        try
+        {
+            _produto = await ProductService.ObterPorIdAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            _mensagemErro = $"Erro ao carregar o produto: {ex.Message}";
+        }
+        finally
+        {
+            _carregando = false;
+        }
+    }
+}
+

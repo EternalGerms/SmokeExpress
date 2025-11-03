@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SmokeExpress.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a81ea0f84c8f1ab9af900327875d4483896df1bb")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ea0be935b931c4f074256910003efe84b154ae3b")]
 [assembly: System.Reflection.AssemblyProductAttribute("SmokeExpress.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SmokeExpress.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

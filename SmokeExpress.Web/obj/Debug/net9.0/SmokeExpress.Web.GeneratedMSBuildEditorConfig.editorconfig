@@ -52,12 +52,24 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQmxvZ1xbU2x1Z10ucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[A:/faculdade/computação/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Categories/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2F0ZWdvcmllc1xJbmRleC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [A:/faculdade/computação/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Counter.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ291bnRlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [A:/faculdade/computação/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Index.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXgucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[A:/faculdade/computação/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Products/Details.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJvZHVjdHNcRGV0YWlscy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[A:/faculdade/computação/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Products/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJvZHVjdHNcSW5kZXgucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [A:/faculdade/computação/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/AgeVerificationModal.razor]
