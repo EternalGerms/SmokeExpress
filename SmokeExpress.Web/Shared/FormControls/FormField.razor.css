@@ -1,0 +1,153 @@
+
+.se-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    width: 100%;
+}
+
+.se-form-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #1e3629;
+}
+
+.se-form-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.se-form-input-wrapper ::deep input,
+.se-form-input-wrapper ::deep select,
+.se-form-input-wrapper ::deep textarea,
+.se-form-input-wrapper ::deep .form-control,
+.se-form-input-wrapper ::deep .se-input {
+    width: 100%;
+    border-radius: 14px;
+    border: 1px solid rgba(15, 81, 50, 0.25);
+    padding: 0.78rem 1rem;
+    box-shadow: 0 18px 32px -28px rgba(15, 81, 50, 0.55);
+    color: #123627;
+    background: linear-gradient(135deg, #f5fcf7 0%, #ffffff 100%);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+    appearance: none;
+    font-size: 0.92rem;
+}
+
+.se-form-input-wrapper.has-suffix ::deep input,
+.se-form-input-wrapper.has-suffix ::deep select,
+.se-form-input-wrapper.has-suffix ::deep .form-control,
+.se-form-input-wrapper.has-suffix ::deep .se-input {
+    padding-right: 3rem;
+}
+
+.se-form-suffix {
+    position: absolute;
+    right: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+}
+
+.se-form-input-wrapper ::deep input:focus,
+.se-form-input-wrapper ::deep select:focus,
+.se-form-input-wrapper ::deep textarea:focus,
+.se-form-input-wrapper ::deep .form-control:focus,
+.se-form-input-wrapper ::deep .se-input:focus {
+    border-color: #1f7a46;
+    box-shadow: 0 0 0 0.26rem rgba(31, 122, 70, 0.22);
+    outline: none;
+    background: linear-gradient(135deg, #f0fff4 0%, #ffffff 100%);
+}
+
+.se-form-input-wrapper ::deep input::placeholder,
+.se-form-input-wrapper ::deep textarea::placeholder {
+    color: #7a8a80;
+}
+
+.se-form-input-wrapper ::deep input:disabled,
+.se-form-input-wrapper ::deep select:disabled,
+.se-form-input-wrapper ::deep textarea:disabled {
+    background-color: #eef5ef;
+    cursor: not-allowed;
+    opacity: 0.75;
+}
+.se-form-suffix ::deep button {
+    border-radius: 12px;
+    border: 1px solid rgba(15, 81, 50, 0.18);
+    background: rgba(246, 252, 247, 0.9);
+    color: #0f5132;
+    padding: 0.35rem;
+    transition: border-color 0.18s ease, color 0.18s ease, background-color 0.18s ease;
+}
+
+.se-form-suffix ::deep button:hover,
+.se-form-suffix ::deep button:focus-visible {
+    background: linear-gradient(135deg, rgba(15, 81, 50, 0.16), rgba(31, 122, 70, 0.24));
+    border-color: rgba(31, 122, 70, 0.45);
+    color: #0b3a24;
+    outline: none;
+}
+
+.se-form-hint {
+    font-size: 0.72rem;
+    color: #738078;
+}
+
+.se-form-footer {
+    font-size: 0.72rem;
+    color: #dc2626;
+}
+
+.se-form-footer ::deep .validation-message {
+    display: block;
+}
+
+.checkbox-validation {
+    font-size: 0.72rem;
+    color: #dc2626;
+    margin-top: 0.35rem;
+}
+
+.se-link {
+    color: #0f5132;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: rgba(15, 81, 50, 0.5);
+    transition: color 0.18s ease, text-decoration-color 0.18s ease;
+}
+
+.se-link:hover,
+.se-link:focus-visible {
+    color: #1f7a46;
+    text-decoration-color: rgba(31, 122, 70, 0.7);
+    outline: none;
+}
+
+.se-form-input-wrapper ::deep textarea,
+.se-form-input-wrapper ::deep .se-textarea {
+    min-height: 7rem;
+    resize: vertical;
+}
+
+.se-form-input-wrapper ::deep select,
+.se-form-input-wrapper ::deep .se-select {
+    padding-right: 3rem;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'%3e%3cpath stroke='%230f5132' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 9l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1.1rem center;
+    background-size: 0.9rem;
+    cursor: pointer;
+}
+
+.se-form-input-wrapper ::deep select::-ms-expand {
+    display: none;
+}
+
+.se-form-input-wrapper ::deep input::-webkit-calendar-picker-indicator {
+    filter: invert(18%) sepia(36%) saturate(494%) hue-rotate(93deg) brightness(95%) contrast(88%);
+}
+

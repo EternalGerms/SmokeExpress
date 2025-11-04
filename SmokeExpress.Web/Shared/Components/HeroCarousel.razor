@@ -1,0 +1,140 @@
+@implements IDisposable
+
+<section class="hero-carousel">
+    <div class="hero-carousel__slides">
+        @foreach (var slide in HeroSlides.Select((value, index) => new { value, index }))
+        {
+            var isActive = slide.index == _currentIndex;
+            <article class="hero-carousel__slide @(isActive ? "hero-carousel__slide--active" : string.Empty)"
+                     style="background: @slide.value.Background">
+                <div class="hero-carousel__content">
+                    <span class="hero-carousel__eyebrow">Smoke Express</span>
+                    <h2>@slide.value.Title</h2>
+                    <p>@slide.value.Description</p>
+                    <div class="hero-carousel__actions">
+                        <button class="hero-carousel__btn hero-carousel__btn--primary">Conheça a coleção</button>
+                        <button class="hero-carousel__btn hero-carousel__btn--secondary">Ver acessórios</button>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+
+    <button class="hero-carousel__control hero-carousel__control--prev"
+            type="button"
+            @onclick="Previous">
+        <span aria-hidden="true">‹</span>
+        <span class="sr-only">Slide anterior</span>
+    </button>
+
+    <button class="hero-carousel__control hero-carousel__control--next"
+            type="button"
+            @onclick="Next">
+        <span aria-hidden="true">›</span>
+        <span class="sr-only">Próximo slide</span>
+    </button>
+
+    <div class="hero-carousel__indicators" role="tablist" aria-label="Carrossel Smoke Express">
+        @foreach (var slide in HeroSlides.Select((value, index) => new { value, index }))
+        {
+            var isActive = slide.index == _currentIndex;
+            <button class="hero-carousel__indicator @(isActive ? "hero-carousel__indicator--active" : string.Empty)"
+                    type="button"
+                    role="tab"
+                    aria-selected="@(isActive.ToString().ToLower())"
+                    aria-label="Ir para o slide @(slide.index + 1)"
+                    @onclick="() => GoTo(slide.index)"></button>
+        }
+    </div>
+</section>
+
+@code {
+    private readonly List<HeroCarouselSlide> HeroSlides = new()
+    {
+        new(
+            Title: "Coleção premium para momentos únicos",
+            Description: "Tabacos artesanais, charutos envelhecidos e acessórios selecionados para elevar a sua experiência.",
+            Background: "linear-gradient(120deg, #1b1b1b 0%, #34364a 60%, #5d5f82 100%)"
+        ),
+        new(
+            Title: "Entrega expressa com total discrição",
+            Description: "Rotas otimizadas, embalagens discretas e acompanhamento em tempo real para levar o melhor até você.",
+            Background: "linear-gradient(135deg, #231942 0%, #5e548e 55%, #9f86c0 100%)"
+        ),
+        new(
+            Title: "Atendimento consultivo e personalizado",
+            Description: "Especialistas dedicados para entender o seu paladar e sugerir combinações ideais em cada pedido.",
+            Background: "linear-gradient(135deg, #1b4332 0%, #2d6a4f 55%, #95d5b2 100%)"
+        )
+    };
+
+    private int _currentIndex;
+    private System.Timers.Timer? _timer;
+
+    protected override void OnInitialized()
+    {
+        StartTimer();
+    }
+
+    private void StartTimer()
+    {
+        _timer = new System.Timers.Timer(6000);
+        _timer.Elapsed += (_, _) => OnSlideTick();
+        _timer.AutoReset = true;
+        _timer.Enabled = true;
+    }
+
+    private void OnSlideTick()
+    {
+        InvokeAsync(() =>
+        {
+            _currentIndex = (_currentIndex + 1) % HeroSlides.Count;
+            StateHasChanged();
+        });
+    }
+
+    private void GoTo(int index)
+    {
+        _currentIndex = index;
+        ResetTimer();
+    }
+
+    private void Previous()
+    {
+        _currentIndex = (_currentIndex - 1 + HeroSlides.Count) % HeroSlides.Count;
+        ResetTimer();
+    }
+
+    private void Next()
+    {
+        _currentIndex = (_currentIndex + 1) % HeroSlides.Count;
+        ResetTimer();
+    }
+
+    private void ResetTimer()
+    {
+        if (_timer is null)
+        {
+            return;
+        }
+
+        _timer.Stop();
+        _timer.Start();
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        if (_timer is null)
+        {
+            return;
+        }
+
+        _timer.Stop();
+        _timer.Dispose();
+        _timer = null;
+    }
+
+    private sealed record HeroCarouselSlide(string Title, string Description, string Background);
+}
+

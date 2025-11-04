@@ -10,10 +10,30 @@ public class ApplicationUser : IdentityUser
 {
     public string NomeCompleto { get; set; } = string.Empty;
 
-    public string Endereco { get; set; } = string.Empty;
+    public string? Endereco { get; set; }
+        = null;
 
     public DateTime DataNascimento { get; set; }
         = DateTime.UtcNow.AddYears(-18); // Garantia mínima para inicialização
+
+    /// <summary>
+    /// CPF (11 dígitos) ou CNPJ (14 dígitos) sem máscara.
+    /// </summary>
+    public string DocumentoFiscal { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Define se o cliente é pessoa física (PF) ou jurídica (PJ).
+    /// </summary>
+    public string TipoCliente { get; set; } = "PF";
+
+    public string? Genero { get; set; }
+        = null;
+
+    public bool ConsentiuMarketing { get; set; }
+        = false;
+
+    public DateTime? TermosAceitosEm { get; set; }
+        = null;
 
     public ICollection<Order> Pedidos { get; set; } = new List<Order>();
 

@@ -1,0 +1,60 @@
+@namespace SmokeExpress.Web.Shared.FormControls
+
+<div class="se-form-field @CssClass">
+    @if (!string.IsNullOrWhiteSpace(Label))
+    {
+        <label class="se-form-label" for="@InputId">@Label</label>
+    }
+
+    <div class="se-form-input-wrapper @(Suffix is not null ? "has-suffix" : string.Empty)">
+        @if (ChildContent is not null)
+        {
+            @ChildContent
+        }
+
+        @if (Suffix is not null)
+        {
+            <div class="se-form-suffix">
+                @Suffix
+            </div>
+        }
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Hint))
+    {
+        <span class="se-form-hint">@Hint</span>
+    }
+
+    @if (Validation is not null)
+    {
+        <div class="se-form-footer">
+            @Validation
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string? Label { get; set; }
+
+    [Parameter]
+    public string? InputId { get; set; }
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    [Parameter]
+    public string? Hint { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; } = default!;
+
+    [Parameter]
+    public RenderFragment? Suffix { get; set; }
+        = null;
+
+    [Parameter]
+    public RenderFragment? Validation { get; set; }
+        = null;
+}
+

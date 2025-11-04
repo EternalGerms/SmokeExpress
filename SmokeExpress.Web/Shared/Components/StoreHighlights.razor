@@ -1,0 +1,49 @@
+@using SmokeExpress.Web.Shared.Components
+
+<section class="store-highlights">
+    <div class="store-highlights__container">
+        <header class="store-highlights__header">
+            <span class="store-highlights__eyebrow">Experiência Smoke Express</span>
+            <h2>Uma loja pensada para apreciadores exigentes</h2>
+            <p>Curadoria criteriosa, logística inteligente e atendimento humanizado para transformar cada compra em um ritual exclusivo.</p>
+        </header>
+
+        <div class="store-highlights__grid">
+            @foreach (var highlight in Highlights)
+            {
+                <StoreHighlightCard Icon="@highlight.Icon"
+                                    Title="@highlight.Title"
+                                    Description="@highlight.Description" />
+            }
+        </div>
+    </div>
+</section>
+
+@code {
+    private readonly IReadOnlyList<StoreHighlight> Highlights = new List<StoreHighlight>
+    {
+        new(
+            Icon: "oi oi-fire",
+            Title: "Seleção autoral",
+            Description: "Coleções sazonais, tabacos raros e marcas exclusivas disponíveis apenas para membros da Smoke Express."
+        ),
+        new(
+            Icon: "oi oi-clock",
+            Title: "Entrega no mesmo dia",
+            Description: "Capilaridade logística com parceiros selecionados, garantindo entregas expressas com rastreio inteligente."
+        ),
+        new(
+            Icon: "oi oi-people",
+            Title: "Consultores especialistas",
+            Description: "Time dedicado para orientar combinações, harmonizações e cuidados ideais para cada perfil."
+        ),
+        new(
+            Icon: "oi oi-lock-locked",
+            Title: "Privacidade garantida",
+            Description: "Embalagens discretas, checkout seguro e políticas rígidas de proteção de dados em todos os pedidos."
+        )
+    };
+
+    private sealed record StoreHighlight(string Icon, string Title, string Description);
+}
+

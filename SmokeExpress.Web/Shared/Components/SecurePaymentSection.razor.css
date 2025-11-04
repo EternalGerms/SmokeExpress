@@ -1,0 +1,149 @@
+.secure-payment {
+    padding: 4.5rem 0;
+    background: radial-gradient(circle at center, rgba(15, 23, 42, 0.95) 0%, #020617 100%);
+    color: #e2e8f0;
+}
+
+.secure-payment__container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 3.5rem;
+    align-items: center;
+}
+
+.secure-payment__badge {
+    display: inline-block;
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.35), rgba(14, 165, 233, 0.15));
+    color: #0ea5e9;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    margin-bottom: 1.5rem;
+}
+
+.secure-payment__content h2 {
+    font-size: 2.15rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    color: #f8fafc;
+}
+
+.secure-payment__content p {
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: rgba(226, 232, 240, 0.85);
+    margin-bottom: 2rem;
+}
+
+.secure-payment__list {
+    list-style: none;
+    display: grid;
+    gap: 1.25rem;
+    padding: 0;
+    margin: 0;
+}
+
+.secure-payment__list li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    align-items: start;
+    font-size: 0.98rem;
+    line-height: 1.65;
+}
+
+.secure-payment__icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    background: rgba(14, 165, 233, 0.18);
+    color: #38bdf8;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.secure-payment__panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.secure-payment__shield {
+    width: 220px;
+    height: 280px;
+    border-radius: 110px 110px 30px 30px;
+    background: linear-gradient(160deg, rgba(14, 165, 233, 0.15), rgba(3, 105, 161, 0.4));
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 40px 80px rgba(14, 165, 233, 0.35);
+}
+
+.secure-payment__shield-inner {
+    width: 140px;
+    height: 180px;
+    border-radius: 90px 90px 25px 25px;
+    background: radial-gradient(circle at top, rgba(248, 250, 252, 0.9), rgba(226, 232, 240, 0.45) 65%, rgba(14, 116, 144, 0.05));
+}
+
+.secure-payment__labels {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.secure-payment__labels span {
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    background-color: rgba(148, 163, 184, 0.15);
+    color: rgba(226, 232, 240, 0.9);
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+}
+
+@media (max-width: 992px) {
+    .secure-payment__container {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+        text-align: center;
+    }
+
+    .secure-payment__list {
+        text-align: left;
+    }
+}
+
+@media (max-width: 576px) {
+    .secure-payment {
+        padding: 3.5rem 0;
+    }
+
+    .secure-payment__content h2 {
+        font-size: 1.85rem;
+    }
+
+    .secure-payment__shield {
+        width: 180px;
+        height: 230px;
+    }
+
+    .secure-payment__shield-inner {
+        width: 120px;
+        height: 150px;
+    }
+}
+
+
+

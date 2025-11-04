@@ -1,37 +1,63 @@
-.auth-card {
-    background: #ffffff;
+
+.page-login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(2.5rem, 10vh, 5rem) 1.5rem;
+}
+
+.login-card {
+    background-color: #ffffff;
+    border: 1px solid #dbe6de;
     border-radius: 16px;
-    border: 1px solid #e4e6ef;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-    color: #2d2d2d;
-    padding: 2.5rem;
+    padding: 2.25rem;
+    box-shadow: 0 14px 30px -20px rgba(15, 81, 50, 0.45);
 }
 
-.auth-card ::deep .rz-button {
-    font-weight: 600;
-    letter-spacing: 0.08em;
+.login-header {
+    margin-bottom: 1.75rem;
 }
 
-.auth-card ::deep input {
-    background: #fdfdff;
-    border-radius: 12px;
-    border: 1px solid #ced2e8;
-    color: #2d2d2d;
-    padding: 0.75rem 1rem;
+.login-header .title {
+    margin: 0 0 0.35rem;
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: #0f5132;
 }
 
-.auth-card ::deep input:focus {
-    border-color: #5138ee;
-    box-shadow: 0 0 0 2px rgba(81, 56, 238, 0.15);
+.login-header .subtitle {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #6b7280;
 }
 
-.auth-card ::deep .rz-alert {
-    margin-bottom: 1rem;
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.form-check-input {
+    cursor: pointer;
+}
+
+.form-check-label {
+    cursor: pointer;
+    color: #4b5563;
+}
+
+.login-form :global(.se-form-field) + :global(.se-form-field) {
+    margin-top: 0.75rem;
 }
 
 @media (max-width: 768px) {
-    .auth-card {
-        padding: 1.75rem;
+    .page-login {
+        min-height: calc(100vh - 6rem);
+        padding: clamp(2rem, 12vh, 3.5rem) 1rem;
+    }
+
+    .login-card {
+        padding: 2rem;
     }
 }
 

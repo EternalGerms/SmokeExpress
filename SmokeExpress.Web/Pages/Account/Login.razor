@@ -1,43 +1,52 @@
 @page "/account/login"
 @attribute [AllowAnonymous]
 @inject NavigationManager Navigation
+@using SmokeExpress.Web.Shared.FormControls
 
 @* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
 
-<h3 class="mb-4">Entrar na Smoke Express</h3>
+<div class="page-login">
+    <div class="login-card">
+        <div class="login-header">
+            <h2 class="title">Entrar</h2>
+            <p class="subtitle">Use o e-mail e a senha cadastrados para acessar.</p>
+        </div>
 
-@if (!string.IsNullOrEmpty(MensagemErro))
-{
-    <div class="alert alert-danger" role="alert">@MensagemErro</div>
-}
+        @if (!string.IsNullOrEmpty(MensagemErro))
+        {
+            <div class="alert alert-danger mb-4" role="alert">@MensagemErro</div>
+        }
 
-<form method="post" action="/account/login" class="needs-validation" novalidate>
-    <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
-    <input type="hidden" name="RememberMe" value="false" />
+        <form method="post" action="/account/login" class="login-form" novalidate>
+            <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
+            <input type="hidden" name="RememberMe" value="false" />
 
-    <div class="mb-3">
-        <label class="form-label" for="email">E-mail</label>
-        <input id="email" name="Email" type="email" class="form-control" @bind="Email" required />
-        <div class="invalid-feedback">Informe um e-mail válido.</div>
+            <TextField Label="E-mail"
+                       InputId="email"
+                       InputType="email"
+                       Hint="Informe um e-mail válido."
+                       @bind-Value="Email"
+                       name="Email" />
+
+        <PasswordField Label="Senha"
+                       InputId="senha"
+                       Hint="Informe a senha."
+                       @bind-Value="Password"
+                       name="Password"
+                       ShowPasswordLabel="Mostrar senha digitada"
+                       HidePasswordLabel="Ocultar senha digitada" />
+
+            <CheckboxField CssClass="mb-4"
+                           InputId="lembrar"
+                           Label="Manter-me conectado"
+                           name="RememberMe"
+                           @bind-Value="RememberMe" />
+
+            <PrimaryButton Type="submit" CssClass="w-100">Entrar</PrimaryButton>
+            <SecondaryButton Type="button" CssClass="w-100 mt-3" OnClick="NavegarParaCadastro">Criar uma conta</SecondaryButton>
+        </form>
     </div>
-
-    <div class="mb-3">
-        <label class="form-label" for="senha">Senha</label>
-        <input id="senha" name="Password" type="password" class="form-control" required />
-        <div class="invalid-feedback">Informe a senha.</div>
-    </div>
-
-    <div class="form-check mb-3">
-        <input id="lembrar" name="RememberMe" value="true" class="form-check-input" type="checkbox" @bind="RememberMe" />
-        <label class="form-check-label" for="lembrar">Manter-me conectado</label>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Entrar</button>
-
-    <p class="mt-3">
-        Ainda não possui conta? <a href="/account/register">Cadastre-se</a>
-    </p>
-</form>
+</div>
 
 @code {
     [SupplyParameterFromQuery(Name = "returnUrl")]
@@ -50,6 +59,8 @@
 
     private string Email { get; set; } = string.Empty;
 
+    private string Password { get; set; } = string.Empty;
+
     private bool RememberMe { get; set; }
         = false;
 
@@ -61,5 +72,10 @@
         "invalid" => "Credenciais inválidas. Verifique o e-mail e a senha informados.",
         _ => null
     };
+
+    private void NavegarParaCadastro()
+    {
+        Navigation.NavigateTo("/account/register");
+    }
 }
 

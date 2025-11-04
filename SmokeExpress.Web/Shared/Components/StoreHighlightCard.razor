@@ -1,0 +1,23 @@
+@using Microsoft.AspNetCore.Components
+
+<div class="store-highlight-card">
+    <div class="store-highlight-card__icon" aria-hidden="true">
+        <span class="store-highlight-card__icon-symbol @Icon"></span>
+    </div>
+    <h3>@Title</h3>
+    <p>@Description</p>
+</div>
+
+@code {
+    [Parameter]
+    public string Icon { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Description { get; set; } = string.Empty;
+}
+
+
+

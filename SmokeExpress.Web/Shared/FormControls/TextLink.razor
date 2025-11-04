@@ -1,0 +1,66 @@
+@namespace SmokeExpress.Web.Shared.FormControls
+
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@using System.Collections.Generic
+
+<a class="se-link @CssClass"
+   href="@Href"
+   target="@TargetAttribute"
+   rel="@RelAttribute"
+   @onclick="OnClick"
+   @attributes="AdditionalAttributes">
+    @ChildContent
+</a>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Href { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool OpenInNewTab { get; set; }
+        = false;
+
+    [Parameter]
+    public string? Target { get; set; }
+        = null;
+
+    [Parameter]
+    public string? Rel { get; set; }
+        = null;
+
+    [Parameter]
+    public string? CssClass { get; set; }
+        = null;
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+        = default;
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+        = null;
+
+    private string? TargetAttribute => !string.IsNullOrWhiteSpace(Target)
+        ? Target
+        : OpenInNewTab ? "_blank" : null;
+
+    private string? RelAttribute
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(Rel))
+            {
+                return Rel;
+            }
+
+            return OpenInNewTab ? "noopener noreferrer" : null;
+        }
+    }
+}
+
+
+

@@ -32,11 +32,30 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .IsRequired();
 
             entity.Property(u => u.Endereco)
-                .HasMaxLength(500)
-                .IsRequired();
+                .HasMaxLength(500);
 
             entity.Property(u => u.DataNascimento)
                 .HasColumnType("date");
+
+            entity.Property(u => u.DocumentoFiscal)
+                .HasMaxLength(14)
+                .IsRequired();
+
+            entity.Property(u => u.TipoCliente)
+                .HasMaxLength(2)
+                .IsRequired();
+
+            entity.Property(u => u.Genero)
+                .HasMaxLength(30);
+
+            entity.Property(u => u.ConsentiuMarketing)
+                .HasDefaultValue(false);
+
+            entity.Property(u => u.TermosAceitosEm)
+                .HasColumnType("datetime2");
+
+            entity.HasIndex(u => u.DocumentoFiscal)
+                .IsUnique();
         });
 
         builder.Entity<Category>(entity =>

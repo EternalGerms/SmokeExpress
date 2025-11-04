@@ -1,51 +1,138 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Identity
+@using SmokeExpress.Web.Models
+@using System.Collections.Generic
+@using System.Globalization
+@using System.Linq
+@using System.Security.Claims
+@using System.Text
+@using System.Threading
+@using System.Threading.Tasks
+@inject NavigationManager Navigation
+@implements IDisposable
 
-<nav class="navbar navbar-expand-lg navbar-dark app-navbar">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">Smoke Express</a>
-        <button class="navbar-toggler" type="button"
-                aria-label="Alternar navegação"
-                aria-expanded="@(!collapseNavMenu)"
-                @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+<nav class="app-navbar">
+    <div class="header-top container-fluid">
+        <div class="brand-area">
+            <a class="brand-link" href="">Smoke Express</a>
+        </div>
 
-        <div class="@NavMenuCssClass">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All" @onclick="CollapseNavMenu">
-                        Home
+        <form class="header-search" @onsubmit="HandleSearchSubmit" @onsubmit:preventDefault>
+            <input class="search-input"
+                   type="search"
+                   placeholder="Pesquisar produtos..."
+                   aria-label="Pesquisar produtos"
+                   @bind="searchQuery" />
+            <button type="submit" class="search-button">Pesquisar</button>
+        </form>
+
+        <div class="header-actions">
+            <a class="cart-button" href="carrinho" @onclick="CollapseNavMenu">
+                <span class="oi oi-cart" aria-hidden="true"></span>
+                <span class="cart-label">Carrinho</span>
+                <span class="visually-hidden">Abrir carrinho</span>
+            </a>
+
+            <AuthorizeView>
+                <Authorized Context="auth">
+                    @{ var effectiveName = currentUserDisplayName ?? GetDisplayName(auth.User); }
+                    <div class="dropdown user-dropdown @(isUserMenuOpen ? "show" : string.Empty)"
+                         @onfocusin="HandleUserMenuFocusIn"
+                         @onfocusout="HandleUserMenuFocusOut">
+                        <button class="btn btn-sm header-user-button dropdown-toggle @(isUserMenuOpen ? "show" : string.Empty)"
+                                type="button"
+                                aria-haspopup="true"
+                                aria-expanded="@isUserMenuOpen"
+                                @onclick="ToggleUserMenu"
+                                @onclick:stopPropagation="true"
+                                @onblur="HandleUserMenuBlur"
+                                @onfocus="HandleUserMenuFocusIn">
+                            <span class="oi oi-person" aria-hidden="true"></span>
+                            <span class="user-name">Olá, @effectiveName</span>
+                        </button>
+                        <div class="dropdown-menu user-dropdown-menu @(isUserMenuOpen ? "show" : string.Empty)"
+                             tabindex="-1"
+                             @onclick:stopPropagation="true">
+                            <AuthorizeView Roles="Admin">
+                                <NavLink class="dropdown-item" href="admin/produtos" @onclick="CollapseNavMenu">
+                                    Administração
+                                </NavLink>
+                                <div class="dropdown-divider"></div>
+                            </AuthorizeView>
+                            <NavLink class="dropdown-item" href="account/profile" @onclick="CollapseNavMenu">
+                                Minha Conta
+                            </NavLink>
+                            <NavLink class="dropdown-item" href="account/orders" @onclick="CollapseNavMenu">
+                                Meus Pedidos
+                            </NavLink>
+                            <div class="dropdown-divider"></div>
+                            <form class="logout-dropdown-form" method="post" action="/account/logout">
+                                <button type="submit" class="dropdown-item" @onclick="CollapseNavMenu">
+                                    Sair
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <NavLink class="btn btn-sm header-login-button" href="account/login" @onclick="CollapseNavMenu">
+                        <span class="oi oi-account-login" aria-hidden="true"></span>
+                        Entrar
                     </NavLink>
-                </li>
-                <AuthorizeView Roles="Admin">
-                    <li class="nav-item">
-                        <NavLink class="nav-link" href="admin/produtos" @onclick="CollapseNavMenu">
-                            Administração
-                        </NavLink>
-                    </li>
-                </AuthorizeView>
-            </ul>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </div>
 
-            <div class="navbar-actions d-flex align-items-center gap-3">
-                <AuthorizeView>
-                    <Authorized Context="auth">
-                        <span class="welcome-text">Bem-vindo, @auth.User.Identity?.Name</span>
-                        <form class="logout-nav-form" method="post" action="/account/logout">
-                            <button type="submit" class="btn btn-sm btn-outline-light" @onclick="CollapseNavMenu">
-                                Sair
-                            </button>
-                        </form>
-                    </Authorized>
-                    <NotAuthorized>
-                        <NavLink class="btn btn-sm btn-outline-light" href="account/login" @onclick="CollapseNavMenu">
-                            Entrar
-                        </NavLink>
-                        <NavLink class="btn btn-sm btn-light text-primary" href="account/register" @onclick="CollapseNavMenu">
-                            Crie sua conta
-                        </NavLink>
-                    </NotAuthorized>
-                </AuthorizeView>
+    <div class="category-bar">
+        <div class="container-fluid category-inner">
+            <button class="category-toggle d-lg-none" type="button"
+                    aria-expanded="@(!collapseNavMenu)"
+                    aria-controls="categoryNav"
+                    @onclick="ToggleNavMenu">
+                <span class="oi oi-menu" aria-hidden="true"></span>
+                Categorias
+            </button>
+
+            <div id="categoryNav" class="@CategoryNavWrapperClass">
+                <ul class="category-nav">
+                    @foreach (var category in categories)
+                    {
+                        var hasSubcategories = category.Subcategories.Count > 0;
+                        var isActive = IsCategoryActive(category.Name);
+
+                        <li class="category-item @(isActive ? "active" : string.Empty)"
+                            @onmouseenter="() => OnCategoryPointerEnter(category.Name)"
+                            @onmouseleave="OnCategoryPointerLeave">
+                            @if (hasSubcategories)
+                            {
+                                <button type="button"
+                                        class="category-button"
+                                        @onclick="() => OnCategoryClick(category.Name)">
+                                    @category.Name
+                                    <span class="caret" aria-hidden="true"></span>
+                                </button>
+
+                                <div class="subcategory-menu @(isActive ? "show" : string.Empty)">
+                                    @foreach (var subcategory in category.Subcategories)
+                                    {
+                                        <NavLink class="subcategory-link" href="@GetCategoryUrl(category.Name, subcategory)" @onclick="CollapseNavMenu">
+                                            @subcategory
+                                        </NavLink>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <NavLink class="category-link" href="@GetCategoryUrl(category.Name)" @onclick="CollapseNavMenu">
+                                    @category.Name
+                                </NavLink>
+                            }
+                        </li>
+                    }
+                </ul>
             </div>
         </div>
     </div>
@@ -53,18 +140,296 @@
 
 @code {
     private bool collapseNavMenu = true;
+    private bool isUserMenuOpen;
+    private string? currentUserDisplayName;
+    private AuthenticationState? cachedAuthState;
+    private CancellationTokenSource? userMenuCloseCts;
+    private string searchQuery = string.Empty;
+    private string? activeCategory;
 
-    private string NavMenuCssClass => collapseNavMenu
-        ? "collapse navbar-collapse"
-        : "collapse navbar-collapse show";
+    private readonly List<CategoryMenuItem> categories = new()
+    {
+        new("Bong", new List<string> { "Percolator", "Mini Bong", "Bong de Silicone" }),
+        new("Pipe", new List<string> { "Pipes de Metal", "Pipes de Vidro", "Pipes de Madeira" }),
+        new("Seda", new List<string> { "Seda King Size", "Seda Slim", "Seda Flavor" }),
+        new("Piteira", new List<string> { "Piteira de Vidro", "Piteira de Papel", "Piteira Reutilizável" }),
+        new("Dichavador", new List<string> { "Dichavador de Metal", "Dichavador Acrílico", "Dichavador 4 Partes" }),
+        new("Isqueiro e Cinzeiro", new List<string> { "Isqueiros Recarregáveis", "Isqueiros Jet", "Cinzeiros Portáteis" }),
+        new("Acessórios", new List<string> { "Caixas Herméticas", "Filtros", "Bolsas e Cases" }),
+        new("Caixa", new List<string> { "Club Mensal", "Kits Selecionados", "Presentes" }),
+        new("Marca", new List<string> { "Smoke Express", "Raw", "Lion Rolling Circus" }),
+        new("Promoções", new List<string>())
+    };
+
+    private string CategoryNavWrapperClass => collapseNavMenu ? "category-nav-wrapper collapsed" : "category-nav-wrapper expanded";
 
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+        if (!collapseNavMenu)
+        {
+            CloseUserMenu();
+        }
+
+        if (collapseNavMenu)
+        {
+            activeCategory = null;
+        }
     }
 
     private void CollapseNavMenu()
     {
         collapseNavMenu = true;
+        activeCategory = null;
+        CloseUserMenu();
     }
+
+    private void ToggleUserMenu()
+    {
+        isUserMenuOpen = !isUserMenuOpen;
+        if (isUserMenuOpen)
+        {
+            CancelScheduledUserMenuClose();
+            collapseNavMenu = true;
+        }
+    }
+
+    private void CloseUserMenu()
+    {
+        isUserMenuOpen = false;
+        CancelScheduledUserMenuClose();
+    }
+
+    private void HandleUserMenuBlur(FocusEventArgs _)
+    {
+        ScheduleCloseUserMenu();
+    }
+
+    private void HandleUserMenuFocusOut(FocusEventArgs _)
+    {
+        ScheduleCloseUserMenu();
+    }
+
+    private void HandleUserMenuFocusIn(FocusEventArgs _)
+    {
+        CancelScheduledUserMenuClose();
+    }
+
+    private void HandleSearchSubmit()
+    {
+        var query = searchQuery?.Trim();
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return;
+        }
+
+        var encoded = Uri.EscapeDataString(query);
+        Navigation.NavigateTo($"/buscar?query={encoded}");
+        CollapseNavMenu();
+    }
+
+    private void OnCategoryPointerEnter(string categoryName)
+    {
+        activeCategory = categoryName;
+    }
+
+    private void OnCategoryPointerLeave()
+    {
+        activeCategory = null;
+    }
+
+    private void OnCategoryClick(string categoryName)
+    {
+        if (string.Equals(activeCategory, categoryName, StringComparison.OrdinalIgnoreCase))
+        {
+            activeCategory = null;
+        }
+        else
+        {
+            activeCategory = categoryName;
+        }
+    }
+
+    private bool IsCategoryActive(string categoryName)
+        => string.Equals(activeCategory, categoryName, StringComparison.OrdinalIgnoreCase);
+
+    [Inject]
+    private AuthenticationStateProvider AuthStateProvider { get; set; } = default!;
+
+    [Inject]
+    private UserManager<ApplicationUser> UserManager { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+        await LoadUserDisplayNameAsync();
+    }
+
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        cachedAuthState = await task;
+        await LoadUserDisplayNameAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadUserDisplayNameAsync()
+    {
+        var state = cachedAuthState ?? await AuthStateProvider.GetAuthenticationStateAsync();
+        cachedAuthState = state;
+
+        var user = state.User;
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            var identityUser = await UserManager.GetUserAsync(user);
+            if (identityUser != null && !string.IsNullOrWhiteSpace(identityUser.NomeCompleto))
+            {
+                currentUserDisplayName = identityUser.NomeCompleto;
+                return;
+            }
+
+            currentUserDisplayName = GetDisplayName(user);
+        }
+        else
+        {
+            currentUserDisplayName = null;
+        }
+    }
+
+    public void Dispose()
+    {
+        AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+        CancelScheduledUserMenuClose();
+    }
+
+    private void ScheduleCloseUserMenu()
+    {
+        CancelScheduledUserMenuClose();
+        userMenuCloseCts = new CancellationTokenSource();
+        var token = userMenuCloseCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(150, token);
+                await InvokeAsync(() =>
+                {
+                    isUserMenuOpen = false;
+                    StateHasChanged();
+                });
+            }
+            catch (TaskCanceledException)
+            {
+                // Ignorado
+            }
+        }, token);
+    }
+
+    private void CancelScheduledUserMenuClose()
+    {
+        if (userMenuCloseCts is null)
+        {
+            return;
+        }
+
+        if (!userMenuCloseCts.IsCancellationRequested)
+        {
+            userMenuCloseCts.Cancel();
+        }
+
+        userMenuCloseCts.Dispose();
+        userMenuCloseCts = null;
+    }
+
+    private static string GetDisplayName(ClaimsPrincipal? user)
+    {
+        if (user == null)
+        {
+            return "Usuário";
+        }
+
+        var customName = user.FindFirst("nome")?.Value
+            ?? user.FindFirst("name")?.Value
+            ?? user.FindFirst("NomeCompleto")?.Value;
+        if (!string.IsNullOrWhiteSpace(customName) && !customName.Contains('@'))
+        {
+            return customName;
+        }
+
+        var givenName = user.FindFirst(ClaimTypes.GivenName)?.Value;
+        var surname = user.FindFirst(ClaimTypes.Surname)?.Value;
+        if (!string.IsNullOrWhiteSpace(givenName) && !string.IsNullOrWhiteSpace(surname))
+        {
+            return $"{givenName} {surname}".Trim();
+        }
+
+        if (!string.IsNullOrWhiteSpace(givenName))
+        {
+            return givenName;
+        }
+
+        var displayName = user.Identity?.Name;
+        if (!string.IsNullOrWhiteSpace(displayName))
+        {
+            var trimmed = displayName.Trim();
+            if (!trimmed.Contains('@'))
+            {
+                return trimmed;
+            }
+        }
+
+        var email = user.FindFirst(ClaimTypes.Email)?.Value;
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            var atIndex = email.IndexOf('@');
+            return atIndex > 0 ? email[..atIndex] : email;
+        }
+
+        return "Usuário";
+    }
+
+    private static string GetCategoryUrl(string categoryName, string? subcategory = null)
+    {
+        var baseSlug = ToSlug(categoryName);
+        if (string.IsNullOrEmpty(subcategory))
+        {
+            return string.IsNullOrEmpty(baseSlug) ? "/catalogo" : $"/catalogo/{baseSlug}";
+        }
+
+        var subSlug = ToSlug(subcategory);
+        return $"/catalogo/{baseSlug}/{subSlug}";
+    }
+
+    private static string ToSlug(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return string.Empty;
+        }
+
+        var normalized = text.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
+        var builder = new StringBuilder();
+
+        foreach (var c in normalized)
+        {
+            var category = CharUnicodeInfo.GetUnicodeCategory(c);
+            if (category == UnicodeCategory.NonSpacingMark)
+            {
+                continue;
+            }
+
+            if (char.IsLetterOrDigit(c))
+            {
+                builder.Append(c);
+            }
+            else if (builder.Length > 0 && builder[^1] != '-')
+            {
+                builder.Append('-');
+            }
+        }
+
+        return builder.ToString().Trim('-');
+    }
+
+    private sealed record CategoryMenuItem(string Name, IReadOnlyList<string> Subcategories);
 }

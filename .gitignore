@@ -52,14 +52,6 @@ publish/
 # Cache do Entity Framework
 Migrations/obj/
 
-# Diretórios específicos do projeto
-dist/
-logs/
-coverage/
-build/
-Build/
-builds/
-
 
 # Arquivos temporários do sistema
 ~$*

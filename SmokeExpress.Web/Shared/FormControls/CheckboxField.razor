@@ -1,0 +1,154 @@
+@namespace SmokeExpress.Web.Shared.FormControls
+
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using System
+@using System.Collections.Generic
+@using System.Linq
+@using System.Linq.Expressions
+@implements IDisposable
+
+<div class="form-check @CssClass">
+    <input id="@ResolvedInputId"
+           name="@InputName"
+           class="form-check-input"
+           type="checkbox"
+           checked="@Value"
+           @onchange="HandleChange"
+           @attributes="AdditionalAttributes" />
+
+    <label class="form-check-label" for="@ResolvedInputId">
+        @if (ChildContent is not null)
+        {
+            @ChildContent
+        }
+        else if (!string.IsNullOrWhiteSpace(Label))
+        {
+            @Label
+        }
+    </label>
+
+    @if (!string.IsNullOrEmpty(CurrentError))
+    {
+        <div class="checkbox-validation">@CurrentError</div>
+    }
+</div>
+
+@code
+{
+    [CascadingParameter] private EditContext? EditContext { get; set; }
+
+    [Parameter]
+    public string? Label { get; set; }
+        = null;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+        = null;
+
+    [Parameter]
+    public string? InputId { get; set; }
+        = null;
+
+    [Parameter]
+    public string? CssClass { get; set; }
+        = null;
+
+    [Parameter]
+    public bool Value { get; set; }
+        = false;
+
+    [Parameter]
+    public EventCallback<bool> ValueChanged { get; set; }
+        = default;
+
+    [Parameter]
+    public Expression<Func<bool>>? ValueExpression { get; set; }
+        = null;
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+        = null;
+
+    private FieldIdentifier _fieldIdentifier;
+    private bool _hasFieldIdentifier;
+    private readonly string _generatedId = $"checkbox_{Guid.NewGuid():N}";
+
+    private EditContext? _previousEditContext;
+    private EventHandler<ValidationStateChangedEventArgs>? _validationHandler;
+
+    private string ResolvedInputId => !string.IsNullOrWhiteSpace(InputId)
+        ? InputId!
+        : _hasFieldIdentifier
+            ? _fieldIdentifier.FieldName
+            : _generatedId;
+
+    private string? InputName => AdditionalAttributes is not null && AdditionalAttributes.TryGetValue("name", out var nameValue)
+        ? Convert.ToString(nameValue)
+        : ResolvedInputId;
+
+    private string? CurrentError => _hasFieldIdentifier && EditContext is not null
+        ? EditContext.GetValidationMessages(_fieldIdentifier).FirstOrDefault()
+        : null;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if (EditContext != _previousEditContext)
+        {
+            if (_previousEditContext is not null && _validationHandler is not null)
+            {
+                _previousEditContext.OnValidationStateChanged -= _validationHandler;
+            }
+
+            _previousEditContext = EditContext;
+
+            if (EditContext is not null)
+            {
+                _validationHandler ??= (_, __) => InvokeAsync(StateHasChanged);
+                EditContext.OnValidationStateChanged += _validationHandler;
+            }
+        }
+
+        _hasFieldIdentifier = false;
+        if (ValueExpression is not null)
+        {
+            _fieldIdentifier = FieldIdentifier.Create(ValueExpression);
+            _hasFieldIdentifier = true;
+        }
+    }
+
+    private async Task HandleChange(ChangeEventArgs args)
+    {
+        var newValue = args.Value switch
+        {
+            bool b => b,
+            string s when bool.TryParse(s, out var parsed) => parsed,
+            _ => !Value
+        };
+
+        Value = newValue;
+
+        if (ValueChanged.HasDelegate)
+        {
+            await ValueChanged.InvokeAsync(newValue);
+        }
+
+        if (_hasFieldIdentifier && EditContext is not null)
+        {
+            EditContext.NotifyFieldChanged(_fieldIdentifier);
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        if (_previousEditContext is not null && _validationHandler is not null)
+        {
+            _previousEditContext.OnValidationStateChanged -= _validationHandler;
+        }
+    }
+}
+

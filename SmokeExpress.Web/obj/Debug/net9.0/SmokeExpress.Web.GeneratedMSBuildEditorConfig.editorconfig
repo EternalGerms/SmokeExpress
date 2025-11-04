@@ -36,6 +36,18 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ291bnRlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/FormControls/DateField.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEZvcm1Db250cm9sc1xEYXRlRmllbGQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/FormControls/SelectField.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEZvcm1Db250cm9sc1xTZWxlY3RGaWVsZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/FormControls/TextField.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEZvcm1Db250cm9sc1xUZXh0RmllbGQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/SurveyPrompt.razor]
 build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXFN1cnZleVByb21wdC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
@@ -63,6 +75,50 @@ build_metadata.AdditionalFiles.CssScope = b-vbg0uotv9f
 [C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Pages/Index.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXgucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = b-2y6i5438r4
+
+[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/Components/HeroCarousel.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXENvbXBvbmVudHNcSGVyb0Nhcm91c2VsLnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-i1lmrgzu0q
+
+[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/Components/SecurePaymentSection.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXENvbXBvbmVudHNcU2VjdXJlUGF5bWVudFNlY3Rpb24ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-kd46ba5vy5
+
+[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/Components/StoreHighlightCard.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXENvbXBvbmVudHNcU3RvcmVIaWdobGlnaHRDYXJkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-svpfi3zaa0
+
+[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/Components/StoreHighlights.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXENvbXBvbmVudHNcU3RvcmVIaWdobGlnaHRzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-ao3hcvszlv
+
+[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/Footer.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEZvb3Rlci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-szv4z8khyh
+
+[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/FormControls/CheckboxField.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEZvcm1Db250cm9sc1xDaGVja2JveEZpZWxkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-uk50mqyy8i
+
+[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/FormControls/FormField.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEZvcm1Db250cm9sc1xGb3JtRmllbGQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-nqfkl7kw2i
+
+[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/FormControls/PasswordField.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEZvcm1Db250cm9sc1xQYXNzd29yZEZpZWxkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-5qb3w315uz
+
+[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/FormControls/PrimaryButton.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEZvcm1Db250cm9sc1xQcmltYXJ5QnV0dG9uLnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-c8nzf2bwpn
+
+[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/FormControls/SecondaryButton.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEZvcm1Db250cm9sc1xTZWNvbmRhcnlCdXR0b24ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-zmw1vejelj
+
+[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/FormControls/TextLink.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEZvcm1Db250cm9sc1xUZXh0TGluay5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-lmdpqjio4o
 
 [C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/MainLayout.razor]
 build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE1haW5MYXlvdXQucmF6b3I=

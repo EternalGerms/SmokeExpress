@@ -1,0 +1,77 @@
+@namespace SmokeExpress.Web.Shared.FormControls
+
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using System;
+@using System.Collections.Generic;
+@using System.Threading.Tasks
+
+@inherits FormInputBase<DateTime>
+
+<FormField Label="@Label"
+           InputId="@ResolvedInputId"
+           Hint="@Hint"
+           CssClass="@CssClass">
+    <ChildContent>
+        <InputDate TValue="DateTime"
+                   id="@ResolvedInputId"
+                   name="@ResolvedName"
+                   class="se-input"
+                   Value="@CurrentValue"
+                   ValueChanged="HandleValueChangedAsync"
+                   ValueExpression="@ValueExpression"
+                   @attributes="AdditionalAttributes" />
+    </ChildContent>
+
+    <Validation>
+        @if (EditContext is not null && ValueExpression is not null)
+        {
+            <ValidationMessage For="ValueExpression" />
+        }
+        else if (!string.IsNullOrEmpty(CurrentError))
+        {
+            <span class="validation-message">@CurrentError</span>
+        }
+    </Validation>
+</FormField>
+
+@code
+{
+    [Parameter]
+    public DateTime Value { get; set; }
+        = DateTime.UtcNow.Date;
+
+    [Parameter]
+    public EventCallback<DateTime> ValueChanged { get; set; }
+        = default;
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+        = null;
+
+    private DateTime CurrentValue { get; set; }
+        = DateTime.UtcNow.Date;
+
+    private string? ResolvedName => AdditionalAttributes is not null && AdditionalAttributes.ContainsKey("name")
+        ? null
+        : ResolvedInputId;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        CurrentValue = Value;
+    }
+
+    private async Task HandleValueChangedAsync(DateTime newValue)
+    {
+        CurrentValue = newValue;
+
+        if (ValueChanged.HasDelegate)
+        {
+            await ValueChanged.InvokeAsync(newValue);
+        }
+
+        NotifyFieldChanged();
+    }
+}
+

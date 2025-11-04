@@ -1,0 +1,17 @@
+.se-link {
+    color: #0f5132;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: rgba(15, 81, 50, 0.5);
+    transition: color 0.18s ease, text-decoration-color 0.18s ease;
+}
+
+.se-link:hover,
+.se-link:focus-visible {
+    color: #1f7a46;
+    text-decoration-color: rgba(31, 122, 70, 0.7);
+    outline: none;
+}
+
+
+

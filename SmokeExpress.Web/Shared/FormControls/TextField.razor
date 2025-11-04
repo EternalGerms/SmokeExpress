@@ -1,0 +1,132 @@
+@namespace SmokeExpress.Web.Shared.FormControls
+
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using System
+@using System.Collections.Generic
+@using System.Threading.Tasks
+@using System.Linq
+@using System.Linq.Expressions
+@implements IDisposable
+
+@inherits FormInputBase<string?>
+
+<FormField Label="@Label"
+           InputId="@ResolvedInputId"
+           Hint="@Hint"
+           CssClass="@CssClass">
+    <ChildContent>
+        <input id="@ResolvedInputId"
+               name="@InputName"
+               class="se-input"
+               type="@InputType"
+               value="@CurrentValue"
+               placeholder="@Placeholder"
+               inputmode="@InputMode"
+               maxlength="@MaxLength"
+               @oninput="HandleInput"
+               @onblur="HandleBlur"
+               @attributes="AdditionalAttributes" />
+    </ChildContent>
+
+    <Suffix>
+    @if (Suffix is not null)
+    {
+            @Suffix
+        }
+        </Suffix>
+
+    <Validation>
+        @if (EditContext is not null && ValueExpression is not null)
+        {
+            <ValidationMessage For="ValueExpression" />
+        }
+        else if (!string.IsNullOrEmpty(CurrentError))
+        {
+            <span class="validation-message">@CurrentError</span>
+        }
+    </Validation>
+</FormField>
+
+@code
+{
+    [Parameter]
+    public string InputType { get; set; } = "text";
+
+    [Parameter]
+    public string? Placeholder { get; set; }
+        = null;
+
+    [Parameter]
+    public MaskType Mask { get; set; } = MaskType.None;
+
+    [Parameter]
+    public RenderFragment? Suffix { get; set; }
+        = null;
+
+    [Parameter]
+    public string? Value { get; set; }
+        = string.Empty;
+
+    [Parameter]
+    public EventCallback<string?> ValueChanged { get; set; }
+        = default;
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+        = null;
+
+    private string CurrentValue { get; set; } = string.Empty;
+
+    private string? InputName => AdditionalAttributes is not null && AdditionalAttributes.TryGetValue("name", out var nameValue)
+        ? Convert.ToString(nameValue)
+        : ResolvedInputId;
+
+    private string? MaxLength => Mask switch
+    {
+        MaskType.CpfCnpj => "18",
+        MaskType.Telefone => "16",
+        MaskType.Cep => "9",
+        _ => AdditionalAttributes is not null && AdditionalAttributes.TryGetValue("maxlength", out var value)
+            ? Convert.ToString(value)
+            : null
+    };
+
+    private string InputMode => Mask switch
+    {
+        MaskType.CpfCnpj or MaskType.Telefone or MaskType.Cep => "numeric",
+        _ => AdditionalAttributes is not null && AdditionalAttributes.TryGetValue("inputmode", out var mode)
+            ? Convert.ToString(mode) ?? "text"
+            : "text"
+    };
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        CurrentValue = MaskUtils.ApplyMask(Value, Mask);
+    }
+
+    private async Task HandleInput(ChangeEventArgs args)
+    {
+        var incoming = args.Value?.ToString() ?? string.Empty;
+        CurrentValue = MaskUtils.ApplyMask(incoming, Mask);
+
+        if (ValueChanged.HasDelegate)
+        {
+            await ValueChanged.InvokeAsync(MaskUtils.RemoveMask(CurrentValue, Mask));
+        }
+
+        NotifyFieldChanged();
+    }
+
+    private async Task HandleBlur(FocusEventArgs _)
+    {
+        CurrentValue = MaskUtils.ApplyMask(CurrentValue, Mask);
+
+        if (ValueChanged.HasDelegate)
+        {
+            await ValueChanged.InvokeAsync(MaskUtils.RemoveMask(CurrentValue, Mask));
+        }
+    }
+}
+
