@@ -1,4 +1,10 @@
 ﻿@* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
+@using MudBlazor
+
+<MudThemeProvider Theme="_theme" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
 
 <CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
@@ -14,3 +20,43 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
+
+@code {
+    private MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = "#1f7a46",
+            PrimaryDarken = "#0f5132",
+            PrimaryLighten = "#2ba965",
+            Secondary = "#424242",
+            AppbarBackground = "#1f7a46",
+            Background = "#ffffff",
+            Surface = "#ffffff",
+            DrawerBackground = "#ffffff",
+            DrawerText = "rgba(0,0,0, 0.87)",
+            DrawerIcon = "rgba(0,0,0, 0.54)",
+            Success = "#26b050",
+            Error = "#f44336",
+            Warning = "#ff9800",
+            Info = "#2196f3"
+        },
+        PaletteDark = new PaletteDark
+        {
+            Primary = "#2ba965",
+            PrimaryDarken = "#1f7a46",
+            PrimaryLighten = "#2ba965",
+            Secondary = "#424242",
+            AppbarBackground = "#1f7a46",
+            Background = "#121212",
+            Surface = "#1e1e1e",
+            DrawerBackground = "#1e1e1e",
+            DrawerText = "rgba(255,255,255, 0.87)",
+            DrawerIcon = "rgba(255,255,255, 0.54)",
+            Success = "#26b050",
+            Error = "#f44336",
+            Warning = "#ff9800",
+            Info = "#2196f3"
+        }
+    };
+}

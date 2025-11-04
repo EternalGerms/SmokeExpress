@@ -1,7 +1,16 @@
 @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
+:root {
+    --se-primary: #1f7a46;
+    --se-primary-dark: #0f5132;
+    --se-primary-light: #2ba965;
+    --se-focus-shadow: rgba(31, 122, 70, 0.22);
+    --se-surface-border: rgba(15, 81, 50, 0.18);
+    --se-font-default: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}
+
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: var(--se-font-default);
 }
 
 h1:focus {
@@ -9,18 +18,14 @@ h1:focus {
 }
 
 a, .btn-link {
-    color: #0071c1;
+    color: var(--se-primary);
 }
 
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+a:hover,
+a:focus {
+    color: var(--se-primary-dark);
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
 
 .content {
     padding-top: 1.1rem;
@@ -66,3 +71,5 @@ a, .btn-link {
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
+
+

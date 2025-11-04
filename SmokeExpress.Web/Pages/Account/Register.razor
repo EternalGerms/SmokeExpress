@@ -1,9 +1,11 @@
 @page "/account/register"
 @using System.ComponentModel.DataAnnotations
+@using System.Globalization
 @using System.Linq
 @using Microsoft.EntityFrameworkCore
-@using SmokeExpress.Web.Shared.FormControls
+@using MudBlazor
 @using SmokeExpress.Web.Validation
+@using SmokeExpress.Web.Shared.FormControls
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject NavigationManager Navigation
@@ -11,97 +13,113 @@
 
 @* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
 
-<h3 class="mb-4">Criar conta na Smoke Express</h3>
+<MudPaper Class="register-card mud-elevation-6 p-6">
+    <MudText Typo="Typo.h4" Class="mb-1">Criar conta na Smoke Express</MudText>
+    <MudText Typo="Typo.body1" Class="text-muted mb-4">
+        Informe seus dados para aproveitar uma experiência discreta e personalizada.
+    </MudText>
 
-<p class="text-muted">Informe seus dados para aproveitar uma experiência discreta e personalizada.</p>
+    <EditForm Model="_model" OnValidSubmit="RegistrarAsync">
+        <DataAnnotationsValidator />
 
-<EditForm Model="_model" OnValidSubmit="RegistrarAsync">
-    <DataAnnotationsValidator />
+        @if (!string.IsNullOrEmpty(_mensagemErro))
+        {
+            <MudAlert Severity="Severity.Error" Dense="true" Class="mb-4">
+                @_mensagemErro
+            </MudAlert>
+        }
 
-    @if (!string.IsNullOrEmpty(_mensagemErro))
-    {
-        <div class="alert alert-danger" role="alert">@_mensagemErro</div>
-    }
+        <MudGrid GutterSize="GutterSize.Small">
+            <MudItem xs="12" md="6">
+                <MudTextField Label="Nome completo"
+                              For="@(() => _model.NomeCompleto)"
+                              @bind-Value="_model.NomeCompleto"
+                              Immediate="true"
+                              Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField Label="E-mail"
+                              For="@(() => _model.Email)"
+                              @bind-Value="_model.Email"
+                              InputType="InputType.Email"
+                              Immediate="true"
+                              Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudTextField Label="CPF"
+                              For="@(() => _model.Cpf)"
+                              @bind-Value="_model.Cpf"
+                              Immediate="true"
+                              HelperText="Digite apenas números."
+                              Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudSelect Label="Gênero"
+                           @bind-Value="_model.Genero"
+                           Dense="true"
+                           Placeholder="Selecione..."
+                           Variant="Variant.Outlined">
+                    <MudSelectItem Value="@(null as string)">Selecione...</MudSelectItem>
+                    <MudSelectItem Value="@GeneroMasculino">@GeneroMasculino</MudSelectItem>
+                    <MudSelectItem Value="@GeneroFeminino">@GeneroFeminino</MudSelectItem>
+                    <MudSelectItem Value="@GeneroOutro">@GeneroOutro</MudSelectItem>
+                    <MudSelectItem Value="@PrefiroNaoInformarOption">@PrefiroNaoInformarOption</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudDatePicker Label="Data de nascimento"
+                               @bind-Date="_model.DataNascimento"
+                               DateFormat="dd/MM/yyyy"
+                               DisplayFormat="dd/MM/yyyy"
+                               Culture="@CultureInfo.GetCultureInfo("pt-BR")"
+                               Clearable="true"
+                               Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField Label="Senha"
+                              For="@(() => _model.Senha)"
+                              @bind-Value="_model.Senha"
+                              InputType="InputType.Password"
+                              Immediate="true"
+                              Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField Label="Confirmar senha"
+                              For="@(() => _model.ConfirmacaoSenha)"
+                              @bind-Value="_model.ConfirmacaoSenha"
+                              InputType="InputType.Password"
+                              Immediate="true"
+                              Variant="Variant.Outlined" />
+            </MudItem>
+        </MudGrid>
 
-    <div class="row g-3">
-        <div class="col-md-6">
-            <TextField Label="Nome completo"
-                       InputId="nomeCompleto"
-                       @bind-Value="_model.NomeCompleto" />
-        </div>
-        <div class="col-md-6">
-            <TextField Label="E-mail"
-                       InputId="email"
-                       InputType="email"
-                       @bind-Value="_model.Email" />
-        </div>
-        <div class="col-md-4">
-            <TextField Label="CPF"
-                       InputId="cpf"
-                       Hint="Digite apenas números."
-                       Mask="MaskType.CpfCnpj"
-                       @bind-Value="_model.Cpf" />
-        </div>
-        <div class="col-md-4">
-            <SelectField Label="Gênero"
-                         InputId="genero"
-                         Hint="Selecione seu gênero."
-                         @bind-Value="_model.Genero">
-                <Options>
-                    <option value="">Selecione...</option>
-                    <option value="Masculino">Masculino</option>
-                    <option value="Feminino">Feminino</option>
-                    <option value="Outro">Outro</option>
-                    <option value="Prefiro não informar">Prefiro não informar</option>
-                </Options>
-            </SelectField>
-        </div>
-        <div class="col-md-4">
-            <DateField Label="Data de nascimento"
-                       InputId="dataNascimento"
-                       @bind-Value="_model.DataNascimento" />
-        </div>
-        <div class="col-md-6">
-            <PasswordField Label="Senha"
-                           InputId="senha"
-                           AutoComplete="new-password"
-                           @bind-Value="_model.Senha" />
-        </div>
-        <div class="col-md-6">
-            <PasswordField Label="Confirmar senha"
-                           InputId="confirmacaoSenha"
-                           AutoComplete="new-password"
-                           @bind-Value="_model.ConfirmacaoSenha" />
-        </div>
-    </div>
+        <MudStack Spacing="1" Class="mt-3">
+            <MudCheckBox Label="Aceito os termos e condições de uso"
+                         @bind-Value="_model.AceiteTermos" />
+            <MudCheckBox Label="Desejo receber ofertas e novidades por e-mail"
+                         @bind-Value="_model.ConsentiuMarketing" />
+        </MudStack>
 
-    <div class="mt-3">
-        <CheckboxField Label="Aceito os termos e condições de uso"
-                       InputId="aceiteTermos"
-                       Value="@_model.AceiteTermos"
-                       ValueChanged="@((bool value) => _model.AceiteTermos = value)"
-                       ValueExpression="@(() => _model.AceiteTermos)" />
-    </div>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Success"
+                   Class="mt-4"
+                   Disabled="@_processando"
+                   ButtonType="ButtonType.Submit">
+            @(_processando ? "Criando conta..." : "Criar conta")
+        </MudButton>
 
-    <div class="mt-2">
-        <CheckboxField Label="Desejo receber ofertas e novidades por e-mail"
-                       InputId="consentiuMarketing"
-                       Value="@_model.ConsentiuMarketing"
-                       ValueChanged="@((bool value) => _model.ConsentiuMarketing = value)"
-                       ValueExpression="@(() => _model.ConsentiuMarketing)" />
-    </div>
-
-    <PrimaryButton Type="submit" CssClass="mt-4" Disabled="@_processando">
-        @(_processando ? "Criando conta..." : "Criar conta")
-    </PrimaryButton>
-
-    <p class="mt-3">
-        Já possui cadastro? <a href="/account/login">Entre agora</a>
-    </p>
-</EditForm>
+        <MudText Typo="Typo.body2" Class="mt-4">
+            Já possui cadastro? <MudLink Href="/account/login">Entre agora</MudLink>
+        </MudText>
+    </EditForm>
+</MudPaper>
 
 @code {
     private readonly RegisterInput _model = new();
+    private const string GeneroMasculino = "Masculino";
+    private const string GeneroFeminino = "Feminino";
+    private const string GeneroOutro = "Outro";
+    private const string PrefiroNaoInformarOption = "Prefiro não informar";
     private bool _processando;
     private string? _mensagemErro;
 
@@ -126,7 +144,7 @@
         try
         {
             var cpfLimpo = MaskUtils.RemoveMask(_model.Cpf, MaskType.CpfCnpj);
-            
+
             if (await UserManager.Users.AnyAsync(u => u.DocumentoFiscal == cpfLimpo))
             {
                 _mensagemErro = "Já existe um cliente cadastrado com este CPF.";
@@ -199,8 +217,8 @@
         public string Genero { get; set; } = string.Empty;
 
         [CustomValidation(typeof(InputValidation), nameof(InputValidation.ValidateAceiteTermos))]
-        public bool AceiteTermos { get; set; } = false;
+        public bool AceiteTermos { get; set; }
 
-        public bool ConsentiuMarketing { get; set; } = false;
+        public bool ConsentiuMarketing { get; set; }
     }
 }

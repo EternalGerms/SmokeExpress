@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor.Services;
 using SmokeExpress.Web.Data;
 using SmokeExpress.Web.Models;
 using SmokeExpress.Web.Security;
@@ -54,6 +55,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddMudServices();
 builder.Services.AddCascadingAuthenticationState();
 
 // Serviços de domínio
@@ -76,6 +78,7 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.MapStaticAssets();
 
 app.UseRouting();
 
