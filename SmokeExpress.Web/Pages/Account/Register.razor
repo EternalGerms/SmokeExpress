@@ -17,7 +17,6 @@
 
 <EditForm Model="_model" OnValidSubmit="RegistrarAsync">
     <DataAnnotationsValidator />
-    <ValidationSummary />
 
     @if (!string.IsNullOrEmpty(_mensagemErro))
     {
@@ -79,16 +78,22 @@
     <div class="mt-3">
         <CheckboxField Label="Aceito os termos e condições de uso"
                        InputId="aceiteTermos"
-                       @bind-Value="_model.AceiteTermos" />
+                       Value="@_model.AceiteTermos"
+                       ValueChanged="@((bool value) => _model.AceiteTermos = value)"
+                       ValueExpression="@(() => _model.AceiteTermos)" />
     </div>
 
     <div class="mt-2">
         <CheckboxField Label="Desejo receber ofertas e novidades por e-mail"
                        InputId="consentiuMarketing"
-                       @bind-Value="_model.ConsentiuMarketing" />
+                       Value="@_model.ConsentiuMarketing"
+                       ValueChanged="@((bool value) => _model.ConsentiuMarketing = value)"
+                       ValueExpression="@(() => _model.ConsentiuMarketing)" />
     </div>
 
-    <button type="submit" class="btn btn-success mt-4" disabled="@_processando">@(_processando ? "Criando conta..." : "Criar conta")</button>
+    <PrimaryButton Type="submit" CssClass="mt-4" Disabled="@_processando">
+        @(_processando ? "Criando conta..." : "Criar conta")
+    </PrimaryButton>
 
     <p class="mt-3">
         Já possui cadastro? <a href="/account/login">Entre agora</a>
@@ -191,8 +196,7 @@
         public string ConfirmacaoSenha { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Selecione seu gênero.")]
-        public string? Genero { get; set; }
-            = null;
+        public string Genero { get; set; } = string.Empty;
 
         [CustomValidation(typeof(InputValidation), nameof(InputValidation.ValidateAceiteTermos))]
         public bool AceiteTermos { get; set; } = false;

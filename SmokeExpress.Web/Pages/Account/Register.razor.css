@@ -139,38 +139,6 @@
     gap: 0.7rem;
 }
 
-.form-check {
-    display: flex;
-    gap: 0.55rem;
-    align-items: flex-start;
-}
-
-.form-check-input {
-    margin-top: 0.28rem;
-    width: 1.15rem;
-    height: 1.15rem;
-    cursor: pointer;
-    border-radius: 0.35rem;
-    border: 1px solid #94a3b8;
-}
-
-.form-check-input:checked {
-    background-color: #1f7a46;
-    border-color: #1f7a46;
-}
-
-.form-check-label {
-    font-size: 0.9rem;
-    color: #374151;
-}
-
-.form-check-label a {
-    color: #0f5132;
-    font-weight: 600;
-    text-decoration: underline;
-    text-decoration-color: rgba(15, 81, 50, 0.4);
-}
-
 .form-actions {
     margin-top: 2.25rem;
 }
@@ -203,10 +171,6 @@
 
     .register-card {
         padding: clamp(1.75rem, 6vw, 2.5rem);
-    }
-
-    .form-check {
-        flex-direction: column;
     }
 }
 

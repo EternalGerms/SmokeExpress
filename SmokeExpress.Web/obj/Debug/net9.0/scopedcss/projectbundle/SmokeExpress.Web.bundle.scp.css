@@ -220,38 +220,6 @@
     gap: 0.7rem;
 }
 
-.form-check[b-q2sdvtuoqn] {
-    display: flex;
-    gap: 0.55rem;
-    align-items: flex-start;
-}
-
-.form-check-input[b-q2sdvtuoqn] {
-    margin-top: 0.28rem;
-    width: 1.15rem;
-    height: 1.15rem;
-    cursor: pointer;
-    border-radius: 0.35rem;
-    border: 1px solid #94a3b8;
-}
-
-.form-check-input:checked[b-q2sdvtuoqn] {
-    background-color: #1f7a46;
-    border-color: #1f7a46;
-}
-
-.form-check-label[b-q2sdvtuoqn] {
-    font-size: 0.9rem;
-    color: #374151;
-}
-
-.form-check-label a[b-q2sdvtuoqn] {
-    color: #0f5132;
-    font-weight: 600;
-    text-decoration: underline;
-    text-decoration-color: rgba(15, 81, 50, 0.4);
-}
-
 .form-actions[b-q2sdvtuoqn] {
     margin-top: 2.25rem;
 }
@@ -284,10 +252,6 @@
 
     .register-card[b-q2sdvtuoqn] {
         padding: clamp(1.75rem, 6vw, 2.5rem);
-    }
-
-    .form-check[b-q2sdvtuoqn] {
-        flex-direction: column;
     }
 }
 
@@ -954,12 +918,16 @@
     align-items: flex-start;
     gap: 0.55rem;
     padding: 0.35rem 0;
+    margin-left: 0;
+    padding-left: 0.75rem;
 }
 
 .form-check-input[b-uk50mqyy8i] {
     width: 1.05rem;
     height: 1.05rem;
     margin-top: 0.15rem;
+    margin-left: 0;
+    flex-shrink: 0;
     border-radius: 0.35rem;
     border: 1.5px solid rgba(15, 81, 50, 0.45);
     background: #ffffff;
@@ -1026,6 +994,7 @@
     box-shadow: 0 18px 32px -28px rgba(15, 81, 50, 0.55);
     color: #123627;
     background: linear-gradient(135deg, #f5fcf7 0%, #ffffff 100%);
+    background-color: #ffffff;
     transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
     appearance: none;
     font-size: 0.92rem;
@@ -1131,6 +1100,7 @@
 .se-form-input-wrapper[b-nqfkl7kw2i]  select,
 .se-form-input-wrapper[b-nqfkl7kw2i]  .se-select {
     padding-right: 3rem;
+    background-color: #ffffff !important;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'%3e%3cpath stroke='%230f5132' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 9l6 6 6-6'/%3e%3c/svg%3e");
     background-repeat: no-repeat;
     background-position: right 1.1rem center;
