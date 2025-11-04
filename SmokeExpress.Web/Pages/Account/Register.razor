@@ -14,12 +14,12 @@
 @* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
 
 <MudPaper Class="register-card mud-elevation-6 p-6">
-    <MudText Typo="Typo.h4" Class="mb-1">Criar conta na Smoke Express</MudText>
-    <MudText Typo="Typo.body1" Class="text-muted mb-4">
+    <MudText Typo="Typo.h4" Class="mb-1 px-4 pt-4">Cadastre-se</MudText>
+    <MudText Typo="Typo.body1" Class="text-muted mb-4 px-4">
         Informe seus dados para aproveitar uma experiência discreta e personalizada.
     </MudText>
 
-    <EditForm Model="_model" OnValidSubmit="RegistrarAsync">
+    <EditForm Model="_model" OnValidSubmit="RegistrarAsync" class="px-4 pb-4">
         <DataAnnotationsValidator />
 
         @if (!string.IsNullOrEmpty(_mensagemErro))
@@ -51,35 +51,42 @@
                               @bind-Value="_model.Cpf"
                               Immediate="true"
                               HelperText="Digite apenas números."
-                              Variant="Variant.Outlined" />
+                              Variant="Variant.Outlined" 
+                              Mask="@(new PatternMask("000.000.000-00"))"/>
             </MudItem>
             <MudItem xs="12" md="4">
                 <MudSelect Label="Gênero"
+                           For="@(() => _model.Genero)"
                            @bind-Value="_model.Genero"
                            Dense="true"
                            Placeholder="Selecione..."
-                           Variant="Variant.Outlined">
-                    <MudSelectItem Value="@(null as string)">Selecione...</MudSelectItem>
-                    <MudSelectItem Value="@GeneroMasculino">@GeneroMasculino</MudSelectItem>
-                    <MudSelectItem Value="@GeneroFeminino">@GeneroFeminino</MudSelectItem>
-                    <MudSelectItem Value="@GeneroOutro">@GeneroOutro</MudSelectItem>
-                    <MudSelectItem Value="@PrefiroNaoInformarOption">@PrefiroNaoInformarOption</MudSelectItem>
+                           Variant="Variant.Outlined"
+                           Required="true"
+                           >
+                           @foreach (var genero in _generos){
+                            <MudSelectItem Value="@genero">@genero</MudSelectItem>
+                           }
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" md="4">
                 <MudDatePicker Label="Data de nascimento"
+                               For="@(() => _model.DataNascimento)"
                                @bind-Date="_model.DataNascimento"
                                DateFormat="dd/MM/yyyy"
                                DisplayFormat="dd/MM/yyyy"
                                Culture="@CultureInfo.GetCultureInfo("pt-BR")"
-                               Clearable="true"
+                               Required="true"
                                Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" md="6">
                 <MudTextField Label="Senha"
                               For="@(() => _model.Senha)"
                               @bind-Value="_model.Senha"
-                              InputType="InputType.Password"
+                              InputType="@_senhaInputType"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@_senhaInputIcon"
+                              OnAdornmentClick="ToggleSenhaVisibility"
+                              AdornmentAriaLabel="Alternar visibilidade da senha"
                               Immediate="true"
                               Variant="Variant.Outlined" />
             </MudItem>
@@ -87,7 +94,11 @@
                 <MudTextField Label="Confirmar senha"
                               For="@(() => _model.ConfirmacaoSenha)"
                               @bind-Value="_model.ConfirmacaoSenha"
-                              InputType="InputType.Password"
+                              InputType="@_confirmacaoSenhaInputType"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@_confirmacaoSenhaInputIcon"
+                              OnAdornmentClick="ToggleConfirmacaoSenhaVisibility"
+                              AdornmentAriaLabel="Alternar visibilidade da confirmação de senha"
                               Immediate="true"
                               Variant="Variant.Outlined" />
             </MudItem>
@@ -95,13 +106,17 @@
 
         <MudStack Spacing="1" Class="mt-3">
             <MudCheckBox Label="Aceito os termos e condições de uso"
-                         @bind-Value="_model.AceiteTermos" />
+                         For="@(() => _model.AceiteTermos)"
+                         @bind-Value="_model.AceiteTermos"
+                         Required="true" />
             <MudCheckBox Label="Desejo receber ofertas e novidades por e-mail"
                          @bind-Value="_model.ConsentiuMarketing" />
         </MudStack>
 
         <MudButton Variant="Variant.Filled"
                    Color="Color.Success"
+                   Size="Size.Large"
+                   FullWidth="true"
                    Class="mt-4"
                    Disabled="@_processando"
                    ButtonType="ButtonType.Submit">
@@ -116,12 +131,49 @@
 
 @code {
     private readonly RegisterInput _model = new();
-    private const string GeneroMasculino = "Masculino";
-    private const string GeneroFeminino = "Feminino";
-    private const string GeneroOutro = "Outro";
-    private const string PrefiroNaoInformarOption = "Prefiro não informar";
+    private readonly string[] _generos = new[] { "Masculino", "Feminino", "Outro", "Prefiro não informar" };
     private bool _processando;
     private string? _mensagemErro;
+
+    // Controle de visibilidade das senhas
+    private bool _senhaVisivel;
+    private bool _confirmacaoSenhaVisivel;
+    private InputType _senhaInputType = InputType.Password;
+    private InputType _confirmacaoSenhaInputType = InputType.Password;
+    private string _senhaInputIcon = Icons.Material.Filled.VisibilityOff;
+    private string _confirmacaoSenhaInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    private void ToggleSenhaVisibility()
+    {
+        if (_senhaVisivel)
+        {
+            _senhaVisivel = false;
+            _senhaInputIcon = Icons.Material.Filled.VisibilityOff;
+            _senhaInputType = InputType.Password;
+        }
+        else
+        {
+            _senhaVisivel = true;
+            _senhaInputIcon = Icons.Material.Filled.Visibility;
+            _senhaInputType = InputType.Text;
+        }
+    }
+
+    private void ToggleConfirmacaoSenhaVisibility()
+    {
+        if (_confirmacaoSenhaVisivel)
+        {
+            _confirmacaoSenhaVisivel = false;
+            _confirmacaoSenhaInputIcon = Icons.Material.Filled.VisibilityOff;
+            _confirmacaoSenhaInputType = InputType.Password;
+        }
+        else
+        {
+            _confirmacaoSenhaVisivel = true;
+            _confirmacaoSenhaInputIcon = Icons.Material.Filled.Visibility;
+            _confirmacaoSenhaInputType = InputType.Text;
+        }
+    }
 
     private async Task RegistrarAsync()
     {
@@ -201,6 +253,7 @@
         [CustomValidation(typeof(InputValidation), nameof(InputValidation.ValidateCpfCnpj))]
         public string Cpf { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "Informe sua data de nascimento.")]
         [DataType(DataType.Date)]
         public DateTime? DataNascimento { get; set; }
 
