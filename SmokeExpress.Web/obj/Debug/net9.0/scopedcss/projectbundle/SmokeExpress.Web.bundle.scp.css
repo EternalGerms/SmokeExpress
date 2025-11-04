@@ -1244,6 +1244,20 @@
     outline: none;
 }
 
+/* _content/SmokeExpress.Web/Shared/FormControls/SelectField.razor.rz.scp.css */
+[b-yohtpce9yj] select.se-select,
+[b-yohtpce9yj] select.se-input.se-select,
+[b-yohtpce9yj] .se-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+[b-yohtpce9yj] select.se-select::-ms-expand,
+[b-yohtpce9yj] select.se-input.se-select::-ms-expand,
+[b-yohtpce9yj] .se-select::-ms-expand {
+    display: none;
+}
 /* _content/SmokeExpress.Web/Shared/FormControls/TextLink.razor.rz.scp.css */
 .se-link[b-lmdpqjio4o] {
     color: #0f5132;

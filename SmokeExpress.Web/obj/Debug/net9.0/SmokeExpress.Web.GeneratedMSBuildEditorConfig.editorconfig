@@ -40,10 +40,6 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEZvcm1Db250cm9sc1xEYXRlRmllbGQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/FormControls/SelectField.razor]
-build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEZvcm1Db250cm9sc1xTZWxlY3RGaWVsZC5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = 
-
 [C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/FormControls/TextField.razor]
 build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEZvcm1Db250cm9sc1xUZXh0RmllbGQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
@@ -115,6 +111,10 @@ build_metadata.AdditionalFiles.CssScope = b-c8nzf2bwpn
 [C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/FormControls/SecondaryButton.razor]
 build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEZvcm1Db250cm9sc1xTZWNvbmRhcnlCdXR0b24ucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = b-zmw1vejelj
+
+[C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/FormControls/SelectField.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEZvcm1Db250cm9sc1xTZWxlY3RGaWVsZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-yohtpce9yj
 
 [C:/Dev/Fatec/SmokeExpress/SmokeExpress/SmokeExpress.Web/Shared/FormControls/TextLink.razor]
 build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEZvcm1Db250cm9sc1xUZXh0TGluay5yYXpvcg==

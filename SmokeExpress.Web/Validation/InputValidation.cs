@@ -108,11 +108,21 @@ public static class InputValidation
         return segundoDigito == cnpj[13] - '0';
     }
 
-    public static ValidationResult? ValidateAceiteTermos(bool value, ValidationContext _)
+    public static ValidationResult? ValidateAceiteTermos(bool value, ValidationContext validationContext)
     {
-        return value
-            ? ValidationResult.Success
-            : new ValidationResult("É necessário aceitar os termos e condições de uso para criar uma conta.");
+        if (value)
+        {
+            return ValidationResult.Success;
+        }
+
+        if (!string.IsNullOrEmpty(validationContext.MemberName))
+        {
+            return new ValidationResult(
+                "É necessário aceitar os termos e condições de uso para criar uma conta.",
+                new[] { validationContext.MemberName });
+        }
+
+        return new ValidationResult("É necessário aceitar os termos e condições de uso para criar uma conta.");
     }
 }
 

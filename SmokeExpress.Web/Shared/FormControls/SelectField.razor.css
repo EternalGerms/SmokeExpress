@@ -1,0 +1,13 @@
+::deep select.se-select,
+::deep select.se-input.se-select,
+::deep .se-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+::deep select.se-select::-ms-expand,
+::deep select.se-input.se-select::-ms-expand,
+::deep .se-select::-ms-expand {
+    display: none;
+}

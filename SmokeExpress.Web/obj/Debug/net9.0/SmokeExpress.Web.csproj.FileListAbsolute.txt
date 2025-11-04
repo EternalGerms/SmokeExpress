@@ -245,5 +245,6 @@ C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\SmokeEx
 C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\SmokeExpress.Web.genruntimeconfig.cache
 C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\ref\SmokeExpress.Web.dll
 C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\scopedcss\Shared\FormControls\PasswordField.razor.rz.scp.css
-C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\compressed\tu1462bacl-k6hel0usre.gz
-C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\compressed\grgiffk0up-k6hel0usre.gz
+C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\scopedcss\Shared\FormControls\SelectField.razor.rz.scp.css
+C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\compressed\tu1462bacl-v11aa6u6sm.gz
+C:\Dev\Fatec\SmokeExpress\SmokeExpress\SmokeExpress.Web\obj\Debug\net9.0\compressed\grgiffk0up-v11aa6u6sm.gz
