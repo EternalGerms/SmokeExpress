@@ -115,7 +115,7 @@
             return;
         }
 
-        if (_model.DataNascimento > DateTime.UtcNow.AddYears(-18))
+        if (_model.DataNascimento == null || _model.DataNascimento > DateTime.UtcNow.AddYears(-18))
         {
             _mensagemErro = "É necessário ter ao menos 18 anos para criar uma conta.";
             return;
@@ -140,7 +140,7 @@
                 NomeCompleto = _model.NomeCompleto,
                 DocumentoFiscal = cpfLimpo,
                 TipoCliente = "PF",
-                DataNascimento = _model.DataNascimento,
+                DataNascimento = _model.DataNascimento ?? DateTime.UtcNow.AddYears(-18),
                 Genero = _model.Genero,
                 ConsentiuMarketing = _model.ConsentiuMarketing,
                 TermosAceitosEm = _model.AceiteTermos ? DateTime.UtcNow : null,
@@ -184,7 +184,7 @@
         public string Cpf { get; set; } = string.Empty;
 
         [DataType(DataType.Date)]
-        public DateTime DataNascimento { get; set; } = DateTime.UtcNow.AddYears(-18);
+        public DateTime? DataNascimento { get; set; }
 
         [Required(ErrorMessage = "Informe uma senha válida.")]
         [StringLength(100, MinimumLength = 8, ErrorMessage = "A senha deve possuir ao menos 8 caracteres.")]

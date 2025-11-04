@@ -1,0 +1,85 @@
+.se-date-input-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.se-date-input-wrapper .se-date-input {
+    padding-right: 3rem;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.se-date-input-wrapper .se-date-input::placeholder {
+    color: #9ca3af;
+    opacity: 0.7;
+}
+
+.se-date-input-wrapper .se-date-icon {
+    position: absolute;
+    right: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    color: rgba(15, 81, 50, 0.6);
+    transition: color 0.18s ease, transform 0.18s ease;
+    z-index: 1;
+    width: 20px;
+    height: 20px;
+}
+
+.se-date-input-wrapper .se-date-input:focus + .se-date-icon,
+.se-date-input-wrapper:hover .se-date-icon {
+    color: #1f7a46;
+}
+
+.se-date-input-wrapper .se-date-input:focus + .se-date-icon {
+    transform: scale(1.1);
+}
+
+.se-date-input-wrapper .se-date-input::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 1rem;
+    width: 20px;
+    height: 20px;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.se-date-input-wrapper .se-date-input::-webkit-inner-spin-button,
+.se-date-input-wrapper .se-date-input::-webkit-clear-button {
+    display: none;
+    -webkit-appearance: none;
+}
+
+/* Para Firefox */
+.se-date-input-wrapper .se-date-input::-moz-calendar-picker-indicator {
+    display: none;
+}
+
+/* Para melhorar a aparência do date picker nativo */
+.se-date-input-wrapper .se-date-input[type="date"] {
+    position: relative;
+}
+
+.se-date-input-wrapper .se-date-input[type="date"]::-webkit-datetime-edit-text {
+    color: #123627;
+}
+
+.se-date-input-wrapper .se-date-input[type="date"]::-webkit-datetime-edit-month-field,
+.se-date-input-wrapper .se-date-input[type="date"]::-webkit-datetime-edit-day-field,
+.se-date-input-wrapper .se-date-input[type="date"]::-webkit-datetime-edit-year-field {
+    color: #123627;
+}
+
+.se-date-input-wrapper .se-date-input[type="date"]::-webkit-datetime-edit-month-field:focus,
+.se-date-input-wrapper .se-date-input[type="date"]::-webkit-datetime-edit-day-field:focus,
+.se-date-input-wrapper .se-date-input[type="date"]::-webkit-datetime-edit-year-field:focus {
+    background-color: rgba(31, 122, 70, 0.1);
+    color: #1f7a46;
+    border-radius: 4px;
+}
+

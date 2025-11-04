@@ -17,6 +17,8 @@
     display: flex;
     align-items: center;
     width: 100%;
+    border: none;
+    outline: none;
 }
 
 .se-form-input-wrapper ::deep input,
@@ -62,6 +64,31 @@
     box-shadow: 0 0 0 0.26rem rgba(31, 122, 70, 0.22);
     outline: none;
     background: linear-gradient(135deg, #f0fff4 0%, #ffffff 100%);
+}
+
+.se-form-input-wrapper.invalid {
+    border: none;
+    outline: none;
+}
+
+.se-form-input-wrapper.invalid ::deep input,
+.se-form-input-wrapper.invalid ::deep select,
+.se-form-input-wrapper.invalid ::deep textarea,
+.se-form-input-wrapper.invalid ::deep .form-control,
+.se-form-input-wrapper.invalid ::deep .se-input {
+    border: 1px solid #dc2626;
+    border-width: 1px;
+}
+
+.se-form-input-wrapper.invalid ::deep input:focus,
+.se-form-input-wrapper.invalid ::deep select:focus,
+.se-form-input-wrapper.invalid ::deep textarea:focus,
+.se-form-input-wrapper.invalid ::deep .form-control:focus,
+.se-form-input-wrapper.invalid ::deep .se-input:focus {
+    border: 1px solid #dc2626;
+    border-width: 1px;
+    box-shadow: 0 0 0 0.26rem rgba(220, 38, 38, 0.22);
+    outline: none;
 }
 
 .se-form-input-wrapper ::deep input::placeholder,
@@ -143,6 +170,8 @@
     background-position: right 1.1rem center;
     background-size: 0.9rem;
     cursor: pointer;
+    border-width: 1px;
+    outline: none;
 }
 
 .se-form-input-wrapper ::deep select::-ms-expand {

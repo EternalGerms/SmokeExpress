@@ -48,6 +48,8 @@ public abstract class FormInputBase<TValue> : ComponentBase, IDisposable
         ? EditContext.GetValidationMessages(FieldIdentifier).FirstOrDefault()
         : null;
 
+    protected bool IsInvalid => !string.IsNullOrEmpty(CurrentError);
+
     protected override void OnParametersSet()
     {
         base.OnParametersSet();

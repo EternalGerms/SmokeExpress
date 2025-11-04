@@ -44,7 +44,7 @@ packages/
 appsettings.Development.*.json
 appsettings.Local.json
 
-# Arquivos publish / deploy
+# Arquivos de publicação / deploy
 publish/
 *.pubxml
 *.pubxml.user
@@ -52,9 +52,7 @@ publish/
 # Cache do Entity Framework
 Migrations/obj/
 
-
-# Arquivos temporários do sistema
+# Arquivos temporários
 ~$*
 *.swp
 *.swn
-
