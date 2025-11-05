@@ -10,8 +10,15 @@ public class ApplicationUser : IdentityUser
 {
     public string NomeCompleto { get; set; } = string.Empty;
 
-    public string? Endereco { get; set; }
-        = null;
+    public string Rua { get; set; } = string.Empty;
+
+    public string? Numero { get; set; }
+
+    public string Cidade { get; set; } = string.Empty;
+
+    public string Bairro { get; set; } = string.Empty;
+
+    public string? Complemento { get; set; }
 
     public DateTime DataNascimento { get; set; }
         = DateTime.UtcNow.AddYears(-18); // Garantia mínima para inicialização

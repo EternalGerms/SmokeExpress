@@ -60,6 +60,8 @@ builder.Services.AddCascadingAuthenticationState();
 
 // Serviços de domínio
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
 
 var app = builder.Build();
 

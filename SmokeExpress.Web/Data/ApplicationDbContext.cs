@@ -31,8 +31,23 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .HasMaxLength(200)
                 .IsRequired();
 
-            entity.Property(u => u.Endereco)
-                .HasMaxLength(500);
+            entity.Property(u => u.Rua)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            entity.Property(u => u.Numero)
+                .HasMaxLength(20);
+
+            entity.Property(u => u.Cidade)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(u => u.Bairro)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(u => u.Complemento)
+                .HasMaxLength(200);
 
             entity.Property(u => u.DataNascimento)
                 .HasColumnType("date");
@@ -92,12 +107,27 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<Order>(entity =>
         {
             entity.Property(o => o.Status)
+                .HasConversion<string>()
                 .HasMaxLength(50)
                 .IsRequired();
 
-            entity.Property(o => o.EnderecoEntrega)
-                .HasMaxLength(500)
+            entity.Property(o => o.Rua)
+                .HasMaxLength(200)
                 .IsRequired();
+
+            entity.Property(o => o.Numero)
+                .HasMaxLength(20);
+
+            entity.Property(o => o.Cidade)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(o => o.Bairro)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(o => o.Complemento)
+                .HasMaxLength(200);
 
             entity.Property(o => o.TotalPedido)
                 .HasColumnType("decimal(18,2)");

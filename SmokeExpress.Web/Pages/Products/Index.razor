@@ -1,0 +1,287 @@
+@page "/produtos"
+@using Microsoft.EntityFrameworkCore
+@inject IProductService ProductService
+@inject ApplicationDbContext DbContext
+@inject NavigationManager Navigation
+
+@* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
+
+<h3 class="mb-4">Nossos Produtos</h3>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <form method="get" class="d-flex gap-2">
+            <input type="text" 
+                   class="form-control" 
+                   placeholder="Buscar produtos..." 
+                   @bind="SearchTerm" 
+                   @bind:event="oninput"
+                   @onkeypress="HandleSearchKeyPress" />
+            <button type="button" class="btn btn-primary" @onclick="Buscar">Buscar</button>
+            @if (!string.IsNullOrWhiteSpace(SearchTerm) || CategoriaFiltro.HasValue)
+            {
+                <button type="button" class="btn btn-outline-secondary" @onclick="LimparFiltros">Limpar</button>
+            }
+        </form>
+    </div>
+    <div class="col-md-4">
+        <select class="form-select" @bind="CategoriaFiltro" @bind:after="FiltrarPorCategoria">
+            <option value="">Todas as categorias</option>
+            @foreach (var categoria in _categorias)
+            {
+                <option value="@categoria.Id">@categoria.Nome</option>
+            }
+        </select>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(_mensagemErro))
+{
+    <div class="alert alert-danger" role="alert">@_mensagemErro</div>
+}
+else if (_carregando)
+{
+    <p>Carregando produtos...</p>
+}
+else if (_resultado?.Items.Count == 0)
+{
+    <div class="alert alert-info" role="alert">
+        @if (!string.IsNullOrWhiteSpace(SearchTerm) || CategoriaFiltro.HasValue)
+        {
+            <span>Nenhum produto encontrado com os filtros aplicados.</span>
+        }
+        else
+        {
+            <span>Nenhum produto disponível no momento.</span>
+        }
+    </div>
+}
+else if (_resultado != null)
+{
+    <div class="row g-4">
+        @foreach (var produto in _resultado.Items)
+        {
+            <div class="col-md-4 col-sm-6">
+                <div class="card h-100 shadow-sm">
+                    @if (!string.IsNullOrWhiteSpace(produto.ImagemUrl))
+                    {
+                        <img src="@produto.ImagemUrl" class="card-img-top" alt="@produto.Nome" style="height: 200px; object-fit: cover;" />
+                    }
+                    else
+                    {
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <span class="text-muted">Sem imagem</span>
+                        </div>
+                    }
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@produto.Nome</h5>
+                        <p class="text-muted small mb-2">@produto.Categoria?.Nome</p>
+                        <p class="card-text flex-grow-1">@ObterResumo(produto.Descricao)</p>
+                        <div class="mt-auto">
+                            <p class="h5 text-primary mb-3">@produto.Preco.ToString("C")</p>
+                            @if (produto.Estoque > 0)
+                            {
+                                <small class="text-success d-block mb-2">Em estoque (@produto.Estoque unidades)</small>
+                            }
+                            else
+                            {
+                                <small class="text-danger d-block mb-2">Sem estoque</small>
+                            }
+                            <a class="btn btn-primary w-100" href="@($"/produtos/{produto.Id}")">Ver detalhes</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (_resultado.TotalPages > 1)
+    {
+        <nav aria-label="Navegação de páginas">
+            <ul class="pagination justify-content-center mt-4">
+                <li class="page-item @(!_resultado.HasPreviousPage ? "disabled" : "")">
+                    <a class="page-link" href="@ObterUrlPagina(_resultado.PageNumber - 1)" aria-label="Anterior">
+                        <span aria-hidden="true">&laquo; Anterior</span>
+                    </a>
+                </li>
+                <li class="page-item active">
+                    <span class="page-link">
+                        Página @_resultado.PageNumber de @_resultado.TotalPages
+                    </span>
+                </li>
+                <li class="page-item @(!_resultado.HasNextPage ? "disabled" : "")">
+                    <a class="page-link" href="@ObterUrlPagina(_resultado.PageNumber + 1)" aria-label="Próxima">
+                        <span aria-hidden="true">Próxima &raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <p class="text-center text-muted mt-2">
+            Exibindo @((_resultado.PageNumber - 1) * _pageSize + 1) até @Math.Min(_resultado.PageNumber * _pageSize, _resultado.TotalCount) de @_resultado.TotalCount produtos
+        </p>
+    }
+}
+
+@code {
+    [SupplyParameterFromQuery(Name = "search")]
+    public string? SearchQuery { get; set; }
+
+    [SupplyParameterFromQuery(Name = "categoria")]
+    public int? CategoriaQuery { get; set; }
+
+    [SupplyParameterFromQuery(Name = "page")]
+    public int? PageQuery { get; set; }
+
+    private string SearchTerm { get; set; } = string.Empty;
+    private int? CategoriaFiltro { get; set; }
+    private PagedResult<Product>? _resultado;
+    private List<Category> _categorias = new();
+    private bool _carregando = true;
+    private string? _mensagemErro;
+    private const int _pageSize = 12;
+
+    private int PageNumber => PageQuery ?? 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregarCategoriasAsync();
+        await CarregarProdutosAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        SearchTerm = SearchQuery ?? string.Empty;
+        CategoriaFiltro = CategoriaQuery;
+        
+        if (PageQuery.HasValue || SearchQuery != null || CategoriaQuery.HasValue)
+        {
+            await CarregarProdutosAsync();
+        }
+    }
+
+    private async Task CarregarCategoriasAsync()
+    {
+        try
+        {
+            _categorias = await DbContext.Categories
+                .AsNoTracking()
+                .OrderBy(c => c.Nome)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            _mensagemErro = $"Erro ao carregar categorias: {ex.Message}";
+        }
+    }
+
+    private async Task CarregarProdutosAsync()
+    {
+        _carregando = true;
+        _mensagemErro = null;
+
+        try
+        {
+            var pageNumber = PageNumber;
+            if (pageNumber < 1) pageNumber = 1;
+
+            _resultado = await ProductService.BuscarPaginadoAsync(
+                string.IsNullOrWhiteSpace(SearchTerm) ? null : SearchTerm,
+                CategoriaFiltro,
+                pageNumber,
+                _pageSize);
+        }
+        catch (Exception ex)
+        {
+            _mensagemErro = $"Erro ao carregar os produtos: {ex.Message}";
+        }
+        finally
+        {
+            _carregando = false;
+        }
+    }
+
+    private void Buscar()
+    {
+        Navigation.NavigateTo(ObterUrlComFiltros());
+    }
+
+    private void LimparFiltros()
+    {
+        SearchTerm = string.Empty;
+        CategoriaFiltro = null;
+        Navigation.NavigateTo("/produtos");
+    }
+
+    private void FiltrarPorCategoria()
+    {
+        Navigation.NavigateTo(ObterUrlComFiltros());
+    }
+
+    private void HandleSearchKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            Buscar();
+        }
+    }
+
+    private string ObterUrlComFiltros()
+    {
+        var queryParams = new List<string>();
+        
+        if (!string.IsNullOrWhiteSpace(SearchTerm))
+        {
+            queryParams.Add($"search={Uri.EscapeDataString(SearchTerm)}");
+        }
+        
+        if (CategoriaFiltro.HasValue)
+        {
+            queryParams.Add($"categoria={CategoriaFiltro.Value}");
+        }
+        
+        if (PageNumber > 1)
+        {
+            queryParams.Add($"page={PageNumber}");
+        }
+
+        var query = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
+        return $"/produtos{query}";
+    }
+
+    private string ObterUrlPagina(int pagina)
+    {
+        var queryParams = new List<string>();
+        
+        if (!string.IsNullOrWhiteSpace(SearchTerm))
+        {
+            queryParams.Add($"search={Uri.EscapeDataString(SearchTerm)}");
+        }
+        
+        if (CategoriaFiltro.HasValue)
+        {
+            queryParams.Add($"categoria={CategoriaFiltro.Value}");
+        }
+        
+        if (pagina > 1)
+        {
+            queryParams.Add($"page={pagina}");
+        }
+
+        var query = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
+        return $"/produtos{query}";
+    }
+
+    private static string ObterResumo(string? descricao)
+    {
+        if (string.IsNullOrWhiteSpace(descricao))
+        {
+            return "Produto premium da Smoke Express.";
+        }
+
+        var textoPlano = descricao.Replace("<", " ").Replace(">", " ");
+        return textoPlano.Length > 150
+            ? textoPlano[..150] + "..."
+            : textoPlano;
+    }
+}
+

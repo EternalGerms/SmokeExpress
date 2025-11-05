@@ -1,0 +1,262 @@
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+@inject ApplicationDbContext DbContext
+@inject IImageUploadService ImageUploadService
+@inject ILogger<ProductForm> Logger
+
+@* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
+
+<EditForm Model="@_model" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="text-danger mb-3" />
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="mb-3">
+                <label for="nome" class="form-label">Nome <span class="text-danger">*</span></label>
+                <InputText id="nome" class="form-control" @bind-Value="_model.Nome" />
+                <ValidationMessage For="@(() => _model.Nome)" />
+            </div>
+
+            <div class="mb-3">
+                <label for="descricao" class="form-label">Descrição</label>
+                <InputTextArea id="descricao" class="form-control" rows="5" @bind-Value="_model.Descricao" />
+                <ValidationMessage For="@(() => _model.Descricao)" />
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="preco" class="form-label">Preço <span class="text-danger">*</span></label>
+                        <InputNumber id="preco" class="form-control" @bind-Value="_model.Preco" step="0.01" min="0" />
+                        <ValidationMessage For="@(() => _model.Preco)" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="estoque" class="form-label">Estoque <span class="text-danger">*</span></label>
+                        <InputNumber id="estoque" class="form-control" @bind-Value="_model.Estoque" min="0" />
+                        <ValidationMessage For="@(() => _model.Estoque)" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="categoria" class="form-label">Categoria <span class="text-danger">*</span></label>
+                <InputSelect id="categoria" class="form-select" @bind-Value="_model.CategoriaId">
+                    <option value="0">Selecione uma categoria</option>
+                    @foreach (var categoria in _categorias)
+                    {
+                        <option value="@categoria.Id">@categoria.Nome</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => _model.CategoriaId)" />
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label class="form-label">Imagem do Produto</label>
+                @if (!string.IsNullOrWhiteSpace(_imagemAtual))
+                {
+                    <div class="mb-2">
+                        <img src="@_imagemAtual" alt="Imagem atual" class="img-thumbnail" style="max-width: 100%; height: 200px; object-fit: cover;" />
+                        <p class="text-muted small mt-1">Imagem atual</p>
+                    </div>
+                }
+                <InputFile OnChange="@HandleFileSelected" accept="image/jpeg,image/jpg,image/png,image/webp" class="form-control" />
+                @if (_imagemPreview != null)
+                {
+                    <div class="mt-2">
+                        <img src="@_imagemPreview" alt="Preview" class="img-thumbnail" style="max-width: 100%; height: 200px; object-fit: cover;" />
+                        <p class="text-muted small mt-1">Preview da nova imagem</p>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(_erroUpload))
+                {
+                    <div class="alert alert-danger mt-2" role="alert">
+                        <small>@_erroUpload</small>
+                    </div>
+                }
+                <small class="form-text text-muted">Formatos aceitos: JPG, PNG, WEBP. Tamanho máximo: 5MB</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-primary" disabled="@_salvando">
+            @if (_salvando)
+            {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                <span>Salvando...</span>
+            }
+            else
+            {
+                <span>Salvar</span>
+            }
+        </button>
+        <a href="/admin/produtos" class="btn btn-secondary">Cancelar</a>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public Product? Produto { get; set; }
+
+    [Parameter]
+    public EventCallback<Product> OnSave { get; set; }
+
+    private ProductFormModel _model = new();
+    private List<Category> _categorias = new();
+    private IBrowserFile? _arquivoSelecionado;
+    private string? _imagemPreview;
+    private string? _imagemAtual;
+    private bool _salvando = false;
+    private string? _erroUpload;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregarCategoriasAsync();
+        
+        if (Produto != null)
+        {
+            _model.Nome = Produto.Nome;
+            _model.Descricao = Produto.Descricao ?? string.Empty;
+            _model.Preco = Produto.Preco;
+            _model.Estoque = Produto.Estoque;
+            _model.CategoriaId = Produto.CategoriaId;
+            _imagemAtual = Produto.ImagemUrl;
+        }
+    }
+
+    private async Task CarregarCategoriasAsync()
+    {
+        try
+        {
+            _categorias = await DbContext.Categories
+                .AsNoTracking()
+                .OrderBy(c => c.Nome)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Erro ao carregar categorias");
+        }
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        _erroUpload = null;
+        _arquivoSelecionado = null;
+
+        if (e.File == null)
+        {
+            return;
+        }
+
+        // Validar tamanho (5MB)
+        const long maxSize = 5 * 1024 * 1024;
+        if (e.File.Size > maxSize)
+        {
+            _erroUpload = "Arquivo muito grande. Tamanho máximo: 5MB";
+            return;
+        }
+
+        // Validar tipo
+        var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/webp" };
+        if (!allowedTypes.Contains(e.File.ContentType))
+        {
+            _erroUpload = "Formato não permitido. Use JPG, PNG ou WEBP";
+            return;
+        }
+
+        _arquivoSelecionado = e.File;
+
+        // Criar preview
+        var buffer = new byte[e.File.Size];
+        await e.File.OpenReadStream(maxSize).ReadAsync(buffer);
+        var base64 = Convert.ToBase64String(buffer);
+        _imagemPreview = $"data:{e.File.ContentType};base64,{base64}";
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        _salvando = true;
+        _erroUpload = null;
+
+        try
+        {
+            var produto = Produto ?? new Product();
+
+            // Atualizar propriedades
+            produto.Nome = _model.Nome;
+            produto.Descricao = string.IsNullOrWhiteSpace(_model.Descricao) ? null : _model.Descricao;
+            produto.Preco = _model.Preco;
+            produto.Estoque = _model.Estoque;
+            produto.CategoriaId = _model.CategoriaId;
+
+            // Upload de imagem se houver arquivo selecionado
+            if (_arquivoSelecionado != null)
+            {
+                // Se já existe imagem, remover a antiga
+                if (!string.IsNullOrWhiteSpace(_imagemAtual) && Produto != null)
+                {
+                    await ImageUploadService.DeleteProductImageAsync(_imagemAtual);
+                }
+
+                // Fazer upload da nova imagem
+                using var stream = _arquivoSelecionado.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+                var imagePath = await ImageUploadService.UploadProductImageAsync(
+                    stream,
+                    _arquivoSelecionado.Name,
+                    _arquivoSelecionado.Size);
+
+                if (imagePath != null)
+                {
+                    produto.ImagemUrl = imagePath;
+                }
+                else
+                {
+                    _erroUpload = "Erro ao fazer upload da imagem. Tente novamente.";
+                    _salvando = false;
+                    return;
+                }
+            }
+
+            await OnSave.InvokeAsync(produto);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Erro ao salvar produto");
+            _erroUpload = $"Erro ao salvar: {ex.Message}";
+        }
+        finally
+        {
+            _salvando = false;
+        }
+    }
+
+    private class ProductFormModel
+    {
+        [Required(ErrorMessage = "O nome é obrigatório")]
+        [StringLength(150, ErrorMessage = "O nome deve ter no máximo 150 caracteres")]
+        public string Nome { get; set; } = string.Empty;
+
+        [StringLength(2000, ErrorMessage = "A descrição deve ter no máximo 2000 caracteres")]
+        public string? Descricao { get; set; }
+
+        [Required(ErrorMessage = "O preço é obrigatório")]
+        [Range(0, 100000, ErrorMessage = "O preço deve ser entre 0 e 100.000")]
+        public decimal Preco { get; set; } = 0m;
+
+        [Required(ErrorMessage = "O estoque é obrigatório")]
+        [Range(0, int.MaxValue, ErrorMessage = "O estoque deve ser maior ou igual a 0")]
+        public int Estoque { get; set; } = 0;
+
+        [Required(ErrorMessage = "A categoria é obrigatória")]
+        [Range(1, int.MaxValue, ErrorMessage = "Selecione uma categoria válida")]
+        public int CategoriaId { get; set; } = 0;
+    }
+}
+

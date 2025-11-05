@@ -1,0 +1,95 @@
+@* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
+@inject IAgeVerificationService AgeVerificationService
+@inject NavigationManager Navigation
+
+@if (ShowModal)
+{
+    <div class="age-verification-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+        <div class="modal-dialog modal-dialog-centered" style="z-index: 10000; max-width: 500px;">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header bg-dark text-light">
+                    <h5 class="modal-title">Verificação de Idade</h5>
+                </div>
+                <div class="modal-body">
+                    <p class="lead">Este site é destinado exclusivamente a pessoas maiores de 18 anos.</p>
+                    <p>Você confirma que possui 18 anos ou mais?</p>
+                    <p class="text-muted small">Ao continuar, você declara estar em conformidade com a legislação vigente.</p>
+                </div>
+                <div class="modal-footer">
+                    <form method="post" action="/age-verification/consent">
+                        <input type="hidden" name="isAdult" value="false" />
+                        <button type="submit" class="btn btn-outline-secondary">
+                            Não tenho 18 anos
+                        </button>
+                    </form>
+                    <form method="post" action="/age-verification/consent" style="display: inline;">
+                        <input type="hidden" name="isAdult" value="true" />
+                        <button type="submit" class="btn btn-primary">
+                            Sim, tenho 18 anos ou mais
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (ShowBlockedMessage)
+{
+    <div class="age-verification-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+        <div class="modal-dialog modal-dialog-centered" style="z-index: 10000; max-width: 500px;">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header bg-danger text-light">
+                    <h5 class="modal-title">Acesso Restrito</h5>
+                </div>
+                <div class="modal-body">
+                    <p class="lead">Desculpe, este site é destinado exclusivamente a pessoas maiores de 18 anos.</p>
+                    <p>Você precisa ter 18 anos ou mais para acessar o conteúdo da Smoke Express.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool ShowModal { get; set; } = false;
+    private bool ShowBlockedMessage { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckConsentStatusAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await CheckConsentStatusAsync();
+    }
+
+    private async Task CheckConsentStatusAsync()
+    {
+        var consent = await AgeVerificationService.HasConsentedAsync();
+
+        if (consent == null)
+        {
+            // Não há consentimento ainda, mostrar modal
+            ShowModal = true;
+            ShowBlockedMessage = false;
+        }
+        else if (consent == false)
+        {
+            // Usuário informou que não tem 18 anos
+            ShowBlockedMessage = true;
+            ShowModal = false;
+        }
+        else
+        {
+            // Usuário já consentiu (consent == true)
+            ShowModal = false;
+            ShowBlockedMessage = false;
+        }
+        
+        StateHasChanged();
+    }
+
+}
+
