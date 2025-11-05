@@ -12,8 +12,8 @@ using SmokeExpress.Web.Data;
 namespace SmokeExpress.Web.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251103182947_UpdateOrderStatusToEnum")]
-    partial class UpdateOrderStatusToEnum
+    [Migration("20251105112621_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -188,8 +188,18 @@ namespace SmokeExpress.Web.Data.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("ConsentiuMarketing")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<DateTime>("DataNascimento")
                         .HasColumnType("date");
+
+                    b.Property<string>("DocumentoFiscal")
+                        .IsRequired()
+                        .HasMaxLength(14)
+                        .HasColumnType("nvarchar(14)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -197,6 +207,10 @@ namespace SmokeExpress.Web.Data.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Genero")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -238,6 +252,14 @@ namespace SmokeExpress.Web.Data.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("TermosAceitosEm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TipoCliente")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
@@ -246,6 +268,9 @@ namespace SmokeExpress.Web.Data.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DocumentoFiscal")
+                        .IsUnique();
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -256,48 +281,6 @@ namespace SmokeExpress.Web.Data.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("SmokeExpress.Web.Models.BlogPost", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ApplicationUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Conteudo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("DataPublicacao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("Publicado")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Slug")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Titulo")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApplicationUserId");
-
-                    b.HasIndex("Slug")
-                        .IsUnique();
-
-                    b.ToTable("BlogPosts");
                 });
 
             modelBuilder.Entity("SmokeExpress.Web.Models.Category", b =>
@@ -524,17 +507,6 @@ namespace SmokeExpress.Web.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SmokeExpress.Web.Models.BlogPost", b =>
-                {
-                    b.HasOne("SmokeExpress.Web.Models.ApplicationUser", "Autor")
-                        .WithMany("Posts")
-                        .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Autor");
-                });
-
             modelBuilder.Entity("SmokeExpress.Web.Models.Order", b =>
                 {
                     b.HasOne("SmokeExpress.Web.Models.ApplicationUser", "Cliente")
@@ -602,8 +574,6 @@ namespace SmokeExpress.Web.Data.Migrations
                     b.Navigation("IndicacoesRecebidas");
 
                     b.Navigation("Pedidos");
-
-                    b.Navigation("Posts");
                 });
 
             modelBuilder.Entity("SmokeExpress.Web.Models.Category", b =>

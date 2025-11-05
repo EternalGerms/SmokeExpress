@@ -116,6 +116,9 @@
                                 </button>
 
                                 <div class="subcategory-menu @(isActive ? "show" : string.Empty)">
+                                    <NavLink class="subcategory-link subcategory-main-link" href="@GetCategoryUrl(category.Name)" @onclick="CollapseNavMenu">
+                                        Ver todos (@category.Name)
+                                    </NavLink>
                                     @foreach (var subcategory in category.Subcategories)
                                     {
                                         <NavLink class="subcategory-link" href="@GetCategoryUrl(category.Name, subcategory)" @onclick="CollapseNavMenu">
@@ -157,8 +160,7 @@
         new("Isqueiro e Cinzeiro", new List<string> { "Isqueiros Recarregáveis", "Isqueiros Jet", "Cinzeiros Portáteis" }),
         new("Acessórios", new List<string> { "Caixas Herméticas", "Filtros", "Bolsas e Cases" }),
         new("Caixa", new List<string> { "Club Mensal", "Kits Selecionados", "Presentes" }),
-        new("Marca", new List<string> { "Smoke Express", "Raw", "Lion Rolling Circus" }),
-        new("Promoções", new List<string>())
+        new("Marca", new List<string> { "Smoke Express", "Raw", "Lion Rolling Circus" })
     };
 
     private string CategoryNavWrapperClass => collapseNavMenu ? "category-nav-wrapper collapsed" : "category-nav-wrapper expanded";
@@ -224,7 +226,7 @@
         }
 
         var encoded = Uri.EscapeDataString(query);
-        Navigation.NavigateTo($"/buscar?query={encoded}");
+        Navigation.NavigateTo($"/produtos?search={encoded}");
         CollapseNavMenu();
     }
 
@@ -390,14 +392,15 @@
 
     private static string GetCategoryUrl(string categoryName, string? subcategory = null)
     {
-        var baseSlug = ToSlug(categoryName);
+        // Usar o nome da categoria diretamente (a página /categorias/{Nome} busca por nome case-insensitive)
+        var categoriaNome = Uri.EscapeDataString(categoryName);
         if (string.IsNullOrEmpty(subcategory))
         {
-            return string.IsNullOrEmpty(baseSlug) ? "/catalogo" : $"/catalogo/{baseSlug}";
+            return string.IsNullOrEmpty(categoriaNome) ? "/categorias" : $"/categorias/{categoriaNome}";
         }
 
-        var subSlug = ToSlug(subcategory);
-        return $"/catalogo/{baseSlug}/{subSlug}";
+        var subcategoriaNome = Uri.EscapeDataString(subcategory);
+        return $"/categorias/{subcategoriaNome}";
     }
 
     private static string ToSlug(string text)

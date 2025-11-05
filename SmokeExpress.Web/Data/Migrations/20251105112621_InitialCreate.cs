@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using BCryptNet = BCrypt.Net.BCrypt;
 
 #nullable disable
 
@@ -9,11 +8,6 @@ namespace SmokeExpress.Web.Data.Migrations
     /// <inheritdoc />
     public partial class InitialCreate : Migration
     {
-        private const string AdminRoleId = "bdf4a40f-8344-45c3-8c1e-4d5c52a3d790";
-        private const string UserRoleId = "f1a1c619-aa0c-4f6c-aabd-bf8770c5f8be";
-        private const string AdminUserId = "6e9cc04c-1f27-4fc9-8725-8b7cbdeb18f1";
-        private const string AdminEmail = "admin@smokeexpress.com";
-
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -37,8 +31,17 @@ namespace SmokeExpress.Web.Data.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     NomeCompleto = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Endereco = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Rua = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Numero = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    Cidade = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Bairro = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Complemento = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     DataNascimento = table.Column<DateTime>(type: "date", nullable: false),
+                    DocumentoFiscal = table.Column<string>(type: "nvarchar(14)", maxLength: 14, nullable: false),
+                    TipoCliente = table.Column<string>(type: "nvarchar(2)", maxLength: 2, nullable: false),
+                    Genero = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: true),
+                    ConsentiuMarketing = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    TermosAceitosEm = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -188,7 +191,11 @@ namespace SmokeExpress.Web.Data.Migrations
                     ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     DataPedido = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    EnderecoEntrega = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Rua = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Numero = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    Cidade = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Bairro = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Complemento = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     TotalPedido = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
@@ -282,76 +289,6 @@ namespace SmokeExpress.Web.Data.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
-            var adminRoleConcurrencyStamp = Guid.NewGuid().ToString();
-            var userRoleConcurrencyStamp = Guid.NewGuid().ToString();
-            var adminConcurrencyStamp = Guid.NewGuid().ToString();
-            var adminSecurityStamp = Guid.NewGuid().ToString();
-            var adminPasswordHash = BCryptNet.EnhancedHashPassword("Admin@123");
-            var adminNormalizedEmail = AdminEmail.ToUpperInvariant();
-
-            migrationBuilder.InsertData(
-                table: "AspNetRoles",
-                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
-                values: new object[,]
-                {
-                    { AdminRoleId, adminRoleConcurrencyStamp, "Admin", "ADMIN" },
-                    { UserRoleId, userRoleConcurrencyStamp, "User", "USER" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "AspNetUsers",
-                columns: new[]
-                {
-                    "Id",
-                    "AccessFailedCount",
-                    "ConcurrencyStamp",
-                    "DataNascimento",
-                    "Email",
-                    "EmailConfirmed",
-                    "Endereco",
-                    "LockoutEnabled",
-                    "LockoutEnd",
-                    "NomeCompleto",
-                    "NormalizedEmail",
-                    "NormalizedUserName",
-                    "PasswordHash",
-                    "PhoneNumber",
-                    "PhoneNumberConfirmed",
-                    "SecurityStamp",
-                    "TwoFactorEnabled",
-                    "UserName"
-                },
-                values: new object[]
-                {
-                    AdminUserId,
-                    0,
-                    adminConcurrencyStamp,
-                    new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-                    AdminEmail,
-                    true,
-                    "Rua Exemplo, 123 - Centro, Cidade/UF",
-                    true,
-                    null,
-                    "Administrador Smoke Express",
-                    adminNormalizedEmail,
-                    adminNormalizedEmail,
-                    adminPasswordHash,
-                    null,
-                    false,
-                    adminSecurityStamp,
-                    false,
-                    AdminEmail
-                });
-
-            migrationBuilder.InsertData(
-                table: "AspNetUserRoles",
-                columns: new[] { "UserId", "RoleId" },
-                values: new object[,]
-                {
-                    { AdminUserId, AdminRoleId },
-                    { AdminUserId, UserRoleId }
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -383,6 +320,12 @@ namespace SmokeExpress.Web.Data.Migrations
                 name: "EmailIndex",
                 table: "AspNetUsers",
                 column: "NormalizedEmail");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_DocumentoFiscal",
+                table: "AspNetUsers",
+                column: "DocumentoFiscal",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",

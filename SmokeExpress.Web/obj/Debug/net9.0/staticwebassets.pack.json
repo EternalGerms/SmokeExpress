@@ -2,7 +2,7 @@
   "Files": [
     {
       "Id": "A:\\faculdade\\computação\\SmokeExpress\\SmokeExpress\\SmokeExpress.Web\\obj\\Debug\\net9.0\\scopedcss\\projectbundle\\SmokeExpress.Web.bundle.scp.css",
-      "PackagePath": "staticwebassets\\SmokeExpress.Web.6muudw9rff.bundle.scp.css"
+      "PackagePath": "staticwebassets\\SmokeExpress.Web.u24kww0nbf.bundle.scp.css"
     },
     {
       "Id": "A:\\faculdade\\computação\\SmokeExpress\\SmokeExpress\\SmokeExpress.Web\\wwwroot\\css\\bootstrap\\bootstrap.min.css",
@@ -55,6 +55,10 @@
     {
       "Id": "A:\\faculdade\\computação\\SmokeExpress\\SmokeExpress\\SmokeExpress.Web\\wwwroot\\favicon.png",
       "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "A:\\faculdade\\computação\\SmokeExpress\\SmokeExpress\\SmokeExpress.Web\\wwwroot\\images\\products\\aac6ea94-8471-4460-a8ac-08945f4160fd.webp",
+      "PackagePath": "staticwebassets\\images\\products\\aac6ea94-8471-4460-a8ac-08945f4160fd.webp"
     },
     {
       "Id": "obj\\Debug\\net9.0\\staticwebassets\\msbuild.SmokeExpress.Web.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
