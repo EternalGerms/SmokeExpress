@@ -1,81 +1,122 @@
 @page "/account/login"
 @attribute [AllowAnonymous]
+@using System.ComponentModel.DataAnnotations
+@using MudBlazor
 @inject NavigationManager Navigation
-@using SmokeExpress.Web.Shared.FormControls
 
 @* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
 
-<div class="page-login">
-    <div class="login-card">
-        <div class="login-header">
-            <h2 class="title">Entrar</h2>
-            <p class="subtitle">Use o e-mail e a senha cadastrados para acessar.</p>
-        </div>
+<MudPaper Class="login-card mud-elevation-6 p-6">
+    <MudText Typo="Typo.h4" Class="mb-1 px-4 pt-4">Entrar</MudText>
+    <MudText Typo="Typo.body1" Class="text-muted mb-4 px-4">
+        Use o e-mail e a senha cadastrados para acessar.
+    </MudText>
 
-        @if (!string.IsNullOrEmpty(MensagemErro))
+    <form method="post" action="/account/login" class="px-4 pb-4">
+        <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
+
+        @if (!string.IsNullOrEmpty(_mensagemErro))
         {
-            <div class="alert alert-danger mb-4" role="alert">@MensagemErro</div>
+            <MudAlert Severity="Severity.Error" Dense="true" Class="mb-4">
+                @_mensagemErro
+            </MudAlert>
         }
 
-        <form method="post" action="/account/login" class="login-form" novalidate>
-            <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
-            <input type="hidden" name="RememberMe" value="false" />
+        <MudStack Spacing="3">
+            <MudTextField Label="E-mail"
+                          @bind-Value="_model.Email"
+                          InputType="InputType.Email"
+                          Immediate="true"
+                          Variant="Variant.Outlined" />
+            <input type="hidden" name="Email" value="@_model.Email" />
 
-            <TextField Label="E-mail"
-                       InputId="email"
-                       InputType="email"
-                       Hint="Informe um e-mail válido."
-                       @bind-Value="Email"
-                       name="Email" />
+            <MudTextField Label="Senha"
+                          @bind-Value="_model.Senha"
+                          InputType="@_senhaInputType"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@_senhaInputIcon"
+                          OnAdornmentClick="ToggleSenhaVisibility"
+                          AdornmentAriaLabel="Alternar visibilidade da senha"
+                          Immediate="true"
+                          Variant="Variant.Outlined" />
+            <input type="hidden" name="Password" value="@_model.Senha" />
 
-        <PasswordField Label="Senha"
-                       InputId="senha"
-                       Hint="Informe a senha."
-                       @bind-Value="Password"
-                       name="Password"
-                       ShowPasswordLabel="Mostrar senha digitada"
-                       HidePasswordLabel="Ocultar senha digitada" />
+            <MudCheckBox Label="Manter-me conectado"
+                         @bind-Value="_model.LembrarMe" />
+            <input type="hidden" name="RememberMe" value="@(_model.LembrarMe ? "true" : "false")" />
+        </MudStack>
 
-            <CheckboxField CssClass="mb-4"
-                           InputId="lembrar"
-                           Label="Manter-me conectado"
-                           name="RememberMe"
-                           @bind-Value="RememberMe" />
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Size="Size.Large"
+                   FullWidth="true"
+                   Class="mt-4"
+                   ButtonType="ButtonType.Submit">
+            Entrar
+        </MudButton>
 
-            <PrimaryButton Type="submit" CssClass="w-100">Entrar</PrimaryButton>
-            <SecondaryButton Type="button" CssClass="w-100 mt-3" OnClick="NavegarParaCadastro">Criar uma conta</SecondaryButton>
-        </form>
-    </div>
-</div>
+        <MudText Typo="Typo.body2" Class="mt-4">
+            Não possui cadastro? <MudLink Href="/account/register">Crie uma conta agora</MudLink>
+        </MudText>
+    </form>
+</MudPaper>
 
 @code {
     [SupplyParameterFromQuery(Name = "returnUrl")]
-    public string? ReturnUrlQuery { get; set; }
-        = "/";
+    public string? ReturnUrlQuery { get; set; } = "/";
 
     [SupplyParameterFromQuery(Name = "error")]
-    public string? ErrorCode { get; set; }
-        = null;
+    public string? ErrorCode { get; set; } = null;
 
-    private string Email { get; set; } = string.Empty;
+    private readonly LoginInput _model = new();
+    private bool _processando;
+    private string? _mensagemErro;
 
-    private string Password { get; set; } = string.Empty;
-
-    private bool RememberMe { get; set; }
-        = false;
+    // Controle de visibilidade da senha
+    private bool _senhaVisivel;
+    private InputType _senhaInputType = InputType.Password;
+    private string _senhaInputIcon = Icons.Material.Filled.VisibilityOff;
 
     private string ReturnUrl => string.IsNullOrWhiteSpace(ReturnUrlQuery) ? "/" : ReturnUrlQuery;
 
-    private string? MensagemErro => ErrorCode switch
+    protected override void OnInitialized()
     {
-        "locked" => "Conta temporariamente bloqueada por tentativas inválidas. Tente novamente mais tarde.",
-        "invalid" => "Credenciais inválidas. Verifique o e-mail e a senha informados.",
-        _ => null
-    };
+        _mensagemErro = ErrorCode switch
+        {
+            "locked" => "Conta temporariamente bloqueada por tentativas inválidas. Tente novamente mais tarde.",
+            "invalid" => "Credenciais inválidas. Verifique o e-mail e a senha informados.",
+            _ => null
+        };
+    }
 
-    private void NavegarParaCadastro()
+    private void ToggleSenhaVisibility()
     {
-        Navigation.NavigateTo("/account/register");
+        if (_senhaVisivel)
+        {
+            _senhaVisivel = false;
+            _senhaInputIcon = Icons.Material.Filled.VisibilityOff;
+            _senhaInputType = InputType.Password;
+        }
+        else
+        {
+            _senhaVisivel = true;
+            _senhaInputIcon = Icons.Material.Filled.Visibility;
+            _senhaInputType = InputType.Text;
+        }
+    }
+
+
+    private sealed class LoginInput
+    {
+        [Required(ErrorMessage = "Informe seu e-mail.")]
+        [EmailAddress(ErrorMessage = "Formato de e-mail inválido.")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Informe sua senha.")]
+        [DataType(DataType.Password)]
+        public string Senha { get; set; } = string.Empty;
+
+        public bool LembrarMe { get; set; } = false;
     }
 }
 

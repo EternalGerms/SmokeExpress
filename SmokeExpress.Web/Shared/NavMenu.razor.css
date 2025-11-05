@@ -207,7 +207,7 @@
 }
 
 .category-bar {
-    background: #071f17;
+    background: #0e5035;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
     border-bottom: 1px solid rgba(0, 0, 0, 0.35);
 }
@@ -340,22 +340,100 @@
     .header-top {
         flex-direction: column;
         align-items: stretch;
-        gap: 0.75rem;
+        gap: 0.4rem;
+        padding: 0.4rem 0 0.5rem;
+        min-height: auto;
+        line-height: 1.2;
+    }
+
+    .header-top.container-fluid {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
     }
 
     .brand-area {
         display: flex;
         justify-content: center;
+        padding: 0;
+        margin: 0;
+        min-height: auto;
+        height: auto;
+        line-height: 1.2;
+        flex: 0 0 auto;
+    }
+
+    .brand-link {
+        font-size: 1.3rem;
+        gap: 0.4rem;
+        padding: 0;
+        margin: 0;
+        line-height: 1.2;
     }
 
     .header-search {
         width: 100%;
         max-width: none;
+        padding: 0.15rem;
+        margin: 0;
+        min-height: auto;
+        height: auto;
+        line-height: 1.2;
+    }
+
+    .header-search .search-input {
+        padding: 0.4rem 0.7rem;
+        font-size: 0.95rem;
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .header-search .search-button {
+        padding: 0.4rem 1rem;
+        font-size: 0.9rem;
+        margin: 0;
+        line-height: 1.2;
     }
 
     .header-actions {
         width: 100%;
         justify-content: space-between;
+        gap: 0.4rem;
+        padding: 0;
+        margin: 0;
+        min-height: auto;
+        height: auto;
+        line-height: 1.2;
+        flex: 0 0 auto;
+    }
+
+    .cart-button {
+        padding: 0.4rem 1rem;
+        font-size: 0.8rem;
+        margin: 0;
+        line-height: 1.2;
+        height: auto;
+    }
+
+    .cart-button .oi {
+        font-size: 1rem;
+    }
+
+    .cart-button .cart-label {
+        font-size: 0.75rem;
+    }
+
+    .header-user-button,
+    .header-login-button {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+        margin: 0;
+        line-height: 1.2;
+        height: auto;
+    }
+
+    .header-user-button .oi,
+    .header-login-button .oi {
+        font-size: 1rem;
     }
 
     .category-inner {
@@ -415,11 +493,98 @@
 }
 
 @media (max-width: 575.98px) {
+    .header-top {
+        padding: 0.3rem 0 0.4rem;
+        gap: 0.3rem;
+        min-height: auto;
+        line-height: 1.2;
+    }
+
+    .header-top.container-fluid {
+        padding-left: 0.4rem;
+        padding-right: 0.4rem;
+    }
+
+    .brand-area {
+        padding: 0;
+        margin: 0;
+        min-height: auto;
+        height: auto;
+        line-height: 1.2;
+        flex: 0 0 auto;
+    }
+
+    .brand-link {
+        font-size: 1.2rem;
+        gap: 0.3rem;
+        padding: 0;
+        margin: 0;
+        line-height: 1.2;
+    }
+
     .header-actions {
-        gap: 0.6rem;
+        gap: 0.3rem;
+        padding: 0;
+        margin: 0;
+        min-height: auto;
+        height: auto;
+        line-height: 1.2;
+        flex: 0 0 auto;
+    }
+
+    .header-search {
+        padding: 0.1rem;
+        margin: 0;
+        min-height: auto;
+        height: auto;
+        line-height: 1.2;
+    }
+
+    .header-search .search-input {
+        padding: 0.35rem 0.6rem;
+        font-size: 0.9rem;
+        margin: 0;
+        line-height: 1.2;
     }
 
     .header-search .search-button {
-        padding-inline: 1.2rem;
+        padding: 0.35rem 0.85rem;
+        font-size: 0.85rem;
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .cart-button {
+        padding: 0.35rem 0.85rem;
+        font-size: 0.75rem;
+        margin: 0;
+        line-height: 1.2;
+        height: auto;
+    }
+
+    .cart-button .oi {
+        font-size: 0.95rem;
+    }
+
+    .cart-button .cart-label {
+        font-size: 0.7rem;
+    }
+
+    .header-user-button,
+    .header-login-button {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.85rem;
+        margin: 0;
+        line-height: 1.2;
+        height: auto;
+    }
+
+    .header-user-button .oi,
+    .header-login-button .oi {
+        font-size: 0.95rem;
+    }
+
+    .header-user-button .user-name {
+        font-size: 0.85rem;
     }
 }
