@@ -1,126 +1,44 @@
 @page "/pedido/confirmacao/{id:int}"
 @inject NavigationManager Nav
-@inject IHttpClientFactory HttpClientFactory
 
 <h3>Pedido confirmado</h3>
 
-@if (_carregando)
-{
-    <p>Carregando detalhes do pedido...</p>
-}
-else if (_erro is not null)
-{
-    <div class="alert alert-danger">@_erro</div>
-}
-else if (_pedido is null)
-{
-    <div class="alert alert-warning">Pedido não encontrado.</div>
-}
-else
-{
-    <div class="alert alert-success">
-        Seu pedido <strong>#@_pedido.Id</strong> foi registrado com sucesso em @_pedido.DataPedido.ToLocalTime().ToString("g").
-    </div>
+<div class="alert alert-success">
+    Seu pedido <strong>#@id</strong> foi registrado com sucesso.
+</div>
 
+<div class="card p-3 mb-3">
+    <h5 class="mb-3">Comprovante de pagamento</h5>
     <div class="row">
         <div class="col-md-8">
-            <h5>Itens</h5>
-            <table class="table table-sm">
-                <thead>
-                    <tr>
-                        <th>Produto</th>
-                        <th class="text-end">Preço Unitário</th>
-                        <th class="text-end">Qtd</th>
-                        <th class="text-end">Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var i in _pedido.Itens)
-                    {
-                        <tr>
-                            <td>@i.Nome</td>
-                            <td class="text-end">@i.PrecoUnitario.ToString("C")</td>
-                            <td class="text-end">@i.Quantidade</td>
-                            <td class="text-end">@i.Subtotal.ToString("C")</td>
-                        </tr>
-                    }
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <th colspan="3" class="text-end">Total</th>
-                        <th class="text-end">@_pedido.TotalPedido.ToString("C")</th>
-                    </tr>
-                </tfoot>
-            </table>
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Número do pedido</dt>
+                <dd class="col-sm-8">@id</dd>
+
+                <dt class="col-sm-4">Código do pedido</dt>
+                <dd class="col-sm-8">@_codigoPedido</dd>
+
+                <dt class="col-sm-4">Data</dt>
+                <dd class="col-sm-8">@_dataLocal.ToString("g")</dd>
+            </dl>
         </div>
-        <div class="col-md-4">
-            <h5>Entrega</h5>
-            <address>
-                @_pedido.Rua, @_pedido.Numero<br />
-                @_pedido.Bairro - @_pedido.Cidade<br />
-                @_pedido.Complemento
-            </address>
-            <a class="btn btn-primary" href="/">Voltar à loja</a>
+        <div class="col-md-4 text-end">
+            <a class="btn btn-outline-secondary" href="/">Voltar à loja</a>
+            <a class="btn btn-primary ms-2" href="/account/orders">Acompanhar pedido</a>
         </div>
     </div>
-}
+</div>
 
 @code {
     [Parameter]
     public int id { get; set; }
-    private bool _carregando = true;
-    private string? _erro;
-    private OrderDetailsResponse? _pedido;
+    private string _codigoPedido = string.Empty;
+    private DateTime _dataLocal = DateTime.Now;
 
-    protected override async Task OnParametersSetAsync()
+    protected override void OnParametersSet()
     {
-        _carregando = true;
-        _erro = null;
-        _pedido = null;
-
-        try
-        {
-            var client = HttpClientFactory.CreateClient();
-            var resp = await client.GetAsync($"/api/orders/{id}");
-            if (!resp.IsSuccessStatusCode)
-            {
-                _erro = "Não foi possível carregar o pedido.";
-                return;
-            }
-
-            _pedido = await resp.Content.ReadFromJsonAsync<OrderDetailsResponse>();
-        }
-        catch (Exception ex)
-        {
-            _erro = ex.Message;
-        }
-        finally
-        {
-            _carregando = false;
-        }
-    }
-
-    private sealed class OrderDetailsResponse
-    {
-        public int Id { get; set; }
-        public DateTime DataPedido { get; set; }
-        public string Rua { get; set; } = string.Empty;
-        public string? Numero { get; set; }
-        public string Cidade { get; set; } = string.Empty;
-        public string Bairro { get; set; } = string.Empty;
-        public string? Complemento { get; set; }
-        public decimal TotalPedido { get; set; }
-        public List<Item> Itens { get; set; } = new();
-
-        public sealed class Item
-        {
-            public int ProductId { get; set; }
-            public string Nome { get; set; } = string.Empty;
-            public int Quantidade { get; set; }
-            public decimal PrecoUnitario { get; set; }
-            public decimal Subtotal { get; set; }
-            public string? ImagemUrl { get; set; }
-        }
+        _dataLocal = DateTime.Now;
+        _codigoPedido = $"SE-{id}-{DateTime.UtcNow:yyyyMMddHHmmss}";
     }
 }
 

@@ -7,6 +7,7 @@
 @inject IProductService ProductService
 @inject IAddressService AddressService
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IOrderService OrderService
 
 <h3>Finalizar Pedido</h3>
 
@@ -110,7 +111,7 @@ else
                         </div>
                     </div>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-primary" @onclick="OnSubmitAsync" disabled="@_submitting">Finalizar Pedido</button>
+                        <button class="btn btn-primary" @onclick="AbrirPagamento" disabled="@_submitting">Finalizar Pedido</button>
                         <a href="/produtos" class="btn btn-outline-secondary">Continuar comprando</a>
                         <button type="button" class="btn btn-outline-danger" @onclick="LimparCarrinhoAsync">Limpar carrinho</button>
                     </div>
@@ -178,6 +179,84 @@ else
     <div class="modal-backdrop fade show"></div>
 }
 
+@* Modal de pagamento *@
+@if (_showPagamento)
+{
+    <div class="modal fade show" style="display:block;" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Pagamento</h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="() => _showPagamento = false"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Escolha o método</label>
+                        <select class="form-select" @bind="_pagamentoMetodo">
+                            <option value="">Selecionar...</option>
+                            <option value="pix">PIX</option>
+                            <option value="cartao">Cartão de crédito</option>
+                            <option value="boleto">Boleto bancário</option>
+                        </select>
+                    </div>
+
+                    @if (_pagamentoMetodo == "pix")
+                    {
+                        <div class="card p-3 mb-2">
+                            <h6>PIX - Copia e Cola</h6>
+                            <div class="mb-2">
+                                <textarea class="form-control" rows="3" readonly>@_pixCode</textarea>
+                            </div>
+                            <div class="mb-2">
+                                <img alt="QR Code PIX" src="@GerarQrSvgDataUri(_pixCode)" style="width:180px;height:180px;border:1px solid #eee;" />
+                            </div>
+                            <button class="btn btn-success" @onclick="ConfirmarPagamentoAsync">Pago</button>
+                        </div>
+                    }
+                    else if (_pagamentoMetodo == "cartao")
+                    {
+                        <EditForm Model="_cartao" OnValidSubmit="ConfirmarPagamentoAsync">
+                            <DataAnnotationsValidator />
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">Número do cartão</label>
+                                    <input class="form-control" @bind="_cartao.Numero" maxlength="19" placeholder="0000 0000 0000 0000" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Validade (MM/AA)</label>
+                                    <input class="form-control" @bind="_cartao.Validade" maxlength="5" placeholder="MM/AA" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">CVV</label>
+                                    <input class="form-control" @bind="_cartao.Cvv" maxlength="4" />
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Nome impresso</label>
+                                    <input class="form-control" @bind="_cartao.Nome" />
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <button class="btn btn-primary" type="submit">Pagar</button>
+                            </div>
+                        </EditForm>
+                    }
+                    else if (_pagamentoMetodo == "boleto")
+                    {
+                        <div class="card p-3 mb-2">
+                            <h6>Boleto bancário</h6>
+                            <div class="mb-2">
+                                <input class="form-control" value="@_boletoCodigo" readonly />
+                            </div>
+                            <button class="btn btn-success" @onclick="ConfirmarPagamentoAsync">Pago</button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
 
 @code {
     private bool _loading = true;
@@ -188,6 +267,11 @@ else
     private EnderecoEntregaDto _endereco = new();
     private decimal _total = 0m;
     private decimal _frete = 0m;
+    private bool _showPagamento;
+    private string? _pagamentoMetodo; // pix | cartao | boleto
+    private string _pixCode = string.Empty;
+    private string _boletoCodigo = string.Empty;
+    private CartaoDto _cartao = new();
 
     private bool _loadedFromJs;
 
@@ -281,6 +365,19 @@ else
         public string Bairro { get; set; } = string.Empty;
         public string? Complemento { get; set; }
         public bool IsDefault { get; set; }
+    }
+
+    private sealed class OrderCreatedDto
+    {
+        public int orderId { get; set; }
+    }
+
+    private sealed class CartaoDto
+    {
+        public string Numero { get; set; } = string.Empty;
+        public string Validade { get; set; } = string.Empty;
+        public string Cvv { get; set; } = string.Empty;
+        public string Nome { get; set; } = string.Empty;
     }
 
     private async Task OnQuantityChanged(int productId, int novaQuantidade)
@@ -502,49 +599,63 @@ else
         }
     }
 
+    private string GerarCodigoPix()
+    {
+        var valor = (_total + _frete).ToString("F2").Replace(',', '.');
+        var code = $"000201PIX-DEMOSMOKE|ORD={DateTime.UtcNow.Ticks}|VAL={valor}|CRC=ABCD";
+        return code;
+    }
+
+    private string GerarBoleto()
+    {
+        var rnd = new Random();
+        var sb = new System.Text.StringBuilder();
+        for (int i = 0; i < 47; i++) sb.Append(rnd.Next(0, 10));
+        return sb.ToString();
+    }
+
+    private string GerarQrSvgDataUri(string text)
+    {
+        // Placeholder simples: um SVG com o texto centralizado (não é um QR real)
+        var safe = System.Net.WebUtility.HtmlEncode(text);
+        var svg = $"<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><rect width='100%' height='100%' fill='white'/><rect x='10' y='10' width='160' height='160' fill='none' stroke='#000'/><text x='90' y='95' font-size='10' text-anchor='middle' fill='#000'>{safe}</text></svg>";
+        var uri = "data:image/svg+xml;utf8," + System.Net.WebUtility.UrlEncode(svg);
+        return uri;
+    }
+
     // Removido: bindings de campos manuais; checkout usa apenas endereços salvos
 
-    private async Task OnSubmitAsync()
+    private void AbrirPagamento()
+    {
+        _error = null;
+        if (_itens.Count == 0)
+        {
+            _error = "Seu carrinho está vazio.";
+            return;
+        }
+        _showPagamento = true;
+        _pagamentoMetodo = null;
+        _pixCode = GerarCodigoPix();
+        _boletoCodigo = GerarBoleto();
+    }
+
+    private async Task ConfirmarPagamentoAsync()
     {
         _error = null;
         _submitting = true;
         try
         {
-            if (_itens.Count == 0)
+            var userId = await GetUserIdAsync();
+            if (string.IsNullOrWhiteSpace(userId))
             {
-                _error = "Seu carrinho está vazio.";
+                _error = "Sessão expirada. Faça login para finalizar o pedido.";
                 return;
             }
 
-            var req = new CheckoutRequest
-            {
-                Itens = _itens,
-                Endereco = _endereco,
-                Frete = _frete
-            };
-
-            var client = HttpClientFactory.CreateClient();
-            var checkoutUri = new Uri(new Uri(Nav.BaseUri), "api/orders/checkout");
-            var response = await client.PostAsJsonAsync(checkoutUri, req);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var msg = await response.Content.ReadAsStringAsync();
-                _error = string.IsNullOrWhiteSpace(msg) ? "Falha ao criar pedido." : msg;
-                return;
-            }
-
-            var payload = await response.Content.ReadFromJsonAsync<JsonElement>();
-            if (payload.TryGetProperty("orderId", out var idElement))
-            {
-                var orderId = idElement.GetInt32();
-                await JS.InvokeVoidAsync("localStorage.removeItem", "cart");
-                Nav.NavigateTo($"/pedido/confirmacao/{orderId}");
-            }
-            else
-            {
-                _error = "Resposta inválida do servidor.";
-            }
+            var orderId = await OrderService.CriarPedidoAsync(userId, _itens, _endereco, _frete);
+            await JS.InvokeVoidAsync("localStorage.removeItem", "cart");
+            _showPagamento = false;
+            Nav.NavigateTo($"/pedido/confirmacao/{orderId}");
         }
         catch (Exception ex)
         {
