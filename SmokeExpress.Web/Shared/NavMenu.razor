@@ -10,7 +10,10 @@
 @using System.Text
 @using System.Threading
 @using System.Threading.Tasks
+@using MudBlazor
+@using Microsoft.EntityFrameworkCore
 @inject NavigationManager Navigation
+@inject ApplicationDbContext DbContext
 @implements IDisposable
 
 <nav class="app-navbar">
@@ -19,16 +22,16 @@
             <a class="brand-link" href="">Smoke Express</a>
         </div>
 
-        <form class="header-search" @onsubmit="HandleSearchSubmit" @onsubmit:preventDefault>
-            <input class="search-input"
-                   type="search"
-                   placeholder="Pesquisar produtos..."
-                   aria-label="Pesquisar produtos"
-                   @bind="searchQuery" />
-            <button type="submit" class="search-button">Pesquisar</button>
-        </form>
-
         <div class="header-actions">
+            <MudButton Variant="Variant.Filled" 
+                      Color="Color.Primary" 
+                      Href="/produtos"
+                      StartIcon="@Icons.Material.Filled.Store"
+                      Size="Size.Medium"
+                      Class="header-products-button"
+                      OnClick="CollapseNavMenu">
+                Ver Todos os Produtos
+            </MudButton>
             <a class="cart-button" href="/checkout" @onclick="CollapseNavMenu">
                 <span class="oi oi-cart" aria-hidden="true"></span>
                 <span class="cart-label">Carrinho</span>
@@ -144,8 +147,9 @@
     private string? currentUserDisplayName;
     private AuthenticationState? cachedAuthState;
     private CancellationTokenSource? userMenuCloseCts;
-    private string searchQuery = string.Empty;
     private string? activeCategory;
+    private List<Category> _categorias = new();
+    private Dictionary<string, int> _categoriaIdsPorNome = new();
 
     private readonly List<CategoryMenuItem> categories = new()
     {
@@ -214,18 +218,6 @@
         CancelScheduledUserMenuClose();
     }
 
-    private void HandleSearchSubmit()
-    {
-        var query = searchQuery?.Trim();
-        if (string.IsNullOrWhiteSpace(query))
-        {
-            return;
-        }
-
-        var encoded = Uri.EscapeDataString(query);
-        Navigation.NavigateTo($"/produtos?search={encoded}");
-        CollapseNavMenu();
-    }
 
     private void OnCategoryPointerEnter(string categoryName)
     {
@@ -262,6 +254,26 @@
     {
         AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
         await LoadUserDisplayNameAsync();
+        await CarregarCategoriasAsync();
+    }
+
+    private async Task CarregarCategoriasAsync()
+    {
+        try
+        {
+            _categorias = await DbContext.Categories
+                .AsNoTracking()
+                .OrderBy(c => c.Nome)
+                .ToListAsync();
+            
+            _categoriaIdsPorNome = _categorias.ToDictionary(c => c.Nome, c => c.Id);
+        }
+        catch
+        {
+            // Se houver erro ao carregar categorias, mantém lista vazia
+            _categorias = new List<Category>();
+            _categoriaIdsPorNome = new Dictionary<string, int>();
+        }
     }
 
     private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
@@ -387,17 +399,29 @@
         return "Usuário";
     }
 
-    private static string GetCategoryUrl(string categoryName, string? subcategory = null)
+    private string GetCategoryUrl(string categoryName, string? subcategory = null)
     {
-        // Usar o nome da categoria diretamente (a página /categorias/{Nome} busca por nome case-insensitive)
-        var categoriaNome = Uri.EscapeDataString(categoryName);
+        // Redirecionar para /produtos com filtro de categoria
         if (string.IsNullOrEmpty(subcategory))
         {
-            return string.IsNullOrEmpty(categoriaNome) ? "/categorias" : $"/categorias/{categoriaNome}";
+            // Buscar o ID da categoria principal no banco
+            if (_categoriaIdsPorNome.TryGetValue(categoryName, out var categoriaId))
+            {
+                return $"/produtos?categoria={categoriaId}";
+            }
+            // Se não encontrar a categoria, retorna para produtos sem filtro
+            return "/produtos";
         }
 
-        var subcategoriaNome = Uri.EscapeDataString(subcategory);
-        return $"/categorias/{subcategoriaNome}";
+        // Para subcategorias, buscar o ID da subcategoria no banco e aplicar como filtro
+        if (_categoriaIdsPorNome.TryGetValue(subcategory, out var subcategoriaId))
+        {
+            return $"/produtos?categoria={subcategoriaId}";
+        }
+        
+        // Se não encontrar a subcategoria no banco, usar como busca
+        var subcategoriaEscapada = Uri.EscapeDataString(subcategory);
+        return $"/produtos?search={subcategoriaEscapada}";
     }
 
     private static string ToSlug(string text)

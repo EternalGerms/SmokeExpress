@@ -21,7 +21,18 @@ public interface IProductService
     /// <param name="pageSize">Itens por página.</param>
     /// <param name="cancellationToken">Token de cancelamento.</param>
     /// <returns>Resultado paginado de produtos.</returns>
+    [Obsolete("Use BuscarPaginadoAsync com ProductSearchFilters para filtros avançados.")]
     Task<PagedResult<Product>> BuscarPaginadoAsync(string? termoBusca, int? categoriaId, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Busca produtos paginados com filtros avançados (preço, estoque, ordenação).
+    /// </summary>
+    /// <param name="filters">Filtros de busca avançada.</param>
+    /// <param name="pageNumber">Número da página (inicia em 1).</param>
+    /// <param name="pageSize">Itens por página.</param>
+    /// <param name="cancellationToken">Token de cancelamento.</param>
+    /// <returns>Resultado paginado de produtos.</returns>
+    Task<PagedResult<Product>> BuscarPaginadoAsync(ProductSearchFilters filters, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
 
     Task<Product?> ObterPorIdAsync(int id, CancellationToken cancellationToken = default);
 

@@ -1,109 +1,224 @@
 @page "/produtos/{Id:int}"
+@using MudBlazor
+@using SmokeExpress.Web.Models
 @inject IProductService ProductService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@inject ISnackbar Snackbar
 
 @* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
 
-@if (_carregando)
-{
-    <p>Carregando produto...</p>
-}
-else if (_produto == null)
-{
-    <div class="alert alert-warning" role="alert">
-        <h4>Produto não encontrado</h4>
-        <p>O produto solicitado não foi encontrado ou não está mais disponível.</p>
-        <a href="/produtos" class="btn btn-primary">Voltar para catálogo</a>
-    </div>
-}
-else
-{
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/">Home</a></li>
-            <li class="breadcrumb-item"><a href="/produtos">Produtos</a></li>
-            <li class="breadcrumb-item active" aria-current="page">@_produto.Nome</li>
-        </ol>
-    </nav>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    @if (_carregando)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+        <MudText Typo="Typo.body1" Class="text-center">Carregando produto...</MudText>
+    }
+    else if (_produto == null)
+    {
+        <MudPaper Elevation="2" Class="pa-8 text-center">
+            <MudIcon Icon="@Icons.Material.Filled.Inventory2" Size="Size.Large" Color="Color.Warning" Class="mb-4" />
+            <MudText Typo="Typo.h5" Class="mb-3">Produto não encontrado</MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+                O produto solicitado não foi encontrado ou não está mais disponível.
+            </MudText>
+            <MudButton Variant="Variant.Filled" 
+                      Color="Color.Primary" 
+                      Href="/produtos"
+                      StartIcon="@Icons.Material.Filled.Store">
+                Voltar para catálogo
+            </MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <!-- Breadcrumb -->
+        <MudBreadcrumbs Items="@_breadcrumbItems" Class="mb-4" />
 
-    <div class="row mt-4">
-        <div class="col-md-6">
-            @if (!string.IsNullOrWhiteSpace(_produto.ImagemUrl))
-            {
-                <img src="@_produto.ImagemUrl" class="img-fluid rounded shadow" alt="@_produto.Nome" />
-            }
-            else
-            {
-                <div class="bg-light d-flex align-items-center justify-content-center rounded shadow" style="height: 400px;">
-                    <span class="text-muted">Sem imagem disponível</span>
-                </div>
-            }
-        </div>
-        <div class="col-md-6">
-            <h1 class="display-5 mb-3">@_produto.Nome</h1>
-            
-            <p class="text-muted mb-3">
-                <span class="badge bg-secondary">@_produto.Categoria?.Nome</span>
-            </p>
+        <MudGrid Spacing="4">
+            <!-- Imagem do Produto -->
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="3" Style="overflow: hidden; padding: 0;">
+                    @if (!string.IsNullOrWhiteSpace(_produto.ImagemUrl))
+                    {
+                        <div style="width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: #f5f5f5; padding: 2rem;">
+                            <img src="@_produto.ImagemUrl" 
+                                 alt="@_produto.Nome" 
+                                 style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: #f5f5f5;">
+                            <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                                <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Large" Color="Color.Default" />
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Sem imagem disponível</MudText>
+                            </MudStack>
+                        </div>
+                    }
+                </MudCard>
+            </MudItem>
 
-            <div class="mb-4">
-                <h2 class="text-primary mb-2">@_produto.Preco.ToString("C")</h2>
-                @if (_produto.Estoque > 0)
-                {
-                    <p class="text-success mb-0">
-                        <strong>Em estoque</strong> - @_produto.Estoque unidades disponíveis
-                    </p>
-                }
-                else
-                {
-                    <p class="text-danger mb-0">
-                        <strong>Sem estoque no momento</strong>
-                    </p>
-                }
-            </div>
+            <!-- Informações do Produto -->
+            <MudItem xs="12" md="6">
+                <MudStack Spacing="3">
+                    <!-- Nome e Categoria -->
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.h3" Class="mb-0">@_produto.Nome</MudText>
+                        <MudChip T="string" 
+                               Size="Size.Medium" 
+                               Color="Color.Secondary" 
+                               Variant="Variant.Outlined"
+                               Icon="@Icons.Material.Filled.Category">
+                            @_produto.Categoria?.Nome
+                        </MudChip>
+                    </MudStack>
 
-            <div class="mb-4">
-                <h3>Descrição</h3>
-                @if (!string.IsNullOrWhiteSpace(_produto.Descricao))
-                {
-                    <p class="text-muted">@_produto.Descricao</p>
-                }
-                else
-                {
-                    <p class="text-muted">Produto premium da Smoke Express com qualidade garantida.</p>
-                }
-            </div>
+                    <MudDivider />
 
-            <div class="mb-3 d-flex align-items-center gap-3">
-                <div>
-                    <label class="form-label mb-1">Quantidade</label>
-                    <input type="number" class="form-control" style="max-width:120px" min="1" value="@quantidadeSelecionada" @onchange="OnQuantidadeChange" />
-                </div>
-            </div>
+                    <!-- Preço e Estoque -->
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.h4" Color="Color.Primary" Class="font-weight-bold">
+                            @_produto.Preco.ToString("C")
+                        </MudText>
+                        @if (_produto.Estoque > 0)
+                        {
+                            <MudChip T="string" 
+                                   Size="Size.Medium" 
+                                   Color="Color.Success" 
+                                   Variant="Variant.Filled"
+                                   Icon="@Icons.Material.Filled.CheckCircle">
+                                Em estoque - @_produto.Estoque unidades disponíveis
+                            </MudChip>
+                        }
+                        else
+                        {
+                            <MudChip T="string" 
+                                   Size="Size.Medium" 
+                                   Color="Color.Error" 
+                                   Variant="Variant.Filled"
+                                   Icon="@Icons.Material.Filled.Cancel">
+                                Sem estoque no momento
+                            </MudChip>
+                        }
+                    </MudStack>
 
-            <div class="d-grid gap-2 d-md-flex">
-                @if (_produto.Estoque > 0)
-                {
-                    <button class="btn btn-primary btn-lg flex-fill" @onclick="AdicionarAoCarrinhoAsync">
-                        Adicionar ao carrinho
-                    </button>
-                }
-                else
-                {
-                    <button class="btn btn-secondary btn-lg flex-fill" disabled>
-                        Produto sem estoque
-                    </button>
-                }
-                <a href="/produtos" class="btn btn-outline-secondary btn-lg">Voltar</a>
-            </div>
-            @if (!string.IsNullOrWhiteSpace(_feedback))
-            {
-                <div class="text-success mt-2">@_feedback</div>
-            }
-        </div>
-    </div>
-}
+                    <MudDivider />
+
+                    <!-- Descrição -->
+                    <MudCard Elevation="1" Class="pa-4">
+                        <MudText Typo="Typo.h6" Class="mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Small" Class="mr-2" />
+                            Descrição
+                        </MudText>
+                        @if (!string.IsNullOrWhiteSpace(_produto.Descricao))
+                        {
+                            <MudText Typo="Typo.body1" Style="white-space: pre-wrap;">@_produto.Descricao</MudText>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                                Produto premium da Smoke Express com qualidade garantida.
+                            </MudText>
+                        }
+                    </MudCard>
+
+                    <!-- Quantidade e Ações -->
+                    <MudCard Elevation="1" Class="pa-4">
+                        <MudStack Spacing="3">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                                <MudText Typo="Typo.body1" Class="mb-0">Quantidade:</MudText>
+                                <MudNumericField @bind-Value="_quantidadeSelecionada" 
+                                               Min="1" 
+                                               Max="@(_produto.Estoque > 0 ? _produto.Estoque : 1)"
+                                               Variant="Variant.Outlined"
+                                               Style="max-width: 150px;" />
+                            </MudStack>
+
+                            @if (!string.IsNullOrWhiteSpace(_feedback))
+                            {
+                                <MudAlert Severity="Severity.Success" Dismissible="true" OnClose="@(() => _feedback = null)">
+                                    <MudText Typo="Typo.body2">@_feedback</MudText>
+                                </MudAlert>
+                            }
+
+                            @if (!string.IsNullOrEmpty(_mensagemErro))
+                            {
+                                <MudAlert Severity="Severity.Error" Dismissible="true" OnClose="@(() => _mensagemErro = null)">
+                                    <MudText Typo="Typo.body2">@_mensagemErro</MudText>
+                                </MudAlert>
+                            }
+
+                            <MudStack Row="true" Spacing="2">
+                                @if (_produto.Estoque > 0)
+                                {
+                                    <MudButton Variant="Variant.Filled" 
+                                             Color="Color.Primary" 
+                                             Size="Size.Large"
+                                             StartIcon="@Icons.Material.Filled.ShoppingCart"
+                                             OnClick="AdicionarAoCarrinhoAsync"
+                                             Disabled="@_adicionando"
+                                             FullWidth="true"
+                                             Class="flex-fill">
+                                        @(_adicionando ? "Adicionando..." : "Adicionar ao Carrinho")
+                                    </MudButton>
+                                }
+                                else
+                                {
+                                    <MudButton Variant="Variant.Filled" 
+                                             Color="Color.Default" 
+                                             Size="Size.Large"
+                                             StartIcon="@Icons.Material.Filled.RemoveShoppingCart"
+                                             Disabled="true"
+                                             FullWidth="true"
+                                             Class="flex-fill">
+                                        Produto sem estoque
+                                    </MudButton>
+                                }
+                                <MudButton Variant="Variant.Outlined" 
+                                         Color="Color.Secondary" 
+                                         Size="Size.Large"
+                                         StartIcon="@Icons.Material.Filled.ArrowBack"
+                                         Href="/produtos"
+                                         FullWidth="false">
+                                    Voltar
+                                </MudButton>
+                            </MudStack>
+                        </MudStack>
+                    </MudCard>
+
+                    <!-- Informações Adicionais -->
+                    <MudCard Elevation="1" Class="pa-4">
+                        <MudText Typo="Typo.h6" Class="mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Class="mr-2" />
+                            Informações do Produto
+                        </MudText>
+                        <MudStack Spacing="2">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <MudIcon Icon="@Icons.Material.Filled.Category" Size="Size.Small" Color="Color.Secondary" />
+                                <MudText Typo="Typo.body2">
+                                    <strong>Categoria:</strong> @_produto.Categoria?.Nome
+                                </MudText>
+                            </MudStack>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Small" Color="Color.Secondary" />
+                                <MudText Typo="Typo.body2">
+                                    <strong>Estoque:</strong> @_produto.Estoque unidades
+                                </MudText>
+                            </MudStack>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Small" Color="Color.Secondary" />
+                                <MudText Typo="Typo.body2">
+                                    <strong>Preço:</strong> @_produto.Preco.ToString("C")
+                                </MudText>
+                            </MudStack>
+                        </MudStack>
+                    </MudCard>
+                </MudStack>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
 
 @code {
     [Parameter]
@@ -113,7 +228,9 @@ else
     private bool _carregando = true;
     private string? _mensagemErro;
     private string? _feedback;
-    private int quantidadeSelecionada = 1;
+    private int _quantidadeSelecionada = 1;
+    private bool _adicionando = false;
+    private List<BreadcrumbItem> _breadcrumbItems = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -134,6 +251,16 @@ else
         try
         {
             _produto = await ProductService.ObterPorIdAsync(Id);
+            
+            if (_produto != null)
+            {
+                _breadcrumbItems = new List<BreadcrumbItem>
+                {
+                    new BreadcrumbItem("Home", "/", icon: Icons.Material.Filled.Home),
+                    new BreadcrumbItem("Produtos", "/produtos", icon: Icons.Material.Filled.Store),
+                    new BreadcrumbItem(_produto.Nome, href: null, disabled: true)
+                };
+            }
         }
         catch (Exception ex)
         {
@@ -152,12 +279,23 @@ else
             return;
         }
 
+        _adicionando = true;
+        _mensagemErro = null;
+        _feedback = null;
+
         try
         {
-            if (quantidadeSelecionada < 1)
+            if (_quantidadeSelecionada < 1)
             {
-                quantidadeSelecionada = 1;
+                _quantidadeSelecionada = 1;
             }
+
+            if (_quantidadeSelecionada > _produto.Estoque)
+            {
+                _mensagemErro = $"Quantidade solicitada ({_quantidadeSelecionada}) excede o estoque disponível ({_produto.Estoque}).";
+                return;
+            }
+
             var json = await JS.InvokeAsync<string>("localStorage.getItem", "cart");
             var itens = string.IsNullOrWhiteSpace(json)
                 ? new List<ClientCartItem>()
@@ -169,7 +307,7 @@ else
                 itens.Add(new ClientCartItem
                 {
                     ProductId = _produto.Id,
-                    Quantidade = quantidadeSelecionada,
+                    Quantidade = _quantidadeSelecionada,
                     Nome = _produto.Nome,
                     PrecoUnitario = _produto.Preco,
                     ImagemUrl = _produto.ImagemUrl
@@ -177,7 +315,13 @@ else
             }
             else
             {
-                existente.Quantidade += quantidadeSelecionada;
+                var novaQuantidade = existente.Quantidade + _quantidadeSelecionada;
+                if (novaQuantidade > _produto.Estoque)
+                {
+                    _mensagemErro = $"A quantidade total no carrinho ({novaQuantidade}) excede o estoque disponível ({_produto.Estoque}).";
+                    return;
+                }
+                existente.Quantidade = novaQuantidade;
                 existente.Nome = _produto.Nome;
                 existente.PrecoUnitario = _produto.Preco;
                 existente.ImagemUrl = _produto.ImagemUrl;
@@ -185,29 +329,19 @@ else
 
             var novoJson = System.Text.Json.JsonSerializer.Serialize(itens);
             await JS.InvokeVoidAsync("localStorage.setItem", "cart", novoJson);
-            _feedback = "Produto adicionado ao carrinho.";
+            _feedback = $"Produto adicionado ao carrinho! ({_quantidadeSelecionada} unidade(s))";
+            Snackbar.Add(_feedback, Severity.Success);
+            _quantidadeSelecionada = 1; // Reset para 1 após adicionar
         }
         catch (Exception ex)
         {
-            _mensagemErro = ex.Message;
+            _mensagemErro = $"Erro ao adicionar ao carrinho: {ex.Message}";
+            Snackbar.Add(_mensagemErro, Severity.Error);
         }
-    }
-
-    private void OnQuantidadeChange(ChangeEventArgs e)
-    {
-        if (e?.Value is null)
+        finally
         {
-            quantidadeSelecionada = 1;
-            return;
-        }
-
-        if (int.TryParse(e.Value.ToString(), out var parsed))
-        {
-            quantidadeSelecionada = parsed < 1 ? 1 : parsed;
-        }
-        else
-        {
-            quantidadeSelecionada = 1;
+            _adicionando = false;
+            StateHasChanged();
         }
     }
 
@@ -220,4 +354,3 @@ else
         public string? ImagemUrl { get; set; }
     }
 }
-
