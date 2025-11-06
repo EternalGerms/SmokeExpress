@@ -1,0 +1,276 @@
+@page "/checkout"
+@using SmokeExpress.Web.Models
+@using System.Text.Json
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+@inject IHttpClientFactory HttpClientFactory
+@inject IProductService ProductService
+
+<h3>Finalizar Pedido</h3>
+
+<AuthorizeView>
+    <Authorized Context="auth">
+        @if (_loading)
+        {
+            <p>Carregando carrinho...</p>
+        }
+        else if (_itens is null || _itens.Count == 0)
+        {
+            <div class="alert alert-warning">Seu carrinho está vazio.</div>
+        }
+        else
+        {
+            <div class="row">
+                <div class="col-md-7">
+                    <h5>Itens do Carrinho</h5>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th class="text-end">Preço Unitário</th>
+                                <th class="text-end">Qtd</th>
+                                <th class="text-end">Subtotal</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in _vmItens)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            @if (!string.IsNullOrWhiteSpace(item.ImagemUrl))
+                                            {
+                                                <img src="@item.ImagemUrl" alt="@item.Nome" style="width:40px;height:40px;object-fit:cover;border-radius:4px;" />
+                                            }
+                                            <span>@item.Nome</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-end">@item.PrecoUnitario.ToString("C")</td>
+                                    <td class="text-end" style="width:120px;">
+                                        <InputNumber Value="@item.Quantidade"
+                                                     ValueChanged="(int v) => OnQuantityChanged(item.ProductId, v)"
+                                                     ValueExpression="() => item.Quantidade"
+                                                     class="form-control form-control-sm text-end"
+                                                     min="1" />
+                                    </td>
+                                    <td class="text-end">@item.Subtotal.ToString("C")</td>
+                                    <td class="text-end" style="width:90px;">
+                                        <button type="button" class="btn btn-sm btn-outline-danger" title="Remover"
+                                                @onclick="() => RemoverItemAsync(item.ProductId)">
+                                            Remover
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="3" class="text-end">Total</th>
+                                <th class="text-end">@_total.ToString("C")</th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="col-md-5">
+                    <h5>Endereço de Entrega</h5>
+                    <EditForm Model="_endereco" OnValidSubmit="OnSubmitAsync" Context="frm">
+                        <DataAnnotationsValidator />
+                        <div class="mb-2">
+                            <label class="form-label">Rua</label>
+                            <InputText class="form-control" @bind-Value="_endereco.Rua" />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Número</label>
+                            <InputText class="form-control" @bind-Value="_endereco.Numero" />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Cidade</label>
+                            <InputText class="form-control" @bind-Value="_endereco.Cidade" />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Bairro</label>
+                            <InputText class="form-control" @bind-Value="_endereco.Bairro" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Complemento</label>
+                            <InputText class="form-control" @bind-Value="_endereco.Complemento" />
+                        </div>
+                        <button class="btn btn-primary" disabled="@_submitting">Finalizar Pedido</button>
+                        @if (!string.IsNullOrWhiteSpace(_error))
+                        {
+                            <div class="text-danger mt-2">@_error</div>
+                        }
+                    </EditForm>
+                </div>
+            </div>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <div class="alert alert-info">Você precisa entrar para finalizar o pedido.</div>
+        <a class="btn btn-outline-primary" href="/account/login?returnUrl=%2Fcheckout">Entrar</a>
+    </NotAuthorized>
+    
+</AuthorizeView>
+
+@code {
+    private bool _loading = true;
+    private bool _submitting = false;
+    private string? _error;
+    private List<CartItemDto> _itens = new();
+    private List<CartItemViewModel> _vmItens = new();
+    private EnderecoEntregaDto _endereco = new();
+    private decimal _total = 0m;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCartAsync();
+        _loading = false;
+    }
+
+    private async Task LoadCartAsync()
+    {
+        try
+        {
+            var json = await JS.InvokeAsync<string>("localStorage.getItem", "cart");
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                _itens = System.Text.Json.JsonSerializer.Deserialize<List<CartItemDto>>(json) ?? new();
+                await HydrateCartViewAsync();
+            }
+        }
+        catch
+        {
+            _itens = new();
+            _vmItens = new();
+            _total = 0m;
+        }
+    }
+
+    private async Task HydrateCartViewAsync()
+    {
+        _vmItens = new();
+        _total = 0m;
+
+        var ids = _itens.Select(i => i.ProductId).Distinct().ToList();
+        var produtos = new Dictionary<int, Product>();
+        foreach (var id in ids)
+        {
+            var p = await ProductService.ObterPorIdAsync(id);
+            if (p != null)
+            {
+                produtos[id] = p;
+            }
+        }
+
+        foreach (var item in _itens)
+        {
+            if (!produtos.TryGetValue(item.ProductId, out var p))
+            {
+                continue;
+            }
+
+            var subtotal = p.Preco * item.Quantidade;
+            _vmItens.Add(new CartItemViewModel
+            {
+                ProductId = p.Id,
+                Nome = p.Nome,
+                Quantidade = item.Quantidade,
+                PrecoUnitario = p.Preco,
+                Subtotal = subtotal,
+                ImagemUrl = p.ImagemUrl ?? string.Empty
+            });
+            _total += subtotal;
+        }
+    }
+
+    private async Task OnQuantityChanged(int productId, int novaQuantidade)
+    {
+        if (novaQuantidade < 1)
+        {
+            novaQuantidade = 1;
+        }
+
+        var item = _itens.FirstOrDefault(i => i.ProductId == productId);
+        if (item is null)
+        {
+            return;
+        }
+
+        item.Quantidade = novaQuantidade;
+        await SaveCartAsync();
+        await HydrateCartViewAsync();
+        StateHasChanged();
+    }
+
+    private async Task SaveCartAsync()
+    {
+        var json = System.Text.Json.JsonSerializer.Serialize(_itens);
+        await JS.InvokeVoidAsync("localStorage.setItem", "cart", json);
+    }
+
+    private async Task RemoverItemAsync(int productId)
+    {
+        var beforeCount = _itens.Count;
+        _itens = _itens.Where(i => i.ProductId != productId).ToList();
+        if (_itens.Count != beforeCount)
+        {
+            await SaveCartAsync();
+            await HydrateCartViewAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnSubmitAsync()
+    {
+        _error = null;
+        _submitting = true;
+        try
+        {
+            if (_itens.Count == 0)
+            {
+                _error = "Seu carrinho está vazio.";
+                return;
+            }
+
+            var req = new CheckoutRequest
+            {
+                Itens = _itens,
+                Endereco = _endereco
+            };
+
+            var client = HttpClientFactory.CreateClient();
+            var response = await client.PostAsJsonAsync("/api/orders/checkout", req);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var msg = await response.Content.ReadAsStringAsync();
+                _error = string.IsNullOrWhiteSpace(msg) ? "Falha ao criar pedido." : msg;
+                return;
+            }
+
+            var payload = await response.Content.ReadFromJsonAsync<JsonElement>();
+            if (payload.TryGetProperty("orderId", out var idElement))
+            {
+                var orderId = idElement.GetInt32();
+                await JS.InvokeVoidAsync("localStorage.removeItem", "cart");
+                Nav.NavigateTo($"/pedido/confirmacao/{orderId}");
+            }
+            else
+            {
+                _error = "Resposta inválida do servidor.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+}
+
+

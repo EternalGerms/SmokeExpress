@@ -57,11 +57,13 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddMudServices();
 builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddHttpClient();
 
 // Serviços de domínio
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 var app = builder.Build();
 
@@ -220,6 +222,7 @@ catch (Exception ex)
 }
 
 app.MapAccountEndpoints();
+app.MapOrderEndpoints();
 
 // Pipeline de requisições HTTP
 if (app.Environment.IsDevelopment())

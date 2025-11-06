@@ -1,0 +1,20 @@
+@page "/pedido/confirmacao/{id:int}"
+@inject NavigationManager Nav
+
+<h3>Pedido confirmado</h3>
+
+<div class="alert alert-success">
+    Seu pedido <strong>#@id</strong> foi registrado com sucesso!
+    Você receberá atualizações do status em breve.
+    <div class="mt-2">
+        <a class="btn btn-primary" href="/">Voltar à loja</a>
+    </div>
+    
+</div>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+}
+
+

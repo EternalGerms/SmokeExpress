@@ -221,8 +221,9 @@
 
             if (resultado.Succeeded)
             {
-                await SignInManager.SignInAsync(usuario, isPersistent: false);
-                Navigation.NavigateTo("/");
+                // Evita definir cookie após a resposta iniciar no Blazor Server.
+                // Redireciona para a página de login para o usuário autenticar.
+                Navigation.NavigateTo("/account/login?returnUrl=/", forceLoad: true);
                 return;
             }
 

@@ -136,13 +136,13 @@
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\site.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-MeB28GjyUZOlgdcp/rlUNL2x3\u002BExU4AceWblSa\u002BtD6Y="}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"2980"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022MeB28GjyUZOlgdcp/rlUNL2x3\u002BExU4AceWblSa\u002BtD6Y=\u0022"},{"Name":"Last-Modified","Value":"Wed, 05 Nov 2025 15:20:27 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"2980"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022MeB28GjyUZOlgdcp/rlUNL2x3\u002BExU4AceWblSa\u002BtD6Y=\u0022"},{"Name":"Last-Modified","Value":"Wed, 05 Nov 2025 19:14:30 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/SmokeExpress.Web/css/site.na5kw61jtz.css">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\site.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"na5kw61jtz"},{"Name":"integrity","Value":"sha256-MeB28GjyUZOlgdcp/rlUNL2x3\u002BExU4AceWblSa\u002BtD6Y="},{"Name":"label","Value":"_content/SmokeExpress.Web/css/site.css"}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"2980"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022MeB28GjyUZOlgdcp/rlUNL2x3\u002BExU4AceWblSa\u002BtD6Y=\u0022"},{"Name":"Last-Modified","Value":"Wed, 05 Nov 2025 15:20:27 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"2980"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022MeB28GjyUZOlgdcp/rlUNL2x3\u002BExU4AceWblSa\u002BtD6Y=\u0022"},{"Name":"Last-Modified","Value":"Wed, 05 Nov 2025 19:14:30 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/SmokeExpress.Web/favicon.ifv42okdf2.png">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\favicon.png'))</AssetFile>
@@ -172,13 +172,13 @@
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\SmokeExpress.Web.u24kww0nbf.bundle.scp.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-prHVn90OCHs1qbi4r2TKsy6j99Tp\u002B4Ty/cVUJyqgbkI="}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"45173"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022prHVn90OCHs1qbi4r2TKsy6j99Tp\u002B4Ty/cVUJyqgbkI=\u0022"},{"Name":"Last-Modified","Value":"Wed, 05 Nov 2025 19:13:51 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"45173"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022prHVn90OCHs1qbi4r2TKsy6j99Tp\u002B4Ty/cVUJyqgbkI=\u0022"},{"Name":"Last-Modified","Value":"Thu, 06 Nov 2025 10:24:27 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/SmokeExpress.Web/SmokeExpress.Web.u24kww0nbf.bundle.scp.css">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\SmokeExpress.Web.u24kww0nbf.bundle.scp.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"u24kww0nbf"},{"Name":"integrity","Value":"sha256-prHVn90OCHs1qbi4r2TKsy6j99Tp\u002B4Ty/cVUJyqgbkI="},{"Name":"label","Value":"_content/SmokeExpress.Web/SmokeExpress.Web.bundle.scp.css"}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"45173"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022prHVn90OCHs1qbi4r2TKsy6j99Tp\u002B4Ty/cVUJyqgbkI=\u0022"},{"Name":"Last-Modified","Value":"Wed, 05 Nov 2025 19:13:51 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"45173"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022prHVn90OCHs1qbi4r2TKsy6j99Tp\u002B4Ty/cVUJyqgbkI=\u0022"},{"Name":"Last-Modified","Value":"Thu, 06 Nov 2025 10:24:27 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
   </ItemGroup>
 </Project>
