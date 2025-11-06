@@ -1,12 +1,297 @@
 @page "/account/profile"
 @attribute [Authorize]
+@using System.ComponentModel.DataAnnotations
+@using SmokeExpress.Web.Pages.Account
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Nav
 
+<h3>Minha Conta</h3>
+
+@if (_loading)
+{
+    <p>Carregando...</p>
+}
+else if (!string.IsNullOrEmpty(_erro))
+{
+    <div class="alert alert-danger">@_erro</div>
+}
+else
+{
+    <div class="row g-3">
+        <div class="col-12 col-xl-8">
+            <div class="card p-3 mb-3">
+                <h5 class="mb-3">Dados cadastrais</h5>
+                <EditForm Model="_model" OnValidSubmit="SalvarDadosAsync">
+                    <DataAnnotationsValidator />
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label">Nome completo</label>
+                            <InputText class="form-control" @bind-Value="_model.NomeCompleto" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">E-mail</label>
+                            <InputText class="form-control" @bind-Value="_model.Email" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">CPF/CNPJ</label>
+                            <InputText class="form-control" @bind-Value="_model.DocumentoFiscal" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Data de nascimento</label>
+                            <InputDate DateFormat="dd/MM/yyyy" class="form-control" @bind-Value="_model.DataNascimento" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Gênero</label>
+                            <InputText class="form-control" @bind-Value="_model.Genero" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Tipo de cliente</label>
+                            <InputText class="form-control" @bind-Value="_model.TipoCliente" disabled />
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-primary" type="submit" disabled="@_saving">Salvar</button>
+                    </div>
+                </EditForm>
+            </div>
+
+            <div class="card p-3 mb-3">
+                <h5 class="mb-3">Alterar senha</h5>
+                <EditForm Model="_senha" OnValidSubmit="AlterarSenhaAsync">
+                    <DataAnnotationsValidator />
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <label class="form-label">Senha atual</label>
+                            <InputText type="password" class="form-control" @bind-Value="_senha.SenhaAtual" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Nova senha</label>
+                            <InputText type="password" class="form-control" @bind-Value="_senha.NovaSenha" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Confirmar nova senha</label>
+                            <InputText type="password" class="form-control" @bind-Value="_senha.ConfirmacaoSenha" />
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-outline-primary" type="submit" disabled="@_saving">Alterar senha</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <div class="card p-3 mb-3">
+                <Addresses />
+            </div>
+
+            <div class="card p-3">
+                <h5 class="mb-2">LGPD - Meus dados</h5>
+                <div class="small text-muted mb-2">Visualize e baixe suas informações.</div>
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Nome</dt>
+                    <dd class="col-sm-7">@_model.NomeCompleto</dd>
+                    <dt class="col-sm-5">E-mail</dt>
+                    <dd class="col-sm-7">@_model.Email</dd>
+                    <dt class="col-sm-5">Documento</dt>
+                    <dd class="col-sm-7">@_model.DocumentoFiscal</dd>
+                    <dt class="col-sm-5">Nascimento</dt>
+                    <dd class="col-sm-7">@_model.DataNascimento.ToString("dd/MM/yyyy")</dd>
+                    <dt class="col-sm-5">Gênero</dt>
+                    <dd class="col-sm-7">@_model.Genero</dd>
+                    <dt class="col-sm-5">Endereço</dt>
+                    <dd class="col-sm-7">@_model.Rua, @_model.Numero - @_model.Bairro, @_model.Cidade @_model.Complemento</dd>
+                </dl>
+                <div class="mt-3 d-flex gap-2">
+                    <a class="btn btn-outline-primary" href="/account/orders">Meus pedidos</a>
+                    <button class="btn btn-outline-secondary" @onclick="BaixarDadosAsync">Baixar meus dados (JSON)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
-    protected override void OnInitialized()
+    private bool _loading = true;
+    private bool _saving = false;
+    private string? _erro;
+
+    private PerfilModel _model = new();
+    private AlterarSenhaModel _senha = new();
+
+    protected override async Task OnInitializedAsync()
     {
-        // Usa navegação interna do Blazor para evitar reinicializar a conexão
-        Nav.NavigateTo("/account/addresses", replace: true);
+        try
+        {
+            var state = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = await UserManager.GetUserAsync(state.User);
+            if (user is null)
+            {
+                Nav.NavigateTo($"/account/login?returnUrl={Uri.EscapeDataString(Nav.Uri)}", forceLoad: true);
+                return;
+            }
+
+            _model = new PerfilModel
+            {
+                Id = user.Id,
+                NomeCompleto = user.NomeCompleto,
+                Email = user.Email ?? string.Empty,
+                DocumentoFiscal = user.DocumentoFiscal,
+                DataNascimento = user.DataNascimento,
+                Genero = user.Genero ?? string.Empty,
+                TipoCliente = user.TipoCliente,
+                Rua = user.Rua,
+                Numero = user.Numero,
+                Bairro = user.Bairro,
+                Cidade = user.Cidade,
+                Complemento = user.Complemento
+            };
+        }
+        catch (Exception ex)
+        {
+            _erro = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task SalvarDadosAsync()
+    {
+        _erro = null;
+        _saving = true;
+        try
+        {
+            var state = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = await UserManager.GetUserAsync(state.User);
+            if (user is null)
+            {
+                _erro = "Sessão expirada.";
+                return;
+            }
+
+            user.NomeCompleto = _model.NomeCompleto;
+            user.Email = _model.Email;
+            user.UserName = _model.Email;
+            user.DocumentoFiscal = _model.DocumentoFiscal;
+            user.DataNascimento = _model.DataNascimento;
+            user.Genero = _model.Genero;
+            user.Rua = _model.Rua;
+            user.Numero = _model.Numero;
+            user.Bairro = _model.Bairro;
+            user.Cidade = _model.Cidade;
+            user.Complemento = _model.Complemento;
+
+            var result = await UserManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                _erro = string.Join(" ", result.Errors.Select(e => e.Description));
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            _erro = ex.Message;
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task AlterarSenhaAsync()
+    {
+        _erro = null;
+        _saving = true;
+        try
+        {
+            if (_senha.NovaSenha != _senha.ConfirmacaoSenha)
+            {
+                _erro = "Confirmação de senha não confere.";
+                return;
+            }
+
+            var state = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = await UserManager.GetUserAsync(state.User);
+            if (user is null)
+            {
+                _erro = "Sessão expirada.";
+                return;
+            }
+
+            var result = await UserManager.ChangePasswordAsync(user, _senha.SenhaAtual, _senha.NovaSenha);
+            if (!result.Succeeded)
+            {
+                _erro = string.Join(" ", result.Errors.Select(e => e.Description));
+                return;
+            }
+
+            _senha = new();
+        }
+        catch (Exception ex)
+        {
+            _erro = ex.Message;
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task BaixarDadosAsync()
+    {
+        var json = System.Text.Json.JsonSerializer.Serialize(_model, new System.Text.Json.JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+        var bytes = System.Text.Encoding.UTF8.GetBytes(json);
+        var base64 = Convert.ToBase64String(bytes);
+        Nav.NavigateTo($"data:application/json;base64,{base64}", forceLoad: true);
+    }
+
+    private string NumeroBinding
+    {
+        get => _model.Numero ?? string.Empty;
+        set
+        {
+            var digits = new string((value ?? string.Empty).Where(char.IsDigit).ToArray());
+            _model.Numero = string.IsNullOrEmpty(digits) ? null : digits;
+        }
+    }
+
+    private sealed class PerfilModel
+    {
+        public string Id { get; set; } = string.Empty;
+        [Required]
+        [StringLength(200)]
+        public string NomeCompleto { get; set; } = string.Empty;
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+        [Required]
+        public string DocumentoFiscal { get; set; } = string.Empty;
+        [DataType(DataType.Date)]
+        public DateTime DataNascimento { get; set; }
+        public string Genero { get; set; } = string.Empty;
+        public string TipoCliente { get; set; } = string.Empty;
+        public string Rua { get; set; } = string.Empty;
+        public string? Numero { get; set; }
+        public string Bairro { get; set; } = string.Empty;
+        public string Cidade { get; set; } = string.Empty;
+        public string? Complemento { get; set; }
+    }
+
+    private sealed class AlterarSenhaModel
+    {
+        [Required]
+        public string SenhaAtual { get; set; } = string.Empty;
+        [Required]
+        [StringLength(100, MinimumLength = 8)]
+        public string NovaSenha { get; set; } = string.Empty;
+        [Required]
+        public string ConfirmacaoSenha { get; set; } = string.Empty;
     }
 }
 
