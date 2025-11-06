@@ -5,6 +5,8 @@
 @inject IJSRuntime JS
 @inject IHttpClientFactory HttpClientFactory
 @inject IProductService ProductService
+@inject IAddressService AddressService
+@inject AuthenticationStateProvider AuthStateProvider
 
 <h3>Finalizar Pedido</h3>
 
@@ -70,12 +72,22 @@ else
                         </tr>
                     }
                 </tbody>
-                <tfoot>
+                        <tfoot>
                     <tr>
-                        <th colspan="3" class="text-end">Total</th>
-                        <th class="text-end">@_total.ToString("C")</th>
+                                <th colspan="3" class="text-end">Subtotal</th>
+                                <th class="text-end">@_total.ToString("C")</th>
                         <th></th>
                     </tr>
+                            <tr>
+                                <th colspan="3" class="text-end">Frete</th>
+                                <th class="text-end">@_frete.ToString("C")</th>
+                                <th></th>
+                            </tr>
+                            <tr>
+                                <th colspan="3" class="text-end">Total</th>
+                                <th class="text-end">@((_total + _frete).ToString("C"))</th>
+                                <th></th>
+                            </tr>
                 </tfoot>
             </table>
         </div>
@@ -83,38 +95,29 @@ else
             <AuthorizeView>
                 <Authorized>
                     <h5>Endereço de Entrega</h5>
-                    <EditForm Model="_endereco" OnValidSubmit="OnSubmitAsync" Context="frm">
-                        <DataAnnotationsValidator />
-                        <div class="mb-2">
-                            <label class="form-label">Rua</label>
-                            <InputText class="form-control" @bind-Value="_endereco.Rua" />
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Número</label>
-                            <InputText class="form-control" @bind-Value="_endereco.Numero" />
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Cidade</label>
-                            <InputText class="form-control" @bind-Value="_endereco.Cidade" />
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Bairro</label>
-                            <InputText class="form-control" @bind-Value="_endereco.Bairro" />
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Complemento</label>
-                            <InputText class="form-control" @bind-Value="_endereco.Complemento" />
-                        </div>
+                    <div class="mb-2">
+                        <label class="form-label">Usar endereço salvo</label>
                         <div class="d-flex gap-2">
-                            <button class="btn btn-primary" disabled="@_submitting">Finalizar Pedido</button>
-                            <a href="/produtos" class="btn btn-outline-secondary">Continuar comprando</a>
-                            <button type="button" class="btn btn-outline-danger" @onclick="LimparCarrinhoAsync">Limpar carrinho</button>
+                            <select class="form-select" @onchange="OnEnderecoSelecionado">
+                                <option value="">Selecionar...</option>
+                                @foreach (var a in _enderecosSalvos)
+                                {
+                                    <option value="@a.Id">@FormatEndereco(a)</option>
+                                }
+                            </select>
+                            <button type="button" class="btn btn-outline-primary" @onclick="AbrirNovoEndereco">Adicionar</button>
+                            <a class="btn btn-outline-secondary" href="/account/addresses">Gerenciar</a>
                         </div>
-                        @if (!string.IsNullOrWhiteSpace(_error))
-                        {
-                            <div class="text-danger mt-2">@_error</div>
-                        }
-                    </EditForm>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary" @onclick="OnSubmitAsync" disabled="@_submitting">Finalizar Pedido</button>
+                        <a href="/produtos" class="btn btn-outline-secondary">Continuar comprando</a>
+                        <button type="button" class="btn btn-outline-danger" @onclick="LimparCarrinhoAsync">Limpar carrinho</button>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(_error))
+                    {
+                        <div class="text-danger mt-2">@_error</div>
+                    }
                 </Authorized>
                 <NotAuthorized>
                     <div class="alert alert-info">Você precisa entrar para finalizar o pedido.</div>
@@ -125,6 +128,57 @@ else
     </div>
 }
 
+@* Modal de novo endereço *@
+@if (_showNovoEndereco)
+{
+    <div class="modal fade show" style="display:block;" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Novo endereço</h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="CancelarNovoEndereco"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="_novoEndereco" OnValidSubmit="SalvarNovoEnderecoAsync">
+                        <DataAnnotationsValidator />
+                        <div class="mb-2">
+                            <label class="form-label">Rua</label>
+                            <InputText class="form-control" @bind-Value="_novoEndereco.Rua" />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Número</label>
+                            <input class="form-control" @bind="NovoNumeroBinding" @bind:event="oninput" inputmode="numeric" />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Cidade</label>
+                            <InputText class="form-control" @bind-Value="_novoEndereco.Cidade" />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Bairro</label>
+                            <InputText class="form-control" @bind-Value="_novoEndereco.Bairro" />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Complemento</label>
+                            <InputText class="form-control" @bind-Value="_novoEndereco.Complemento" />
+                        </div>
+                        <div class="form-check mb-2">
+                            <InputCheckbox class="form-check-input" @bind-Value="_novoEndereco.IsDefault" />
+                            <label class="form-check-label">Marcar como padrão</label>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Salvar</button>
+                            <button type="button" class="btn btn-secondary" @onclick="CancelarNovoEndereco">Cancelar</button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+
 @code {
     private bool _loading = true;
     private bool _submitting = false;
@@ -133,8 +187,13 @@ else
     private List<CartItemViewModel> _vmItens = new();
     private EnderecoEntregaDto _endereco = new();
     private decimal _total = 0m;
+    private decimal _frete = 0m;
 
     private bool _loadedFromJs;
+
+    private List<AddressDto> _enderecosSalvos = new();
+    private bool _showNovoEndereco;
+    private AddressDto _novoEndereco = new();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -143,6 +202,8 @@ else
             await LoadCartAsync();
             _loading = false;
             _loadedFromJs = true;
+            // Após primeira renderização, JS interop está disponível: carrega endereços e define frete
+            await CarregarEnderecosAsync();
             await InvokeAsync(StateHasChanged);
         }
     }
@@ -211,6 +272,17 @@ else
         public string? ImagemUrl { get; set; }
     }
 
+    private sealed class AddressDto
+    {
+        public int Id { get; set; }
+        public string Rua { get; set; } = string.Empty;
+        public string? Numero { get; set; }
+        public string Cidade { get; set; } = string.Empty;
+        public string Bairro { get; set; } = string.Empty;
+        public string? Complemento { get; set; }
+        public bool IsDefault { get; set; }
+    }
+
     private async Task OnQuantityChanged(int productId, int novaQuantidade)
     {
         if (novaQuantidade < 1)
@@ -256,6 +328,182 @@ else
         StateHasChanged();
     }
 
+    // Removido: carregamento de endereços ocorre em OnAfterRenderAsync(firstRender)
+
+    private async Task CarregarEnderecosAsync()
+    {
+        try
+        {
+            var userId = await GetUserIdAsync();
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                _enderecosSalvos = new();
+                return;
+            }
+
+            var list = await AddressService.ListAsync(userId);
+            _enderecosSalvos = list.Select(a => new AddressDto
+            {
+                Id = a.Id,
+                Rua = a.Rua,
+                Numero = a.Numero,
+                Cidade = a.Cidade,
+                Bairro = a.Bairro,
+                Complemento = a.Complemento,
+                IsDefault = a.IsDefault
+            }).ToList();
+
+            var padrao = _enderecosSalvos.FirstOrDefault(a => a.IsDefault);
+            if (padrao is not null)
+            {
+                PreencherEndereco(padrao);
+                await DefinirFreteParaEnderecoAsync(padrao.Id);
+            }
+        }
+        catch
+        {
+            _enderecosSalvos = new();
+        }
+    }
+
+    private void AbrirNovoEndereco()
+    {
+        _novoEndereco = new AddressDto();
+        _showNovoEndereco = true;
+    }
+
+    private void CancelarNovoEndereco()
+    {
+        _showNovoEndereco = false;
+    }
+
+    private async Task SalvarNovoEnderecoAsync()
+    {
+        try
+        {
+            var userId = await GetUserIdAsync();
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                Nav.NavigateTo("/account/login?returnUrl=%2Fcheckout");
+                return;
+            }
+
+            var entity = new Address
+            {
+                Rua = _novoEndereco.Rua,
+                Numero = _novoEndereco.Numero,
+                Cidade = _novoEndereco.Cidade,
+                Bairro = _novoEndereco.Bairro,
+                Complemento = _novoEndereco.Complemento,
+                IsDefault = _novoEndereco.IsDefault
+            };
+
+            var created = await AddressService.CreateAsync(userId, entity);
+            _showNovoEndereco = false;
+            await CarregarEnderecosAsync();
+            var dto = new AddressDto
+            {
+                Id = created.Id,
+                Rua = created.Rua,
+                Numero = created.Numero,
+                Cidade = created.Cidade,
+                Bairro = created.Bairro,
+                Complemento = created.Complemento,
+                IsDefault = created.IsDefault
+            };
+            PreencherEndereco(dto);
+            await DefinirFreteParaEnderecoAsync(dto.Id);
+        }
+        catch { }
+    }
+
+    private string NovoNumeroBinding
+    {
+        get => _novoEndereco.Numero ?? string.Empty;
+        set
+        {
+            var digits = new string((value ?? string.Empty).Where(char.IsDigit).ToArray());
+            _novoEndereco.Numero = string.IsNullOrEmpty(digits) ? null : digits;
+        }
+    }
+
+    private async Task<string> GetUserIdAsync()
+    {
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+        if (user?.Identity?.IsAuthenticated == true)
+        {
+            return user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+        }
+        return string.Empty;
+    }
+
+    
+
+    private async void OnEnderecoSelecionado(ChangeEventArgs e)
+    {
+        if (e?.Value is null) return;
+        if (int.TryParse(e.Value.ToString(), out var id))
+        {
+            var sel = _enderecosSalvos.FirstOrDefault(a => a.Id == id);
+            if (sel is not null)
+            {
+                PreencherEndereco(sel);
+                await DefinirFreteParaEnderecoAsync(sel.Id);
+            }
+        }
+    }
+
+    private void PreencherEndereco(AddressDto a)
+    {
+        _endereco.Rua = a.Rua;
+        _endereco.Numero = a.Numero;
+        _endereco.Cidade = a.Cidade;
+        _endereco.Bairro = a.Bairro;
+        _endereco.Complemento = a.Complemento;
+        StateHasChanged();
+    }
+
+    private static string FormatEndereco(AddressDto a)
+        => $"{a.Rua}, {a.Numero} - {a.Bairro}, {a.Cidade} {a.Complemento}";
+
+    private async Task DefinirFreteParaEnderecoAsync(int addressId)
+    {
+        // Tenta ler frete salvo do localStorage
+        try
+        {
+            var json = await JS.InvokeAsync<string>("localStorage.getItem", "shipping");
+            var map = string.IsNullOrWhiteSpace(json)
+                ? new Dictionary<int, decimal>()
+                : System.Text.Json.JsonSerializer.Deserialize<Dictionary<int, decimal>>(json) ?? new Dictionary<int, decimal>();
+
+            if (map.TryGetValue(addressId, out var saved))
+            {
+                _frete = saved;
+                StateHasChanged();
+                return;
+            }
+
+            // Gera uma vez e persiste
+            var rnd = new Random();
+            var valor = rnd.NextDouble() * (20.0 - 10.0) + 10.0; // 10 a 20
+            _frete = Math.Round((decimal)valor, 2);
+            map[addressId] = _frete;
+            var novoJson = System.Text.Json.JsonSerializer.Serialize(map);
+            await JS.InvokeVoidAsync("localStorage.setItem", "shipping", novoJson);
+            StateHasChanged();
+        }
+        catch
+        {
+            // fallback local
+            var rnd = new Random();
+            var valor = rnd.NextDouble() * (20.0 - 10.0) + 10.0;
+            _frete = Math.Round((decimal)valor, 2);
+        }
+    }
+
+    // Removido: bindings de campos manuais; checkout usa apenas endereços salvos
+
     private async Task OnSubmitAsync()
     {
         _error = null;
@@ -271,7 +519,8 @@ else
             var req = new CheckoutRequest
             {
                 Itens = _itens,
-                Endereco = _endereco
+                Endereco = _endereco,
+                Frete = _frete
             };
 
             var client = HttpClientFactory.CreateClient();

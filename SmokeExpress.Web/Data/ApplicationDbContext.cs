@@ -21,6 +21,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<Referral> Referrals => Set<Referral>();
 
+    public DbSet<Address> Addresses => Set<Address>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -71,6 +73,22 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
             entity.HasIndex(u => u.DocumentoFiscal)
                 .IsUnique();
+        });
+
+        builder.Entity<Address>(entity =>
+        {
+            entity.Property(a => a.Rua).HasMaxLength(200).IsRequired();
+            entity.Property(a => a.Numero).HasMaxLength(20);
+            entity.Property(a => a.Cidade).HasMaxLength(100).IsRequired();
+            entity.Property(a => a.Bairro).HasMaxLength(100).IsRequired();
+            entity.Property(a => a.Complemento).HasMaxLength(200);
+
+            entity.HasOne(a => a.User)
+                .WithMany(u => u.Enderecos)
+                .HasForeignKey(a => a.ApplicationUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(a => new { a.ApplicationUserId, a.IsDefault });
         });
 
         builder.Entity<Category>(entity =>

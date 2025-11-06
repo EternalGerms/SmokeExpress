@@ -64,6 +64,7 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IAddressService, AddressService>();
 
 var app = builder.Build();
 
@@ -223,6 +224,7 @@ catch (Exception ex)
 
 app.MapAccountEndpoints();
 app.MapProductEndpoints();
+app.MapAddressEndpoints();
 app.MapOrderEndpoints();
 
 // Pipeline de requisições HTTP

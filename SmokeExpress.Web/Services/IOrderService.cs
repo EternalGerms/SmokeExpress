@@ -9,6 +9,7 @@ public interface IOrderService
         string userId,
         IEnumerable<CartItemDto> cartItems,
         EnderecoEntregaDto endereco,
+        decimal frete = 0m,
         CancellationToken cancellationToken = default);
 }
 

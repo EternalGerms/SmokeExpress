@@ -11,6 +11,7 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
         string userId,
         IEnumerable<CartItemDto> cartItems,
         EnderecoEntregaDto endereco,
+        decimal frete = 0m,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(userId))
@@ -81,7 +82,7 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
             product.Estoque -= item.Quantidade;
         }
 
-        order.TotalPedido = total;
+        order.TotalPedido = total + Math.Max(0m, frete);
 
         dbContext.Orders.Add(order);
         await dbContext.SaveChangesAsync(cancellationToken);

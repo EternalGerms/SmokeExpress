@@ -1,0 +1,13 @@
+@page "/account/profile"
+@attribute [Authorize]
+@inject NavigationManager Nav
+
+@code {
+    protected override void OnInitialized()
+    {
+        // Usa navegação interna do Blazor para evitar reinicializar a conexão
+        Nav.NavigateTo("/account/addresses", replace: true);
+    }
+}
+
+

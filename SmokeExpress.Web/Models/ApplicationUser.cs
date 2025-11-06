@@ -47,6 +47,8 @@ public class ApplicationUser : IdentityUser
     public ICollection<Referral> IndicacoesRealizadas { get; set; } = new List<Referral>();
 
     public ICollection<Referral> IndicacoesRecebidas { get; set; } = new List<Referral>();
+
+    public ICollection<Address> Enderecos { get; set; } = new List<Address>();
 }
 
 

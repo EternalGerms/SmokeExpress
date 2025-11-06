@@ -1,0 +1,256 @@
+@page "/account/addresses"
+@attribute [Authorize]
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Nav
+@inject IAddressService AddressService
+@inject AuthenticationStateProvider AuthStateProvider
+
+<h3>Meus endereços</h3>
+
+@if (_loading)
+{
+    <p>Carregando...</p>
+}
+else
+{
+    <div class="mb-3">
+        <button class="btn btn-primary" @onclick="Novo">Novo endereço</button>
+    </div>
+
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Endereço</th>
+                <th>Padrão</th>
+                <th class="text-end">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var a in _enderecos)
+            {
+                <tr>
+                    <td>@Format(a)</td>
+                    <td>@(a.IsDefault ? "Sim" : "Não")</td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-secondary" @onclick="() => Editar(a)">Editar</button>
+                        <button class="btn btn-sm btn-outline-danger" @onclick="() => ExcluirAsync(a)">Excluir</button>
+                        @if (!a.IsDefault)
+                        {
+                            <button class="btn btn-sm btn-outline-primary" @onclick="() => TornarPadraoAsync(a)">Tornar padrão</button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (_editando is not null && _showModal)
+    {
+        <div class="modal fade show" style="display:block;" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@(_editando.Id == 0 ? "Novo endereço" : "Editar endereço")</h5>
+                        <button type="button" class="btn-close" aria-label="Close" @onclick="Cancelar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <EditForm Model="_editando" OnValidSubmit="SalvarAsync">
+                            <DataAnnotationsValidator />
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">Rua</label>
+                                    <InputText class="form-control" @bind-Value="_editando.Rua" />
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Número</label>
+                                    <input class="form-control" @bind="NumeroBinding" @bind:event="oninput" inputmode="numeric" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Bairro</label>
+                                    <InputText class="form-control" @bind-Value="_editando.Bairro" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Cidade</label>
+                                    <InputText class="form-control" @bind-Value="_editando.Cidade" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Complemento</label>
+                                    <InputText class="form-control" @bind-Value="_editando.Complemento" />
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <InputCheckbox class="form-check-input" @bind-Value="_editando.IsDefault" />
+                                        <label class="form-check-label">Marcar como padrão</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3 d-flex gap-2">
+                                <button class="btn btn-primary" type="submit">Salvar</button>
+                                <button class="btn btn-secondary" type="button" @onclick="Cancelar">Cancelar</button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    }
+}
+
+@code {
+    private bool _loading = true;
+    private List<AddressDto> _enderecos = new();
+    private AddressDto? _editando;
+    private bool _showModal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregarAsync();
+        _loading = false;
+    }
+
+    private async Task CarregarAsync()
+    {
+        var userId = await GetUserIdAsync();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            Nav.NavigateTo($"/account/login?returnUrl={Uri.EscapeDataString(Nav.Uri)}", forceLoad: true);
+            return;
+        }
+
+        var list = await AddressService.ListAsync(userId);
+        _enderecos = list.Select(a => new AddressDto
+        {
+            Id = a.Id,
+            Rua = a.Rua,
+            Numero = a.Numero,
+            Cidade = a.Cidade,
+            Bairro = a.Bairro,
+            Complemento = a.Complemento,
+            IsDefault = a.IsDefault
+        }).ToList();
+    }
+
+    private void Novo()
+    {
+        _editando = new AddressDto();
+        _showModal = true;
+    }
+
+    private void Editar(AddressDto a)
+    {
+        _editando = new AddressDto
+        {
+            Id = a.Id,
+            Rua = a.Rua,
+            Numero = a.Numero,
+            Bairro = a.Bairro,
+            Cidade = a.Cidade,
+            Complemento = a.Complemento,
+            IsDefault = a.IsDefault
+        };
+        _showModal = true;
+    }
+
+    private async Task SalvarAsync()
+    {
+        if (_editando is null) return;
+        var userId = await GetUserIdAsync();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            Nav.NavigateTo($"/account/login?returnUrl={Uri.EscapeDataString(Nav.Uri)}", forceLoad: true);
+            return;
+        }
+
+        var entity = new Address
+        {
+            Rua = _editando.Rua,
+            Numero = _editando.Numero,
+            Bairro = _editando.Bairro,
+            Cidade = _editando.Cidade,
+            Complemento = _editando.Complemento,
+            IsDefault = _editando.IsDefault
+        };
+
+        if (_editando.Id == 0)
+        {
+            await AddressService.CreateAsync(userId, entity);
+        }
+        else
+        {
+            await AddressService.UpdateAsync(userId, _editando.Id, entity);
+        }
+        _editando = null;
+        _showModal = false;
+        await CarregarAsync();
+        StateHasChanged();
+    }
+
+    private async Task ExcluirAsync(AddressDto a)
+    {
+        var userId = await GetUserIdAsync();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            Nav.NavigateTo($"/account/login?returnUrl={Uri.EscapeDataString(Nav.Uri)}", forceLoad: true);
+            return;
+        }
+        await AddressService.DeleteAsync(userId, a.Id);
+        await CarregarAsync();
+    }
+
+    private async Task TornarPadraoAsync(AddressDto a)
+    {
+        var userId = await GetUserIdAsync();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            Nav.NavigateTo($"/account/login?returnUrl={Uri.EscapeDataString(Nav.Uri)}", forceLoad: true);
+            return;
+        }
+        await AddressService.MakeDefaultAsync(userId, a.Id);
+        await CarregarAsync();
+    }
+
+    private void Cancelar()
+    {
+        _editando = null;
+        _showModal = false;
+    }
+
+    private static string Format(AddressDto a)
+        => $"{a.Rua}, {a.Numero} - {a.Bairro}, {a.Cidade} {a.Complemento}";
+
+    private sealed class AddressDto
+    {
+        public int Id { get; set; }
+        public string Rua { get; set; } = string.Empty;
+        public string? Numero { get; set; }
+        public string Cidade { get; set; } = string.Empty;
+        public string Bairro { get; set; } = string.Empty;
+        public string? Complemento { get; set; }
+        public bool IsDefault { get; set; }
+    }
+
+    private string NumeroBinding
+    {
+        get => _editando?.Numero ?? string.Empty;
+        set
+        {
+            if (_editando is null) return;
+            var digits = new string((value ?? string.Empty).Where(char.IsDigit).ToArray());
+            _editando.Numero = string.IsNullOrEmpty(digits) ? null : digits;
+        }
+    }
+
+    private async Task<string> GetUserIdAsync()
+    {
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+        if (user?.Identity?.IsAuthenticated == true)
+        {
+            return user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+        }
+        return string.Empty;
+    }
+}
+
+

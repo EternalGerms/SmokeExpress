@@ -34,7 +34,7 @@ public static class OrderEndpointRouteBuilderExtensions
 
                 try
                 {
-                    var orderId = await orderService.CriarPedidoAsync(userId, req.Itens, req.Endereco, ct);
+                    var orderId = await orderService.CriarPedidoAsync(userId, req.Itens, req.Endereco, req.Frete, ct);
                     return Results.Ok(new { orderId });
                 }
                 catch (KeyNotFoundException ex)
