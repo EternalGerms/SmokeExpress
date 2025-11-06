@@ -109,6 +109,38 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
 
         return pedidos;
     }
+
+    public async Task<IReadOnlyList<Order>> ListarTodosAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Orders
+            .OrderByDescending(o => o.DataPedido)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Order?> ObterPorIdAsync(
+        int id,
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Orders
+            .Include(o => o.Cliente)
+            .Include(o => o.Itens)
+            .ThenInclude(i => i.Product)
+            .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+    }
+
+    public async Task<bool> AtualizarStatusAsync(
+        int id,
+        OrderStatus novoStatus,
+        CancellationToken cancellationToken = default)
+    {
+        var order = await dbContext.Orders.FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+        if (order is null) return false;
+        order.Status = novoStatus;
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return true;
+    }
 }
 
 

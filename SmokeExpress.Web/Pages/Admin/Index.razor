@@ -1,0 +1,35 @@
+@page "/admin"
+@attribute [Authorize(Roles = "Admin")]
+
+<h3>Painel de Administração</h3>
+
+<div class="row g-3 mt-2">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Produtos</h5>
+                <p class="card-text">Gerencie produtos, estoque e preços do catálogo.</p>
+                <a href="/admin/produtos" class="btn btn-primary">Gerenciar Produtos</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Categorias</h5>
+                <p class="card-text">Organize produtos por categorias e subcategorias.</p>
+                <a href="/admin/categorias" class="btn btn-primary">Gerenciar Categorias</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Pedidos</h5>
+                <p class="card-text">Visualize e gerencie pedidos dos clientes.</p>
+                <a href="/admin/pedidos" class="btn btn-primary">Gerenciar Pedidos</a>
+            </div>
+        </div>
+    </div>
+</div>
+

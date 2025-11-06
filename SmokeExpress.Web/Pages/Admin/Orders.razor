@@ -1,0 +1,268 @@
+@page "/admin/pedidos"
+@attribute [Authorize(Roles = "Admin")]
+@inject IOrderService OrderService
+
+<h3>Gestão de Pedidos</h3>
+
+@if (_loading)
+{
+    <p>Carregando...</p>
+}
+else if (!string.IsNullOrEmpty(_erro))
+{
+    <div class="alert alert-danger">@_erro</div>
+}
+else
+{
+    <div class="mb-2 d-flex gap-2">
+        <input class="form-control" style="max-width:320px" placeholder="Filtrar por id, cliente ou e-mail" @bind="_filtro" @bind:event="oninput" />
+        <button class="btn btn-outline-secondary" @onclick="RecarregarAsync">Atualizar</button>
+    </div>
+
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Cliente</th>
+                <th>Data</th>
+                <th class="text-end">Total</th>
+                <th>Status</th>
+                <th class="text-end">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Filtrar(_pedidos))
+            {
+                <tr>
+                    <td>@p.Id</td>
+                    <td>
+                        <div>@p.ClienteNome</div>
+                        <div class="text-muted small">@p.ClienteEmail</div>
+                    </td>
+                    <td>@p.DataLocal</td>
+                    <td class="text-end">@p.TotalTexto</td>
+                    <td style="min-width:180px">
+                        <select class="form-select form-select-sm" @bind="p.Status" @bind:after="() => OnStatusChangedAsync(p)">
+                            @foreach (var s in _statusOptions)
+                            {
+                                <option value="@s.Value">@s.Label</option>
+                            }
+                        </select>
+                    </td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-primary" @onclick="() => AbrirDetalhesAsync(p.Id)">Ver</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (_detalhes is not null)
+{
+    <div class="modal fade show" style="display:block;" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Pedido #@_detalhes.Id</h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="FecharDetalhes"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-6">
+                            <strong>Cliente</strong>
+                            <div>@_detalhes.ClienteNome</div>
+                            <div class="text-muted">@_detalhes.ClienteEmail</div>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Data</strong>
+                            <div>@_detalhes.DataLocal</div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Endereço de entrega</strong>
+                        <div>@_detalhes.Rua, @_detalhes.Numero - @_detalhes.Bairro, @_detalhes.Cidade @_detalhes.Complemento</div>
+                    </div>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th class="text-end">Qtd</th>
+                                <th class="text-end">Preço</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var i in _detalhes.Itens)
+                            {
+                                <tr>
+                                    <td>@i.Nome</td>
+                                    <td class="text-end">@i.Quantidade</td>
+                                    <td class="text-end">@i.PrecoUnitario.ToString("C")</td>
+                                    <td class="text-end">@((i.PrecoUnitario * i.Quantidade).ToString("C"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="3" class="text-end">Subtotal</th>
+                                <th class="text-end">@_detalhes.Subtotal.ToString("C")</th>
+                            </tr>
+                            <tr>
+                                <th colspan="3" class="text-end">Frete</th>
+                                <th class="text-end">@_detalhes.Frete.ToString("C")</th>
+                            </tr>
+                            <tr>
+                                <th colspan="3" class="text-end">Total</th>
+                                <th class="text-end">@_detalhes.TotalPedido.ToString("C")</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    private bool _loading = true;
+    private string? _erro;
+    private string _filtro = string.Empty;
+    private List<OrderRow> _pedidos = new();
+    private OrderDetails? _detalhes;
+
+    private readonly (OrderStatus Value, string Label)[] _statusOptions = new[]
+    {
+        (OrderStatus.Processando, "Processando"),
+        (OrderStatus.Confirmado, "Confirmado"),
+        (OrderStatus.EmPreparacao, "Em preparação"),
+        (OrderStatus.Enviado, "Enviado"),
+        (OrderStatus.Entregue, "Entregue"),
+        (OrderStatus.Cancelado, "Cancelado")
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RecarregarAsync();
+    }
+
+    private async Task RecarregarAsync()
+    {
+        _loading = true;
+        _erro = null;
+        try
+        {
+            var list = await OrderService.ListarTodosAsync();
+            _pedidos = list.Select(o => new OrderRow
+            {
+                Id = o.Id,
+                ClienteNome = o.Cliente?.NomeCompleto ?? "",
+                ClienteEmail = o.Cliente?.Email ?? "",
+                DataLocal = o.DataPedido.ToLocalTime().ToString("g"),
+                TotalTexto = o.TotalPedido.ToString("C"),
+                Status = o.Status
+            }).ToList();
+        }
+        catch (Exception ex)
+        {
+            _erro = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private IEnumerable<OrderRow> Filtrar(IEnumerable<OrderRow> source)
+    {
+        if (string.IsNullOrWhiteSpace(_filtro)) return source;
+        var f = _filtro.Trim().ToLowerInvariant();
+        return source.Where(p => p.Id.ToString().Contains(f)
+            || (p.ClienteNome?.ToLowerInvariant().Contains(f) ?? false)
+            || (p.ClienteEmail?.ToLowerInvariant().Contains(f) ?? false));
+    }
+
+    private async Task OnStatusChangedAsync(OrderRow row)
+    {
+        try
+        {
+            var ok = await OrderService.AtualizarStatusAsync(row.Id, row.Status);
+            if (!ok)
+            {
+                _erro = "Não foi possível atualizar o status.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _erro = ex.Message;
+        }
+    }
+
+    private async Task AbrirDetalhesAsync(int id)
+    {
+        _detalhes = null;
+        var o = await OrderService.ObterPorIdAsync(id);
+        if (o is null) return;
+        _detalhes = new OrderDetails
+        {
+            Id = o.Id,
+            ClienteNome = o.Cliente?.NomeCompleto ?? string.Empty,
+            ClienteEmail = o.Cliente?.Email ?? string.Empty,
+            DataLocal = o.DataPedido.ToLocalTime().ToString("g"),
+            Rua = o.Rua,
+            Numero = o.Numero,
+            Bairro = o.Bairro,
+            Cidade = o.Cidade,
+            Complemento = o.Complemento,
+            TotalPedido = o.TotalPedido,
+            Itens = o.Itens.Select(i => new OrderItemRow
+            {
+                Nome = i.Product?.Nome ?? $"Produto {i.ProductId}",
+                Quantidade = i.Quantidade,
+                PrecoUnitario = i.PrecoUnitario
+            }).ToList()
+        };
+        _detalhes.Subtotal = _detalhes.Itens.Sum(i => i.PrecoUnitario * i.Quantidade);
+        _detalhes.Frete = _detalhes.TotalPedido - _detalhes.Subtotal;
+        StateHasChanged();
+    }
+
+    private void FecharDetalhes() => _detalhes = null;
+
+    private sealed class OrderRow
+    {
+        public int Id { get; set; }
+        public string ClienteNome { get; set; } = string.Empty;
+        public string ClienteEmail { get; set; } = string.Empty;
+        public string DataLocal { get; set; } = string.Empty;
+        public string TotalTexto { get; set; } = string.Empty;
+        public OrderStatus Status { get; set; }
+    }
+
+    private sealed class OrderDetails
+    {
+        public int Id { get; set; }
+        public string ClienteNome { get; set; } = string.Empty;
+        public string ClienteEmail { get; set; } = string.Empty;
+        public string DataLocal { get; set; } = string.Empty;
+        public string Rua { get; set; } = string.Empty;
+        public string? Numero { get; set; }
+        public string Bairro { get; set; } = string.Empty;
+        public string Cidade { get; set; } = string.Empty;
+        public string? Complemento { get; set; }
+        public decimal Subtotal { get; set; }
+        public decimal Frete { get; set; }
+        public decimal TotalPedido { get; set; }
+        public List<OrderItemRow> Itens { get; set; } = new();
+    }
+
+    private sealed class OrderItemRow
+    {
+        public string Nome { get; set; } = string.Empty;
+        public int Quantidade { get; set; }
+        public decimal PrecoUnitario { get; set; }
+    }
+}
+
+

@@ -15,6 +15,18 @@ public interface IOrderService
     Task<IReadOnlyList<Order>> ListarPedidosPorUsuarioAsync(
         string userId,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<Order>> ListarTodosAsync(
+        CancellationToken cancellationToken = default);
+
+    Task<Order?> ObterPorIdAsync(
+        int id,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> AtualizarStatusAsync(
+        int id,
+        OrderStatus novoStatus,
+        CancellationToken cancellationToken = default);
 }
 
 
