@@ -91,6 +91,24 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
 
         return order.Id;
     }
+
+    public async Task<IReadOnlyList<Order>> ListarPedidosPorUsuarioAsync(
+        string userId,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Array.Empty<Order>();
+        }
+
+        var pedidos = await dbContext.Orders
+            .Where(o => o.ApplicationUserId == userId)
+            .OrderByDescending(o => o.DataPedido)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        return pedidos;
+    }
 }
 
 

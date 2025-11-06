@@ -11,6 +11,10 @@ public interface IOrderService
         EnderecoEntregaDto endereco,
         decimal frete = 0m,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<Order>> ListarPedidosPorUsuarioAsync(
+        string userId,
+        CancellationToken cancellationToken = default);
 }
 
 

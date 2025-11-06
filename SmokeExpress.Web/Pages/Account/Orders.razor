@@ -1,0 +1,108 @@
+@page "/account/orders"
+@attribute [Authorize]
+@inject IOrderService OrderService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Nav
+
+<h3>Meus pedidos</h3>
+
+@if (_loading)
+{
+    <p>Carregando...</p>
+}
+else if (_erro is not null)
+{
+    <div class="alert alert-danger">@_erro</div>
+}
+else if (_pedidos.Count == 0)
+{
+    <div class="alert alert-info">Você ainda não realizou nenhum pedido.</div>
+}
+else
+{
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Data</th>
+                <th>Status</th>
+                <th class="text-end">Total</th>
+                <th class="text-end">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in _pedidos)
+            {
+                <tr>
+                    <td>@p.Id</td>
+                    <td>@p.DataPedidoLocal</td>
+                    <td>@p.StatusTexto</td>
+                    <td class="text-end">@p.TotalTexto</td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary" href="/pedido/confirmacao/@p.Id">Ver detalhes</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private bool _loading = true;
+    private string? _erro;
+    private List<OrderRow> _pedidos = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var state = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = state.User;
+            if (user?.Identity?.IsAuthenticated != true)
+            {
+                Nav.NavigateTo($"/account/login?returnUrl={Uri.EscapeDataString(Nav.Uri)}", forceLoad: true);
+                return;
+            }
+
+            var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var list = await OrderService.ListarPedidosPorUsuarioAsync(userId!);
+
+            _pedidos = list.Select(o => new OrderRow
+            {
+                Id = o.Id,
+                DataPedidoLocal = o.DataPedido.ToLocalTime().ToString("g"),
+                StatusTexto = FormatStatus(o.Status),
+                TotalTexto = o.TotalPedido.ToString("C")
+            }).ToList();
+        }
+        catch (Exception ex)
+        {
+            _erro = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string FormatStatus(OrderStatus status) => status switch
+    {
+        OrderStatus.Processando => "Processando",
+        OrderStatus.Confirmado => "Confirmado",
+        OrderStatus.EmPreparacao => "Em preparação",
+        OrderStatus.Enviado => "Enviado",
+        OrderStatus.Entregue => "Entregue",
+        OrderStatus.Cancelado => "Cancelado",
+        _ => status.ToString()
+    };
+
+    private sealed class OrderRow
+    {
+        public int Id { get; set; }
+        public string DataPedidoLocal { get; set; } = string.Empty;
+        public string StatusTexto { get; set; } = string.Empty;
+        public string TotalTexto { get; set; } = string.Empty;
+    }
+}
+
+
