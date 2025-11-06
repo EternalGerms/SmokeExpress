@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmokeExpress.Web.Models;
 using SmokeExpress.Web.Services;
+using SmokeExpress.Web.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace SmokeExpress.Web.Routing;
 
@@ -46,6 +48,55 @@ public static class OrderEndpointRouteBuilderExtensions
             })
             .RequireAuthorization()
             .DisableAntiforgery();
+
+        group.MapGet("/{id:int}", async (
+            int id,
+            ClaimsPrincipal user,
+            ApplicationDbContext db,
+            CancellationToken ct) =>
+            {
+                var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrWhiteSpace(userId))
+                {
+                    return Results.Unauthorized();
+                }
+
+                var order = await db.Orders
+                    .Include(o => o.Itens)
+                    .ThenInclude(i => i.Product)
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(o => o.Id == id && o.ApplicationUserId == userId, ct);
+
+                if (order is null)
+                {
+                    return Results.NotFound(new { message = "Pedido não encontrado." });
+                }
+
+                var dto = new
+                {
+                    order.Id,
+                    order.DataPedido,
+                    order.Status,
+                    order.Rua,
+                    order.Numero,
+                    order.Cidade,
+                    order.Bairro,
+                    order.Complemento,
+                    order.TotalPedido,
+                    Itens = order.Itens.Select(i => new
+                    {
+                        i.ProductId,
+                        Nome = i.Product.Nome,
+                        i.Quantidade,
+                        i.PrecoUnitario,
+                        Subtotal = i.PrecoUnitario * i.Quantidade,
+                        ImagemUrl = i.Product.ImagemUrl
+                    }).ToList()
+                };
+
+                return Results.Ok(dto);
+            })
+            .RequireAuthorization();
 
         return endpoints;
     }

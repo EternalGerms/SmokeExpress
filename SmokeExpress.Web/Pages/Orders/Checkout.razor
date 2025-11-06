@@ -8,72 +8,80 @@
 
 <h3>Finalizar Pedido</h3>
 
-<AuthorizeView>
-    <Authorized Context="auth">
-        @if (_loading)
-        {
-            <p>Carregando carrinho...</p>
-        }
-        else if (_itens is null || _itens.Count == 0)
-        {
-            <div class="alert alert-warning">Seu carrinho está vazio.</div>
-        }
-        else
-        {
-            <div class="row">
-                <div class="col-md-7">
-                    <h5>Itens do Carrinho</h5>
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Produto</th>
-                                <th class="text-end">Preço Unitário</th>
-                                <th class="text-end">Qtd</th>
-                                <th class="text-end">Subtotal</th>
-                                <th class="text-end">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in _vmItens)
-                            {
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center gap-2">
-                                            @if (!string.IsNullOrWhiteSpace(item.ImagemUrl))
-                                            {
-                                                <img src="@item.ImagemUrl" alt="@item.Nome" style="width:40px;height:40px;object-fit:cover;border-radius:4px;" />
-                                            }
-                                            <span>@item.Nome</span>
-                                        </div>
-                                    </td>
-                                    <td class="text-end">@item.PrecoUnitario.ToString("C")</td>
-                                    <td class="text-end" style="width:120px;">
-                                        <InputNumber Value="@item.Quantidade"
-                                                     ValueChanged="(int v) => OnQuantityChanged(item.ProductId, v)"
-                                                     ValueExpression="() => item.Quantidade"
-                                                     class="form-control form-control-sm text-end"
-                                                     min="1" />
-                                    </td>
-                                    <td class="text-end">@item.Subtotal.ToString("C")</td>
-                                    <td class="text-end" style="width:90px;">
-                                        <button type="button" class="btn btn-sm btn-outline-danger" title="Remover"
-                                                @onclick="() => RemoverItemAsync(item.ProductId)">
-                                            Remover
-                                        </button>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th colspan="3" class="text-end">Total</th>
-                                <th class="text-end">@_total.ToString("C")</th>
-                                <th></th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-                <div class="col-md-5">
+@if (_loading)
+{
+    <p>Carregando carrinho...</p>
+}
+else if (_itens is null || _itens.Count == 0)
+{
+    <div class="alert alert-warning">Seu carrinho está vazio.</div>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-7">
+            <h5>Itens do Carrinho</h5>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th class="text-end">Preço Unitário</th>
+                        <th class="text-end">Qtd</th>
+                        <th class="text-end">Subtotal</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in _vmItens)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    @if (!string.IsNullOrWhiteSpace(item.ImagemUrl))
+                                    {
+                                        <img src="@item.ImagemUrl" alt="@item.Nome" style="width:40px;height:40px;object-fit:cover;border-radius:4px;" />
+                                    }
+                                    <span>@item.Nome</span>
+                                </div>
+                            </td>
+                            <td class="text-end">@item.PrecoUnitario.ToString("C")</td>
+                            <td class="text-end" style="width:160px;">
+                                <div class="input-group input-group-sm">
+                                    <button class="btn btn-outline-secondary"
+                                            type="button"
+                                            @onclick="() => OnQuantityChanged(item.ProductId, item.Quantidade - 1)">−</button>
+                                    <InputNumber Value="@item.Quantidade"
+                                                 ValueChanged="(int v) => OnQuantityChanged(item.ProductId, v)"
+                                                 ValueExpression="() => item.Quantidade"
+                                                 class="form-control text-end"
+                                                 min="1" />
+                                    <button class="btn btn-outline-secondary"
+                                            type="button"
+                                            @onclick="() => OnQuantityChanged(item.ProductId, item.Quantidade + 1)">+</button>
+                                </div>
+                            </td>
+                            <td class="text-end">@item.Subtotal.ToString("C")</td>
+                            <td class="text-end" style="width:90px;">
+                                <button type="button" class="btn btn-sm btn-outline-danger" title="Remover"
+                                        @onclick="() => RemoverItemAsync(item.ProductId)">
+                                    Remover
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="3" class="text-end">Total</th>
+                        <th class="text-end">@_total.ToString("C")</th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="col-md-5">
+            <AuthorizeView>
+                <Authorized>
                     <h5>Endereço de Entrega</h5>
                     <EditForm Model="_endereco" OnValidSubmit="OnSubmitAsync" Context="frm">
                         <DataAnnotationsValidator />
@@ -97,22 +105,25 @@
                             <label class="form-label">Complemento</label>
                             <InputText class="form-control" @bind-Value="_endereco.Complemento" />
                         </div>
-                        <button class="btn btn-primary" disabled="@_submitting">Finalizar Pedido</button>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" disabled="@_submitting">Finalizar Pedido</button>
+                            <a href="/produtos" class="btn btn-outline-secondary">Continuar comprando</a>
+                            <button type="button" class="btn btn-outline-danger" @onclick="LimparCarrinhoAsync">Limpar carrinho</button>
+                        </div>
                         @if (!string.IsNullOrWhiteSpace(_error))
                         {
                             <div class="text-danger mt-2">@_error</div>
                         }
                     </EditForm>
-                </div>
-            </div>
-        }
-    </Authorized>
-    <NotAuthorized>
-        <div class="alert alert-info">Você precisa entrar para finalizar o pedido.</div>
-        <a class="btn btn-outline-primary" href="/account/login?returnUrl=%2Fcheckout">Entrar</a>
-    </NotAuthorized>
-    
-</AuthorizeView>
+                </Authorized>
+                <NotAuthorized>
+                    <div class="alert alert-info">Você precisa entrar para finalizar o pedido.</div>
+                    <a class="btn btn-outline-primary" href="/account/login?returnUrl=%2Fcheckout">Entrar</a>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </div>
+}
 
 @code {
     private bool _loading = true;
@@ -123,10 +134,17 @@
     private EnderecoEntregaDto _endereco = new();
     private decimal _total = 0m;
 
-    protected override async Task OnInitializedAsync()
+    private bool _loadedFromJs;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await LoadCartAsync();
-        _loading = false;
+        if (firstRender && !_loadedFromJs)
+        {
+            await LoadCartAsync();
+            _loading = false;
+            _loadedFromJs = true;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task LoadCartAsync()
@@ -140,7 +158,7 @@
                 await HydrateCartViewAsync();
             }
         }
-        catch
+        catch (Exception)
         {
             _itens = new();
             _vmItens = new();
@@ -153,15 +171,15 @@
         _vmItens = new();
         _total = 0m;
 
-        var ids = _itens.Select(i => i.ProductId).Distinct().ToList();
-        var produtos = new Dictionary<int, Product>();
-        foreach (var id in ids)
+        var ids = _itens.Select(i => i.ProductId).Distinct().ToArray();
+        var client = HttpClientFactory.CreateClient();
+        var productsUri = new Uri(new Uri(Nav.BaseUri), "api/products/by-ids");
+        var response = await client.PostAsJsonAsync(productsUri, ids);
+        var produtos = new Dictionary<int, ProductLite>();
+        if (response.IsSuccessStatusCode)
         {
-            var p = await ProductService.ObterPorIdAsync(id);
-            if (p != null)
-            {
-                produtos[id] = p;
-            }
+            var list = await response.Content.ReadFromJsonAsync<List<ProductLite>>() ?? new();
+            produtos = list.ToDictionary(p => p.Id);
         }
 
         foreach (var item in _itens)
@@ -183,6 +201,14 @@
             });
             _total += subtotal;
         }
+    }
+
+    private sealed class ProductLite
+    {
+        public int Id { get; set; }
+        public string Nome { get; set; } = string.Empty;
+        public decimal Preco { get; set; }
+        public string? ImagemUrl { get; set; }
     }
 
     private async Task OnQuantityChanged(int productId, int novaQuantidade)
@@ -222,6 +248,14 @@
         }
     }
 
+    private async Task LimparCarrinhoAsync()
+    {
+        _itens.Clear();
+        await SaveCartAsync();
+        await HydrateCartViewAsync();
+        StateHasChanged();
+    }
+
     private async Task OnSubmitAsync()
     {
         _error = null;
@@ -241,7 +275,8 @@
             };
 
             var client = HttpClientFactory.CreateClient();
-            var response = await client.PostAsJsonAsync("/api/orders/checkout", req);
+            var checkoutUri = new Uri(new Uri(Nav.BaseUri), "api/orders/checkout");
+            var response = await client.PostAsJsonAsync(checkoutUri, req);
 
             if (!response.IsSuccessStatusCode)
             {

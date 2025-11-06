@@ -160,17 +160,27 @@ else
             }
             var json = await JS.InvokeAsync<string>("localStorage.getItem", "cart");
             var itens = string.IsNullOrWhiteSpace(json)
-                ? new List<CartItemDto>()
-                : System.Text.Json.JsonSerializer.Deserialize<List<CartItemDto>>(json) ?? new List<CartItemDto>();
+                ? new List<ClientCartItem>()
+                : System.Text.Json.JsonSerializer.Deserialize<List<ClientCartItem>>(json) ?? new List<ClientCartItem>();
 
             var existente = itens.FirstOrDefault(i => i.ProductId == _produto.Id);
             if (existente is null)
             {
-                itens.Add(new CartItemDto { ProductId = _produto.Id, Quantidade = quantidadeSelecionada });
+                itens.Add(new ClientCartItem
+                {
+                    ProductId = _produto.Id,
+                    Quantidade = quantidadeSelecionada,
+                    Nome = _produto.Nome,
+                    PrecoUnitario = _produto.Preco,
+                    ImagemUrl = _produto.ImagemUrl
+                });
             }
             else
             {
                 existente.Quantidade += quantidadeSelecionada;
+                existente.Nome = _produto.Nome;
+                existente.PrecoUnitario = _produto.Preco;
+                existente.ImagemUrl = _produto.ImagemUrl;
             }
 
             var novoJson = System.Text.Json.JsonSerializer.Serialize(itens);
@@ -199,6 +209,15 @@ else
         {
             quantidadeSelecionada = 1;
         }
+    }
+
+    private sealed class ClientCartItem
+    {
+        public int ProductId { get; set; }
+        public int Quantidade { get; set; }
+        public string? Nome { get; set; }
+        public decimal PrecoUnitario { get; set; }
+        public string? ImagemUrl { get; set; }
     }
 }
 

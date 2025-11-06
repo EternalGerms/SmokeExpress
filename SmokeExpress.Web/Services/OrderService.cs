@@ -41,6 +41,16 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
 
         var productById = products.ToDictionary(p => p.Id);
 
+        // Validação de estoque
+        foreach (var item in itensLista)
+        {
+            var product = productById[item.ProductId];
+            if (item.Quantidade > product.Estoque)
+            {
+                throw new InvalidOperationException($"Quantidade acima do estoque para '{product.Nome}'. Disponível: {product.Estoque}.");
+            }
+        }
+
         var order = new Order
         {
             ApplicationUserId = userId,
@@ -66,6 +76,9 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
             };
             total += preco * item.Quantidade;
             order.Itens.Add(orderItem);
+
+            // Deduz estoque (MVP)
+            product.Estoque -= item.Quantidade;
         }
 
         order.TotalPedido = total;

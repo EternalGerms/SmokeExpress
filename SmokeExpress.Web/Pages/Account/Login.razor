@@ -15,6 +15,13 @@
     <form method="post" action="/account/login" class="px-4 pb-4">
         <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
 
+        @if (CreatedAccount)
+        {
+            <MudAlert Severity="Severity.Success" Dense="true" Class="mb-4">
+                Conta criada com sucesso! Faça login para continuar.
+            </MudAlert>
+        }
+
         @if (!string.IsNullOrEmpty(_mensagemErro))
         {
             <MudAlert Severity="Severity.Error" Dense="true" Class="mb-4">
@@ -67,6 +74,9 @@
 
     [SupplyParameterFromQuery(Name = "error")]
     public string? ErrorCode { get; set; } = null;
+
+    [SupplyParameterFromQuery(Name = "created")]
+    public bool CreatedAccount { get; set; }
 
     private readonly LoginInput _model = new();
     private bool _processando;

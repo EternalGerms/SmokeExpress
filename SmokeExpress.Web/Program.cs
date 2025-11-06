@@ -222,6 +222,7 @@ catch (Exception ex)
 }
 
 app.MapAccountEndpoints();
+app.MapProductEndpoints();
 app.MapOrderEndpoints();
 
 // Pipeline de requisições HTTP
