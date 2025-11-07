@@ -129,7 +129,7 @@ else
     private bool _loading = true;
     private string? _erro;
     private string _filtro = string.Empty;
-    private List<OrderRow> _pedidos = new();
+    private IReadOnlyList<OrderRow> _pedidos = Array.Empty<OrderRow>();
     private OrderDetails? _detalhes;
 
     private readonly (OrderStatus Value, string Label)[] _statusOptions = new[]

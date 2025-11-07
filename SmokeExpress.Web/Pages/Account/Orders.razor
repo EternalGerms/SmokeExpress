@@ -207,7 +207,7 @@ else
 @code {
     private bool _loading = true;
     private string? _erro;
-    private List<OrderRow> _pedidos = new();
+    private IReadOnlyList<OrderRow> _pedidos = Array.Empty<OrderRow>();
 
     protected override async Task OnInitializedAsync()
     {

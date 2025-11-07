@@ -109,7 +109,7 @@ else
 }
 
 @code {
-    private List<Category> _categorias = new();
+    private IReadOnlyList<Category> _categorias = Array.Empty<Category>();
     private bool _carregando = true;
     private string? _mensagemErro;
 

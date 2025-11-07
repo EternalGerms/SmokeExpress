@@ -602,7 +602,7 @@ else
     // Endereços
     private bool _loadingEnderecos = false;
     private bool _savingEndereco = false;
-    private List<AddressDto> _enderecos = new();
+    private IReadOnlyList<AddressDto> _enderecos = Array.Empty<AddressDto>();
     private AddressDto? _editandoEndereco;
     private bool _showEnderecoDialog = false;
     private string _numeroBinding = string.Empty;
@@ -610,7 +610,7 @@ else
     // Pedidos
     private bool _loadingPedidos = false;
     private string? _erroPedidos;
-    private List<OrderRow> _pedidos = new();
+    private IReadOnlyList<OrderRow> _pedidos = Array.Empty<OrderRow>();
 
     private PerfilModel _model = new();
     private AlterarSenhaModel _senha = new();

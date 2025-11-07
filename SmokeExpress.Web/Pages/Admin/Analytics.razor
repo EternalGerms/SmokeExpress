@@ -74,12 +74,20 @@
         <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
         <MudText Typo="Typo.body1" Class="text-center">Carregando estatísticas...</MudText>
     }
-    else if (!string.IsNullOrEmpty(_erro))
-    {
-        <MudAlert Severity="Severity.Error" Class="mb-4">@_erro</MudAlert>
-    }
     else
     {
+        @if (_tipoMensagem != TipoMensagem.Nenhuma && !string.IsNullOrEmpty(_mensagem))
+        {
+            <MudAlert Severity="@ObterSeveridadeMensagem(_tipoMensagem)" 
+                      Class="mb-4" 
+                      Dense="false"
+                      Icon="@ObterIconeMensagem(_tipoMensagem)">
+                @_mensagem
+            </MudAlert>
+        }
+
+        @if (_tipoMensagem != TipoMensagem.Critico && _tipoMensagem != TipoMensagem.Validacao)
+        {
         <!-- KPIs Principais -->
         <MudGrid Spacing="3" Class="mb-4">
             <MudItem xs="12" sm="6" md="3">
@@ -334,34 +342,7 @@
                                         </MudStack>
                                     </MudTd>
                                     <MudTd DataLabel="Avaliação" align="Align.Center">
-                                        @if (context.MediaAvaliacao.HasValue)
-                                        {
-                                            var mediaValor = context.MediaAvaliacao.Value;
-                                            var estrelasCheias = (int)Math.Floor(mediaValor);
-                                            var temMeiaEstrela = mediaValor - estrelasCheias >= 0.5m;
-                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
-                                                @for (int i = 1; i <= 5; i++)
-                                                {
-                                                    if (i <= estrelasCheias)
-                                                    {
-                                                        <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #ff9800; font-size: 0.875rem;" />
-                                                    }
-                                                    else if (i == estrelasCheias + 1 && temMeiaEstrela)
-                                                    {
-                                                        <div style="position: relative; display: inline-block;">
-                                                            <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #e0e0e0; font-size: 0.875rem;" />
-                                                            <div style="position: absolute; top: 0; left: 0; width: 50%; overflow: hidden;">
-                                                                <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #ff9800; font-size: 0.875rem;" />
-                                                            </div>
-                                                        </div>
-                                                    }
-                                                    else
-                                                    {
-                                                        <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #e0e0e0; font-size: 0.875rem;" />
-                                                    }
-                                                }
-                                            </MudStack>
-                                        }
+                                        <RatingDisplay Rating="@context.MediaAvaliacao" StarSize="0.875rem" />
                                     </MudTd>
                                     <MudTd DataLabel="Total" align="Align.Right">@context.TotalAvaliacoes</MudTd>
                                 </RowTemplate>
@@ -403,34 +384,7 @@
                                         </MudStack>
                                     </MudTd>
                                     <MudTd DataLabel="Avaliação" align="Align.Center">
-                                        @if (context.MediaAvaliacao.HasValue)
-                                        {
-                                            var mediaValor = context.MediaAvaliacao.Value;
-                                            var estrelasCheias = (int)Math.Floor(mediaValor);
-                                            var temMeiaEstrela = mediaValor - estrelasCheias >= 0.5m;
-                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
-                                                @for (int i = 1; i <= 5; i++)
-                                                {
-                                                    if (i <= estrelasCheias)
-                                                    {
-                                                        <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #ff9800; font-size: 0.875rem;" />
-                                                    }
-                                                    else if (i == estrelasCheias + 1 && temMeiaEstrela)
-                                                    {
-                                                        <div style="position: relative; display: inline-block;">
-                                                            <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #e0e0e0; font-size: 0.875rem;" />
-                                                            <div style="position: absolute; top: 0; left: 0; width: 50%; overflow: hidden;">
-                                                                <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #ff9800; font-size: 0.875rem;" />
-                                                            </div>
-                                                        </div>
-                                                    }
-                                                    else
-                                                    {
-                                                        <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #e0e0e0; font-size: 0.875rem;" />
-                                                    }
-                                                }
-                                            </MudStack>
-                                        }
+                                        <RatingDisplay Rating="@context.MediaAvaliacao" StarSize="0.875rem" />
                                     </MudTd>
                                     <MudTd DataLabel="Total" align="Align.Right">@context.TotalAvaliacoes</MudTd>
                                 </RowTemplate>
@@ -446,43 +400,94 @@
                 </MudCard>
             </MudItem>
         </MudGrid>
+        }
     }
 </MudContainer>
 
 @code {
     [Inject] private ILogger<Analytics>? logger { get; set; }
 
+    private enum TipoMensagem
+    {
+        Nenhuma,
+        Validacao,
+        DadosVazios,
+        Critico
+    }
+
     private bool _carregando = false;
-    private string? _erro;
+    private string? _mensagem;
+    private TipoMensagem _tipoMensagem = TipoMensagem.Nenhuma;
     private PeriodFilter _periodoFiltro = PeriodFilter.EsteMes;
     private DateTime? _dataInicio;
     private DateTime? _dataFim;
     private int _topItems = 10;
 
     private DashboardSummaryDto _resumo = new();
-    private List<SalesByPeriodDto> _vendasPorPeriodo = new();
-    private List<ProductSalesDto> _produtosMaisVendidos = new();
-    private List<Product> _produtosMenorEstoque = new();
-    private List<ProductRatingDto> _produtosMelhoresAvaliados = new();
-    private List<ProductRatingDto> _produtosPioresAvaliados = new();
-    private List<OrderStatusCountDto> _pedidosPorStatus = new();
+    private IReadOnlyList<SalesByPeriodDto> _vendasPorPeriodo = Array.Empty<SalesByPeriodDto>();
+    private IReadOnlyList<ProductSalesDto> _produtosMaisVendidos = Array.Empty<ProductSalesDto>();
+    private IReadOnlyList<Product> _produtosMenorEstoque = Array.Empty<Product>();
+    private IReadOnlyList<ProductRatingDto> _produtosMelhoresAvaliados = Array.Empty<ProductRatingDto>();
+    private IReadOnlyList<ProductRatingDto> _produtosPioresAvaliados = Array.Empty<ProductRatingDto>();
+    private IReadOnlyList<OrderStatusCountDto> _pedidosPorStatus = Array.Empty<OrderStatusCountDto>();
 
     protected override async Task OnInitializedAsync()
     {
         await CarregarDadosAsync();
     }
 
+    private (bool Valido, string? Mensagem) ValidarEntradas()
+    {
+        if (_periodoFiltro == PeriodFilter.Personalizado)
+        {
+            if (!_dataInicio.HasValue || !_dataFim.HasValue)
+            {
+                return (false, "Por favor, preencha ambas as datas quando usar período personalizado.");
+            }
+
+            if (_dataInicio.Value > _dataFim.Value)
+            {
+                return (false, "A data de início deve ser anterior ou igual à data de fim.");
+            }
+
+            var agora = DateTime.UtcNow;
+            if (_dataFim.Value > agora)
+            {
+                return (false, "A data de fim não pode ser futura.");
+            }
+        }
+        return (true, null);
+    }
+
+    private bool VerificarDadosVazios()
+    {
+        return _resumo.TotalPedidos == 0
+            && !_vendasPorPeriodo.Any()
+            && !_produtosMaisVendidos.Any()
+            && !_pedidosPorStatus.Any();
+    }
+
     private async Task CarregarDadosAsync()
     {
         _carregando = true;
-        _erro = null;
+        _mensagem = null;
+        _tipoMensagem = TipoMensagem.Nenhuma;
 
         try
         {
+            // 1. Validar entradas antes de processar
+            var (valido, mensagemValidacao) = ValidarEntradas();
+            if (!valido)
+            {
+                _mensagem = mensagemValidacao;
+                _tipoMensagem = TipoMensagem.Validacao;
+                return;
+            }
+
             var dataInicio = _periodoFiltro == PeriodFilter.Personalizado ? _dataInicio : null;
             var dataFim = _periodoFiltro == PeriodFilter.Personalizado ? _dataFim : null;
 
-            // 1. Consulta consolidada para estatísticas relacionadas a pedidos/vendas
+            // 2. Consulta consolidada para estatísticas relacionadas a pedidos/vendas
             var analyticsCompleto = await AnalyticsService.ObterAnalyticsCompletoAsync(
                 _periodoFiltro, 
                 _topItems, 
@@ -490,18 +495,26 @@
                 dataFim);
 
             _resumo = analyticsCompleto.Resumo;
-            _vendasPorPeriodo = analyticsCompleto.VendasPorPeriodo.ToList();
-            _produtosMaisVendidos = analyticsCompleto.ProdutosMaisVendidos.ToList();
-            _pedidosPorStatus = analyticsCompleto.PedidosPorStatus.ToList();
+            _vendasPorPeriodo = analyticsCompleto.VendasPorPeriodo;
+            _produtosMaisVendidos = analyticsCompleto.ProdutosMaisVendidos;
+            _pedidosPorStatus = analyticsCompleto.PedidosPorStatus;
 
-            // 2. Consultas de produtos sequencialmente (evita concorrência no DbContext)
-            _produtosMenorEstoque = (await AnalyticsService.ObterProdutosMenorEstoqueAsync(_topItems)).ToList();
-            _produtosMelhoresAvaliados = (await AnalyticsService.ObterProdutosMelhoresAvaliadosAsync(_topItems)).ToList();
-            _produtosPioresAvaliados = (await AnalyticsService.ObterProdutosPioresAvaliadosAsync(_topItems)).ToList();
+            // 3. Consultas de produtos sequencialmente (evita concorrência no DbContext)
+            _produtosMenorEstoque = await AnalyticsService.ObterProdutosMenorEstoqueAsync(_topItems);
+            _produtosMelhoresAvaliados = await AnalyticsService.ObterProdutosMelhoresAvaliadosAsync(_topItems);
+            _produtosPioresAvaliados = await AnalyticsService.ObterProdutosPioresAvaliadosAsync(_topItems);
+
+            // 4. Verificar se não há dados para o período
+            if (VerificarDadosVazios())
+            {
+                _mensagem = "Não há dados disponíveis para o período selecionado.";
+                _tipoMensagem = TipoMensagem.DadosVazios;
+            }
         }
         catch (Exception ex)
         {
-            _erro = $"Erro ao carregar estatísticas: {ex.Message}";
+            _mensagem = $"Erro ao carregar estatísticas: {ex.Message}";
+            _tipoMensagem = TipoMensagem.Critico;
             logger?.LogError(ex, "Erro ao carregar estatísticas do dashboard");
         }
         finally
@@ -509,6 +522,28 @@
             _carregando = false;
             StateHasChanged();
         }
+    }
+
+    private Severity ObterSeveridadeMensagem(TipoMensagem tipo)
+    {
+        return tipo switch
+        {
+            TipoMensagem.Validacao => Severity.Warning,
+            TipoMensagem.DadosVazios => Severity.Info,
+            TipoMensagem.Critico => Severity.Error,
+            _ => Severity.Info
+        };
+    }
+
+    private string ObterIconeMensagem(TipoMensagem tipo)
+    {
+        return tipo switch
+        {
+            TipoMensagem.Validacao => Icons.Material.Filled.Warning,
+            TipoMensagem.DadosVazios => Icons.Material.Filled.Info,
+            TipoMensagem.Critico => Icons.Material.Filled.Error,
+            _ => Icons.Material.Filled.Info
+        };
     }
 
     private Color ObterCorStatus(OrderStatus status)

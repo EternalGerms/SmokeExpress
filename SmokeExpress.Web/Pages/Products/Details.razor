@@ -241,32 +241,8 @@
                         <!-- Média de Avaliações -->
                         @if (_mediaAvaliacoes.HasValue)
                         {
-                            var mediaValor = _mediaAvaliacoes.Value;
-                            var estrelasCheias = (int)Math.Floor(mediaValor);
-                            var temMeiaEstrela = mediaValor - estrelasCheias >= 0.5m;
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="mb-4">
-                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0" Style="position: relative;">
-                                    @for (int i = 1; i <= 5; i++)
-                                    {
-                                        if (i <= estrelasCheias)
-                                        {
-                                            <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #ff9800; font-size: 1.875rem;" />
-                                        }
-                                        else if (i == estrelasCheias + 1 && temMeiaEstrela)
-                                        {
-                                            <div style="position: relative; display: inline-block;">
-                                                <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #e0e0e0; font-size: 1.875rem;" />
-                                                <div style="position: absolute; top: 0; left: 0; width: 50%; overflow: hidden;">
-                                                    <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #ff9800; font-size: 1.875rem;" />
-                                                </div>
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #e0e0e0; font-size: 1.875rem;" />
-                                        }
-                                    }
-                                </MudStack>
+                                <RatingDisplay Rating="@_mediaAvaliacoes" StarSize="1.875rem" />
                                 <MudText Typo="Typo.h6" Class="mb-0">
                                     @_mediaAvaliacoes.Value.ToString("F1")
                                 </MudText>
@@ -305,19 +281,7 @@
                                                 @avaliacao.DataAvaliacao.ToLocalTime().ToString("dd/MM/yyyy")
                                             </MudText>
                                         </MudStack>
-                                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
-                                            @for (int i = 1; i <= 5; i++)
-                                            {
-                                                if (i <= avaliacao.Rating)
-                                                {
-                                                    <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #ff9800; font-size: 1.25rem;" />
-                                                }
-                                                else
-                                                {
-                                                    <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #e0e0e0; font-size: 1.25rem;" />
-                                                }
-                                            }
-                                        </MudStack>
+                                        <RatingDisplay IntegerRating="@avaliacao.Rating" StarSize="1.25rem" />
                                         <MudText Typo="Typo.body2" Style="white-space: pre-wrap;">
                                             @avaliacao.Comment
                                         </MudText>
@@ -357,13 +321,13 @@
     private string? _feedback;
     private int _quantidadeSelecionada = 1;
     private bool _adicionando = false;
-    private List<BreadcrumbItem> _breadcrumbItems = new();
+    private IReadOnlyList<BreadcrumbItem> _breadcrumbItems = Array.Empty<BreadcrumbItem>();
     
     // Avaliações
     private bool _carregandoAvaliacoes = false;
     private decimal? _mediaAvaliacoes;
     private int _totalAvaliacoes = 0;
-    private List<ProductReview> _avaliacoesComComentario = new();
+    private IReadOnlyList<ProductReview> _avaliacoesComComentario = Array.Empty<ProductReview>();
     private int _paginaAtual = 0;
     private const int _avaliacoesPorPagina = 5;
 

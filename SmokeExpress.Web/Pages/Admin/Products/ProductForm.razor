@@ -108,7 +108,7 @@
     public EventCallback<Product> OnSave { get; set; }
 
     private ProductFormModel _model = new();
-    private List<Category> _categorias = new();
+    private IReadOnlyList<Category> _categorias = Array.Empty<Category>();
     private IBrowserFile? _arquivoSelecionado;
     private string? _imagemPreview;
     private string? _imagemAtual;

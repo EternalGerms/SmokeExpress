@@ -274,8 +274,8 @@ else
     private bool _loading = true;
     private bool _submitting = false;
     private string? _error;
-    private List<CartItemDto> _itens = new();
-    private List<CartItemViewModel> _vmItens = new();
+    private IReadOnlyList<CartItemDto> _itens = Array.Empty<CartItemDto>();
+    private IReadOnlyList<CartItemViewModel> _vmItens = Array.Empty<CartItemViewModel>();
     private EnderecoEntregaDto _endereco = new();
     private int? _enderecoSelecionadoId;
     private decimal _total = 0m;
@@ -288,7 +288,7 @@ else
 
     private bool _loadedFromJs;
 
-    private List<AddressDto> _enderecosSalvos = new();
+    private IReadOnlyList<AddressDto> _enderecosSalvos = Array.Empty<AddressDto>();
     private bool _showNovoEndereco;
     private AddressDto _novoEndereco = new();
 
@@ -318,15 +318,15 @@ else
         }
         catch (Exception)
         {
-            _itens = new();
-            _vmItens = new();
+            _itens = Array.Empty<CartItemDto>();
+            _vmItens = Array.Empty<CartItemViewModel>();
             _total = 0m;
         }
     }
 
     private async Task HydrateCartViewAsync()
     {
-        _vmItens = new();
+        var vmItensTemp = new List<CartItemViewModel>();
         _total = 0m;
 
         var ids = _itens.Select(i => i.ProductId).Distinct().ToArray();
@@ -348,7 +348,7 @@ else
             }
 
             var subtotal = p.Preco * item.Quantidade;
-            _vmItens.Add(new CartItemViewModel
+            vmItensTemp.Add(new CartItemViewModel
             {
                 ProductId = p.Id,
                 Nome = p.Nome,
@@ -359,6 +359,8 @@ else
             });
             _total += subtotal;
         }
+
+        _vmItens = vmItensTemp;
     }
 
     private sealed class ProductLite
@@ -432,7 +434,7 @@ else
 
     private async Task LimparCarrinhoAsync()
     {
-        _itens.Clear();
+        _itens = Array.Empty<CartItemDto>();
         await SaveCartAsync();
         await HydrateCartViewAsync();
         StateHasChanged();
@@ -447,7 +449,7 @@ else
             var userId = await GetUserIdAsync();
             if (string.IsNullOrWhiteSpace(userId))
             {
-                _enderecosSalvos = new();
+                _enderecosSalvos = Array.Empty<AddressDto>();
                 return;
             }
 
@@ -473,7 +475,7 @@ else
         }
         catch
         {
-            _enderecosSalvos = new();
+            _enderecosSalvos = Array.Empty<AddressDto>();
         }
     }
 

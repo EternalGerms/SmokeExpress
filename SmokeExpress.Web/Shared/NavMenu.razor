@@ -151,7 +151,7 @@
     private AuthenticationState? cachedAuthState;
     private CancellationTokenSource? userMenuCloseCts;
     private string? activeCategory;
-    private List<Category> _categorias = new();
+    private IReadOnlyList<Category> _categorias = Array.Empty<Category>();
     private Dictionary<string, int> _categoriaIdsPorNome = new();
 
     private readonly List<CategoryMenuItem> categories = new()
@@ -274,7 +274,7 @@
         catch
         {
             // Se houver erro ao carregar categorias, mantém lista vazia
-            _categorias = new List<Category>();
+            _categorias = Array.Empty<Category>();
             _categoriaIdsPorNome = new Dictionary<string, int>();
         }
     }

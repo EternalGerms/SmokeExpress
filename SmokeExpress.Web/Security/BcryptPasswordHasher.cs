@@ -29,9 +29,17 @@ public sealed class BcryptPasswordHasher : IPasswordHasher<ApplicationUser>
             return PasswordVerificationResult.Failed;
         }
 
-        return BCryptNet.EnhancedVerify(providedPassword, hashedPassword)
-            ? PasswordVerificationResult.Success
-            : PasswordVerificationResult.Failed;
+        try
+        {
+            return BCryptNet.EnhancedVerify(providedPassword, hashedPassword)
+                ? PasswordVerificationResult.Success
+                : PasswordVerificationResult.Failed;
+        }
+        catch (BCrypt.Net.SaltParseException)
+        {
+            // O hash não está em um formato válido, portanto, a senha não corresponde.
+            return PasswordVerificationResult.Failed;
+        }
     }
 }
 

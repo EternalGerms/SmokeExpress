@@ -99,7 +99,7 @@ else
 
 @code {
     private bool _loading = true;
-    private List<AddressDto> _enderecos = new();
+    private IReadOnlyList<AddressDto> _enderecos = Array.Empty<AddressDto>();
     private AddressDto? _editando;
     private bool _showModal;
 
