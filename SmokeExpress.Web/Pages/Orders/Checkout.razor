@@ -103,21 +103,33 @@ else
                                 <option value="">Selecionar...</option>
                                 @foreach (var a in _enderecosSalvos)
                                 {
-                                    <option value="@a.Id">@FormatEndereco(a)</option>
+                                    <option value="@a.Id" selected="@(_enderecoSelecionadoId == a.Id)">@FormatEndereco(a)</option>
                                 }
                             </select>
                             <button type="button" class="btn btn-outline-primary" @onclick="AbrirNovoEndereco">Adicionar</button>
                             <a class="btn btn-outline-secondary" href="/account/addresses">Gerenciar</a>
                         </div>
+                        @if (EnderecoSelecionado())
+                        {
+                            <div class="alert alert-success mt-2 mb-0">
+                                <small>✓ Endereço selecionado: @FormatEnderecoSelecionado()</small>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning mt-2 mb-0">
+                                <small>⚠ Por favor, selecione um endereço de entrega para continuar</small>
+                            </div>
+                        }
                     </div>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-primary" @onclick="AbrirPagamento" disabled="@_submitting">Finalizar Pedido</button>
+                        <button class="btn btn-primary" @onclick="AbrirPagamento" disabled="@(_submitting || !EnderecoSelecionado())">Finalizar Pedido</button>
                         <a href="/produtos" class="btn btn-outline-secondary">Continuar comprando</a>
                         <button type="button" class="btn btn-outline-danger" @onclick="LimparCarrinhoAsync">Limpar carrinho</button>
                     </div>
                     @if (!string.IsNullOrWhiteSpace(_error))
                     {
-                        <div class="text-danger mt-2">@_error</div>
+                        <div class="alert alert-danger mt-2">@_error</div>
                     }
                 </Authorized>
                 <NotAuthorized>
@@ -265,6 +277,7 @@ else
     private List<CartItemDto> _itens = new();
     private List<CartItemViewModel> _vmItens = new();
     private EnderecoEntregaDto _endereco = new();
+    private int? _enderecoSelecionadoId;
     private decimal _total = 0m;
     private decimal _frete = 0m;
     private bool _showPagamento;
@@ -453,6 +466,7 @@ else
             var padrao = _enderecosSalvos.FirstOrDefault(a => a.IsDefault);
             if (padrao is not null)
             {
+                _enderecoSelecionadoId = padrao.Id;
                 PreencherEndereco(padrao);
                 await DefinirFreteParaEnderecoAsync(padrao.Id);
             }
@@ -508,6 +522,7 @@ else
                 Complemento = created.Complemento,
                 IsDefault = created.IsDefault
             };
+            _enderecoSelecionadoId = dto.Id;
             PreencherEndereco(dto);
             await DefinirFreteParaEnderecoAsync(dto.Id);
         }
@@ -539,9 +554,17 @@ else
 
     private async void OnEnderecoSelecionado(ChangeEventArgs e)
     {
-        if (e?.Value is null) return;
+        if (e?.Value is null || string.IsNullOrWhiteSpace(e.Value.ToString()))
+        {
+            _enderecoSelecionadoId = null;
+            _endereco = new EnderecoEntregaDto();
+            StateHasChanged();
+            return;
+        }
+        
         if (int.TryParse(e.Value.ToString(), out var id))
         {
+            _enderecoSelecionadoId = id;
             var sel = _enderecosSalvos.FirstOrDefault(a => a.Id == id);
             if (sel is not null)
             {
@@ -559,6 +582,29 @@ else
         _endereco.Bairro = a.Bairro;
         _endereco.Complemento = a.Complemento;
         StateHasChanged();
+    }
+
+    private bool EnderecoSelecionado()
+    {
+        return !string.IsNullOrWhiteSpace(_endereco.Rua) &&
+               !string.IsNullOrWhiteSpace(_endereco.Cidade) &&
+               !string.IsNullOrWhiteSpace(_endereco.Bairro);
+    }
+
+    private string FormatEnderecoSelecionado()
+    {
+        var parts = new List<string> { _endereco.Rua };
+        if (!string.IsNullOrWhiteSpace(_endereco.Numero))
+        {
+            parts.Add(_endereco.Numero);
+        }
+        parts.Add(_endereco.Bairro);
+        parts.Add(_endereco.Cidade);
+        if (!string.IsNullOrWhiteSpace(_endereco.Complemento))
+        {
+            parts.Add(_endereco.Complemento);
+        }
+        return string.Join(", ", parts);
     }
 
     private static string FormatEndereco(AddressDto a)
@@ -633,6 +679,16 @@ else
             _error = "Seu carrinho está vazio.";
             return;
         }
+
+        // Validar se um endereço foi selecionado
+        if (string.IsNullOrWhiteSpace(_endereco.Rua) ||
+            string.IsNullOrWhiteSpace(_endereco.Cidade) ||
+            string.IsNullOrWhiteSpace(_endereco.Bairro))
+        {
+            _error = "Por favor, selecione um endereço de entrega antes de finalizar o pedido.";
+            return;
+        }
+
         _showPagamento = true;
         _pagamentoMetodo = null;
         _pixCode = GerarCodigoPix();
@@ -649,6 +705,15 @@ else
             if (string.IsNullOrWhiteSpace(userId))
             {
                 _error = "Sessão expirada. Faça login para finalizar o pedido.";
+                return;
+            }
+
+            // Validar novamente o endereço antes de criar o pedido
+            if (string.IsNullOrWhiteSpace(_endereco.Rua) ||
+                string.IsNullOrWhiteSpace(_endereco.Cidade) ||
+                string.IsNullOrWhiteSpace(_endereco.Bairro))
+            {
+                _error = "Por favor, selecione um endereço de entrega antes de finalizar o pedido.";
                 return;
             }
 

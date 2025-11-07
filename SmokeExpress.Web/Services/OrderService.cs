@@ -52,6 +52,27 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
             }
         }
 
+        // Validação de endereço obrigatório
+        if (endereco == null)
+        {
+            throw new ArgumentNullException(nameof(endereco), "Endereço de entrega é obrigatório.");
+        }
+
+        if (string.IsNullOrWhiteSpace(endereco.Rua))
+        {
+            throw new InvalidOperationException("O campo Rua do endereço de entrega é obrigatório.");
+        }
+
+        if (string.IsNullOrWhiteSpace(endereco.Cidade))
+        {
+            throw new InvalidOperationException("O campo Cidade do endereço de entrega é obrigatório.");
+        }
+
+        if (string.IsNullOrWhiteSpace(endereco.Bairro))
+        {
+            throw new InvalidOperationException("O campo Bairro do endereço de entrega é obrigatório.");
+        }
+
         var order = new Order
         {
             ApplicationUserId = userId,

@@ -26,6 +26,19 @@ public static class OrderEndpointRouteBuilderExtensions
                     return Results.BadRequest(new { message = "Carrinho vazio." });
                 }
 
+                // Validar endereço obrigatório
+                if (req.Endereco == null)
+                {
+                    return Results.BadRequest(new { message = "Endereço de entrega é obrigatório." });
+                }
+
+                if (string.IsNullOrWhiteSpace(req.Endereco.Rua) ||
+                    string.IsNullOrWhiteSpace(req.Endereco.Cidade) ||
+                    string.IsNullOrWhiteSpace(req.Endereco.Bairro))
+                {
+                    return Results.BadRequest(new { message = "Por favor, selecione um endereço de entrega válido antes de finalizar o pedido." });
+                }
+
                 var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrWhiteSpace(userId))
                 {
@@ -36,6 +49,10 @@ public static class OrderEndpointRouteBuilderExtensions
                 {
                     var orderId = await orderService.CriarPedidoAsync(userId, req.Itens, req.Endereco, req.Frete, ct);
                     return Results.Ok(new { orderId });
+                }
+                catch (ArgumentNullException ex)
+                {
+                    return Results.BadRequest(new { message = ex.Message });
                 }
                 catch (KeyNotFoundException ex)
                 {
