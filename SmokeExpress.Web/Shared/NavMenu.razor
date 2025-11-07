@@ -60,7 +60,10 @@
                              @onclick:stopPropagation="true">
                             <AuthorizeView Roles="Admin">
                                 <NavLink class="dropdown-item" href="admin" @onclick="CollapseNavMenu">
-                                    Administração
+                                    <span class="oi oi-dashboard" aria-hidden="true"></span> Painel Admin
+                                </NavLink>
+                                <NavLink class="dropdown-item" href="admin/estatisticas" @onclick="CollapseNavMenu">
+                                    <span class="oi oi-bar-chart" aria-hidden="true"></span> Estatísticas
                                 </NavLink>
                                 <div class="dropdown-divider"></div>
                             </AuthorizeView>

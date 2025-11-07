@@ -1,35 +1,183 @@
 @page "/admin"
 @attribute [Authorize(Roles = "Admin")]
+@using MudBlazor
+@using SmokeExpress.Web.Services
+@using SmokeExpress.Web.Models.Dashboard
+@inject IAnalyticsService AnalyticsService
 
-<h3>Painel de Administração</h3>
+@* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
 
-<div class="row g-3 mt-2">
-    <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title">Produtos</h5>
-                <p class="card-text">Gerencie produtos, estoque e preços do catálogo.</p>
-                <a href="/admin/produtos" class="btn btn-primary">Gerenciar Produtos</a>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title">Categorias</h5>
-                <p class="card-text">Organize produtos por categorias e subcategorias.</p>
-                <a href="/admin/categorias" class="btn btn-primary">Gerenciar Categorias</a>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title">Pedidos</h5>
-                <p class="card-text">Visualize e gerencie pedidos dos clientes.</p>
-                <a href="/admin/pedidos" class="btn btn-primary">Gerenciar Pedidos</a>
-            </div>
-        </div>
-    </div>
-</div>
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.Dashboard" Size="Size.Large" Class="mr-2" />
+        Painel de Administração
+    </MudText>
+
+    <!-- Cards de Acesso Rápido -->
+    <MudGrid Spacing="3" Class="mb-4">
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="3" Class="h-100">
+                <MudCardContent>
+                    <MudStack Spacing="2">
+                        <MudIcon Icon="@Icons.Material.Filled.Inventory" Color="Color.Primary" Size="Size.Large" />
+                        <MudText Typo="Typo.h6">Produtos</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Gerencie produtos, estoque e preços do catálogo.
+                        </MudText>
+                        <MudButton Variant="Variant.Text" 
+                                  Color="Color.Primary" 
+                                  FullWidth="true"
+                                  EndIcon="@Icons.Material.Filled.ArrowForward"
+                                  Href="/admin/produtos">
+                            Gerenciar Produtos
+                        </MudButton>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="3" Class="h-100">
+                <MudCardContent>
+                    <MudStack Spacing="2">
+                        <MudIcon Icon="@Icons.Material.Filled.Category" Color="Color.Info" Size="Size.Large" />
+                        <MudText Typo="Typo.h6">Categorias</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Organize produtos por categorias e subcategorias.
+                        </MudText>
+                        <MudButton Variant="Variant.Text" 
+                                  Color="Color.Info" 
+                                  FullWidth="true"
+                                  EndIcon="@Icons.Material.Filled.ArrowForward"
+                                  Href="/admin/categorias">
+                            Gerenciar Categorias
+                        </MudButton>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="3" Class="h-100">
+                <MudCardContent>
+                    <MudStack Spacing="2">
+                        <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Color="Color.Success" Size="Size.Large" />
+                        <MudText Typo="Typo.h6">Pedidos</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Visualize e gerencie pedidos dos clientes.
+                        </MudText>
+                        <MudButton Variant="Variant.Text" 
+                                  Color="Color.Success" 
+                                  FullWidth="true"
+                                  EndIcon="@Icons.Material.Filled.ArrowForward"
+                                  Href="/admin/pedidos">
+                            Gerenciar Pedidos
+                        </MudButton>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="3" Class="h-100">
+                <MudCardContent>
+                    <MudStack Spacing="2">
+                        <MudIcon Icon="@Icons.Material.Filled.Analytics" Color="Color.Warning" Size="Size.Large" />
+                        <MudText Typo="Typo.h6">Estatísticas</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Visualize relatórios, vendas e análises detalhadas.
+                        </MudText>
+                        <MudButton Variant="Variant.Text" 
+                                  Color="Color.Warning" 
+                                  FullWidth="true"
+                                  EndIcon="@Icons.Material.Filled.ArrowForward"
+                                  Href="/admin/estatisticas">
+                            Ver Estatísticas
+                        </MudButton>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Resumo Rápido -->
+    @if (_resumoCarregando)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+    }
+    else if (_resumo != null)
+    {
+        <MudCard Elevation="2">
+            <MudCardContent>
+                <MudText Typo="Typo.h6" Class="mb-4">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Class="mr-2" />
+                    Resumo Geral
+                </MudText>
+                <MudGrid Spacing="3">
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudChip T="string" Icon="@Icons.Material.Filled.AttachMoney" 
+                                Color="Color.Success" 
+                                Size="Size.Large"
+                                Variant="Variant.Filled">
+                            Receita Total: @_resumo.ReceitaTotal.ToString("C")
+                        </MudChip>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudChip T="string" Icon="@Icons.Material.Filled.ShoppingCart" 
+                                Color="Color.Primary" 
+                                Size="Size.Large"
+                                Variant="Variant.Filled">
+                            Pedidos: @_resumo.TotalPedidos
+                        </MudChip>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudChip T="string" Icon="@Icons.Material.Filled.People" 
+                                Color="Color.Info" 
+                                Size="Size.Large"
+                                Variant="Variant.Filled">
+                            Clientes: @_resumo.TotalClientesAtivos
+                        </MudChip>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudChip T="string" Icon="@Icons.Material.Filled.Inventory" 
+                                Color="@(_resumo.TotalProdutosSemEstoque > 0 ? Color.Error : Color.Success)" 
+                                Size="Size.Large"
+                                Variant="Variant.Filled">
+                            Produtos: @_resumo.TotalProdutos (@_resumo.TotalProdutosSemEstoque sem estoque)
+                        </MudChip>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+    }
+</MudContainer>
+
+@code {
+    [Inject] private NavigationManager Navigation { get; set; } = null!;
+
+    private bool _resumoCarregando = true;
+    private DashboardSummaryDto? _resumo;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregarResumoAsync();
+    }
+
+    private async Task CarregarResumoAsync()
+    {
+        try
+        {
+            _resumoCarregando = true;
+            _resumo = await AnalyticsService.ObterResumoAsync();
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't block the page
+            Console.WriteLine($"Erro ao carregar resumo: {ex.Message}");
+        }
+        finally
+        {
+            _resumoCarregando = false;
+            StateHasChanged();
+        }
+    }
+}
+
 
