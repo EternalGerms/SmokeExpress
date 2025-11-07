@@ -344,7 +344,7 @@ else
                     
                     Logger.LogInformation("RENDERIZANDO DETALHES para pedido #{PedidoId}. Itens: {ItemCount}", 
                         pedido.Id, pedido.Detalhes.Itens?.Count ?? 0);
-                    pedido.Detalhes.Subtotal = pedido.Detalhes.Itens.Sum(i => i.Subtotal);
+                    pedido.Detalhes.Subtotal = pedido.Detalhes.Itens?.Sum(i => i.Subtotal) ?? 0m;
                     pedido.Detalhes.Frete = pedido.Detalhes.TotalPedido - pedido.Detalhes.Subtotal;
 
                     Logger.LogInformation("Detalhes do pedido #{PedidoId} carregados com sucesso. Itens: {ItemCount}, Total: {Total}, DetalhesNotNull: {DetalhesNotNull}",

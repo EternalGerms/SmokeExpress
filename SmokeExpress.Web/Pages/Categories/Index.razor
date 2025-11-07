@@ -1,5 +1,6 @@
 @page "/categorias/{Nome}"
 @using Microsoft.EntityFrameworkCore
+@using SmokeExpress.Web.Models
 @inject IProductService ProductService
 @inject ApplicationDbContext DbContext
 @inject NavigationManager Navigation
@@ -182,9 +183,14 @@ else
             var pageNumber = PageNumber;
             if (pageNumber < 1) pageNumber = 1;
 
+            var filtros = new ProductSearchFilters
+            {
+                CategoriaId = _categoria?.Id,
+                Ordenacao = ProductSortOrder.Nome
+            };
+
             _resultado = await ProductService.BuscarPaginadoAsync(
-                null,
-                _categoria?.Id,
+                filtros,
                 pageNumber,
                 _pageSize);
         }

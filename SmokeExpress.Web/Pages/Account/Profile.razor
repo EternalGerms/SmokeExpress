@@ -684,7 +684,7 @@ else
             var list = await AddressService.ListAsync(userId);
             Logger.LogInformation("AddressService.ListAsync retornou {Count} endereços", list?.Count ?? 0);
             
-            _enderecos = list.Select(a => new AddressDto
+            _enderecos = (list ?? Array.Empty<Address>()).Select(a => new AddressDto
             {
                 Id = a.Id,
                 Rua = a.Rua,
@@ -740,7 +740,7 @@ else
             var list = await OrderService.ListarPedidosPorUsuarioAsync(userId);
             Logger.LogInformation("OrderService.ListarPedidosPorUsuarioAsync retornou {Count} pedidos", list?.Count ?? 0);
 
-            _pedidos = list.Select(o => new OrderRow
+            _pedidos = (list ?? new List<Order>()).Select(o => new OrderRow
             {
                 Id = o.Id,
                 DataPedidoLocal = o.DataPedido.ToLocalTime().ToString("g"),
@@ -1038,7 +1038,7 @@ else
         var dialog = await DialogService.ShowAsync<ReviewDialog>("Avaliar Produto", parameters, options);
         var result = await dialog.Result;
 
-        if (!result.Canceled)
+        if (result is { Canceled: false })
         {
             // Recarregar detalhes do pedido para atualizar status de avaliação
             var pedido = _pedidos.FirstOrDefault(p => p.IsExpanded);
