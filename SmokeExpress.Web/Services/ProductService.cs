@@ -156,6 +156,7 @@ public class ProductService(ApplicationDbContext context) : IProductService
             ProductSortOrder.PrecoAsc => query.OrderBy(p => p.Preco),
             ProductSortOrder.PrecoDesc => query.OrderByDescending(p => p.Preco),
             ProductSortOrder.Relevancia => AplicarOrdenacaoRelevancia(query, filters.TermoBusca),
+            ProductSortOrder.MelhoresAvaliados => AplicarOrdenacaoPorAvaliacao(query),
             _ => query.OrderBy(p => p.Nome) // ProductSortOrder.Nome ou padrão
         };
 
@@ -205,6 +206,35 @@ public class ProductService(ApplicationDbContext context) : IProductService
             termos.Count(termo => p.Nome.ToLower().Contains(termo)) * 2 + // Nome tem peso 2
             termos.Count(termo => p.Descricao != null && p.Descricao.ToLower().Contains(termo)) // Descrição tem peso 1
         ).ThenBy(p => p.Nome);
+    }
+
+    /// <summary>
+    /// Aplica ordenação por melhor avaliação (maior média de avaliações primeiro).
+    /// Produtos sem avaliações aparecem por último.
+    /// </summary>
+    private IQueryable<Product> AplicarOrdenacaoPorAvaliacao(IQueryable<Product> query)
+    {
+        var mediasQuery = _context.Reviews
+            .GroupBy(r => r.ProductId)
+            .Select(g => new
+            {
+                ProductId = g.Key,
+                Media = g.Average(r => (decimal?)r.Rating)
+            });
+
+        return query
+            .GroupJoin(
+                mediasQuery,
+                produto => produto.Id,
+                media => media.ProductId,
+                (produto, medias) => new
+                {
+                    Produto = produto,
+                    MediaAvaliacao = medias.Select(m => m.Media).FirstOrDefault()
+                })
+            .OrderByDescending(x => x.MediaAvaliacao ?? -1)
+            .ThenBy(x => x.Produto.Nome)
+            .Select(x => x.Produto);
     }
 
     public async Task<Product?> ObterPorIdAsync(int id, CancellationToken cancellationToken = default)

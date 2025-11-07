@@ -23,6 +23,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<Address> Addresses => Set<Address>();
 
+    public DbSet<ProductReview> Reviews => Set<ProductReview>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -186,6 +188,29 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .WithMany(u => u.IndicacoesRecebidas)
                 .HasForeignKey(r => r.ReferredUserId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<ProductReview>(entity =>
+        {
+            entity.Property(r => r.Comment)
+                .HasMaxLength(1000);
+
+            entity.HasOne(r => r.Product)
+                .WithMany()
+                .HasForeignKey(r => r.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(r => r.ApplicationUser)
+                .WithMany()
+                .HasForeignKey(r => r.ApplicationUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(r => r.Order)
+                .WithMany()
+                .HasForeignKey(r => r.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Permite múltiplas avaliações do mesmo produto pelo mesmo usuário (em pedidos diferentes)
         });
     }
 }

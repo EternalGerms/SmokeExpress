@@ -25,6 +25,11 @@ public enum ProductSortOrder
     /// <summary>
     /// Ordenação por relevância (produtos que mais correspondem ao termo de busca).
     /// </summary>
-    Relevancia = 3
+    Relevancia = 3,
+
+    /// <summary>
+    /// Ordenação por melhor avaliação (maior média de avaliações primeiro).
+    /// </summary>
+    MelhoresAvaliados = 4
 }
 

@@ -418,7 +418,7 @@
         {
             return $"/produtos?categoria={subcategoriaId}";
         }
-        
+
         // Se não encontrar a subcategoria no banco, usar como busca
         var subcategoriaEscapada = Uri.EscapeDataString(subcategory);
         return $"/produtos?search={subcategoriaEscapada}";

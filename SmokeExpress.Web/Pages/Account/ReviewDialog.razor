@@ -1,0 +1,95 @@
+@using MudBlazor
+@using SmokeExpress.Web.Models
+@using SmokeExpress.Web.Services
+@inject IReviewService ReviewService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Avaliar: @ProductName</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudContainer>
+            <EditForm Model="@_model" OnValidSubmit="SalvarAvaliacao">
+                <DataAnnotationsValidator />
+
+                <MudStack Spacing="4">
+                    <MudRating @bind-SelectedValue="_model.Rating"
+                              MaxValue="5" 
+                              Size="Size.Large"
+                              Color="Color.Warning" />
+
+                    <MudTextField @bind-Value="_model.Comment"
+                                  Label="Comentário (opcional)"
+                                  Placeholder="Deixe um comentário sobre o produto..."
+                                  Lines="4"
+                                  Counter="1000"
+                                  MaxLength="1000"
+                                  Variant="Variant.Outlined"
+                                  HelperText="Máximo de 1000 caracteres" />
+
+                    <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="2" Class="mt-4">
+                        <MudButton OnClick="Cancelar">Cancelar</MudButton>
+                        <MudButton Variant="Variant.Filled" 
+                                  Color="Color.Primary" 
+                                  ButtonType="ButtonType.Submit"
+                                  Disabled="@(_model.Rating < 1 || _model.Rating > 5)">
+                            Salvar Avaliação
+                        </MudButton>
+                    </MudStack>
+                </MudStack>
+            </EditForm>
+        </MudContainer>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    IMudDialogInstance? MudDialog { get; set; }
+
+    [Parameter] public int ProductId { get; set; }
+    [Parameter] public string ProductName { get; set; } = string.Empty;
+    [Parameter] public string UserId { get; set; } = string.Empty;
+    [Parameter] public int OrderId { get; set; }
+
+    private CreateReviewModel _model = new();
+
+    private void Cancelar()
+    {
+        MudDialog?.Close(DialogResult.Cancel());
+    }
+
+    private async Task SalvarAvaliacao()
+    {
+        if (_model.Rating < 1 || _model.Rating > 5)
+        {
+            Snackbar.Add("Por favor, selecione uma nota de 1 a 5 estrelas.", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            await ReviewService.CriarAvaliacaoAsync(
+                UserId,
+                ProductId,
+                _model.Rating,
+                string.IsNullOrWhiteSpace(_model.Comment) ? null : _model.Comment.Trim(),
+                OrderId
+            );
+
+            MudDialog?.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erro ao salvar avaliação: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private class CreateReviewModel
+    {
+        public int Rating { get; set; } = 0;
+        public string? Comment { get; set; }
+    }
+}
+

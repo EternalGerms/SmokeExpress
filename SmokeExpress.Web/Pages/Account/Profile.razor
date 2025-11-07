@@ -11,6 +11,8 @@
 @inject IOrderService OrderService
 @inject IAddressService AddressService
 @inject IDialogService DialogService
+@inject IReviewService ReviewService
+@inject ILogger<Profile> Logger
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
     <MudText Typo="Typo.h4" Class="mb-4">
@@ -383,6 +385,10 @@ else
                                                                     <MudTh align="Align.Right">Quantidade</MudTh>
                                                                     <MudTh align="Align.Right">Preço Unit.</MudTh>
                                                                     <MudTh align="Align.Right">Subtotal</MudTh>
+                                                                    @if (pedido.Status == OrderStatus.Entregue)
+                                                                    {
+                                                                        <MudTh align="Align.Center">Ações</MudTh>
+                                                                    }
                                                                 </HeaderContent>
                                                                 <RowTemplate>
                                                                     <MudTd DataLabel="Produto">
@@ -409,6 +415,28 @@ else
                                                                             @context.Subtotal.ToString("C")
                                                                         </MudText>
                                                                     </MudTd>
+                                                                    @if (pedido.Status == OrderStatus.Entregue)
+                                                                    {
+                                                                        <MudTd DataLabel="Ações" align="Align.Center">
+                                                                            @if (context.JaAvaliado)
+                                                                            {
+                                                                                <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">
+                                                                                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Class="mr-1" />
+                                                                                    Avaliado
+                                                                                </MudChip>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <MudButton Size="Size.Small" 
+                                                                                          Variant="Variant.Outlined" 
+                                                                                          Color="Color.Primary"
+                                                                                          StartIcon="@Icons.Material.Filled.Star"
+                                                                                          OnClick="@(() => AbrirModalAvaliacao(context.ProductId, context.Nome, pedido.Id))">
+                                                                                    Deixar Avaliação
+                                                                                </MudButton>
+                                                                            }
+                                                                        </MudTd>
+                                                                    }
                                                                 </RowTemplate>
                                                             </MudTable>
                                                             <MudDivider Class="my-3" />
@@ -621,8 +649,12 @@ else
                 Email = user.Email ?? string.Empty
             };
 
-            // Carrega endereços e pedidos
-            await Task.WhenAll(CarregarEnderecosAsync(), CarregarPedidosAsync());
+            // Carrega endereços e pedidos sequencialmente para evitar conflito de DbContext
+            Logger.LogInformation("Iniciando carregamento de endereços e pedidos");
+            await CarregarEnderecosAsync();
+            Logger.LogInformation("Endereços carregados. Iniciando carregamento de pedidos");
+            await CarregarPedidosAsync();
+            Logger.LogInformation("Pedidos carregados com sucesso");
         }
         catch (Exception ex)
         {
@@ -637,12 +669,21 @@ else
     private async Task CarregarEnderecosAsync()
     {
         _loadingEnderecos = true;
+        Logger.LogInformation("CarregarEnderecosAsync iniciado");
         try
         {
             var userId = await GetUserIdAsync();
-            if (string.IsNullOrWhiteSpace(userId)) return;
+            Logger.LogInformation("UserId obtido para endereços: {UserId}", userId ?? "NULL");
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                Logger.LogWarning("UserId vazio ao carregar endereços");
+                return;
+            }
 
+            Logger.LogInformation("Chamando AddressService.ListAsync para userId: {UserId}", userId);
             var list = await AddressService.ListAsync(userId);
+            Logger.LogInformation("AddressService.ListAsync retornou {Count} endereços", list?.Count ?? 0);
+            
             _enderecos = list.Select(a => new AddressDto
             {
                 Id = a.Id,
@@ -653,14 +694,18 @@ else
                 Complemento = a.Complemento,
                 IsDefault = a.IsDefault
             }).ToList();
+            
+            Logger.LogInformation("Endereços processados: {Count}", _enderecos.Count);
         }
         catch (Exception ex)
         {
+            Logger.LogError(ex, "Erro ao carregar endereços. Mensagem: {Message}, StackTrace: {StackTrace}", ex.Message, ex.StackTrace);
             Snackbar.Add($"Erro ao carregar endereços: {ex.Message}", Severity.Error);
         }
         finally
         {
             _loadingEnderecos = false;
+            Logger.LogInformation("CarregarEnderecosAsync finalizado. LoadingEnderecos: {Loading}", _loadingEnderecos);
             StateHasChanged();
         }
     }
@@ -669,17 +714,31 @@ else
     {
         _loadingPedidos = true;
         _erroPedidos = null;
+        Logger.LogInformation("CarregarPedidosAsync iniciado");
         try
         {
             var state = await AuthStateProvider.GetAuthenticationStateAsync();
             var user = state.User;
+            Logger.LogInformation("AuthenticationState obtido. IsAuthenticated: {IsAuth}", user?.Identity?.IsAuthenticated ?? false);
+            
             if (user?.Identity?.IsAuthenticated != true)
             {
+                Logger.LogWarning("Usuário não autenticado ao carregar pedidos");
                 return;
             }
 
             var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            var list = await OrderService.ListarPedidosPorUsuarioAsync(userId!);
+            Logger.LogInformation("UserId obtido para pedidos: {UserId}", userId ?? "NULL");
+            
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                Logger.LogWarning("UserId vazio ao carregar pedidos");
+                return;
+            }
+
+            Logger.LogInformation("Chamando OrderService.ListarPedidosPorUsuarioAsync para userId: {UserId}", userId);
+            var list = await OrderService.ListarPedidosPorUsuarioAsync(userId);
+            Logger.LogInformation("OrderService.ListarPedidosPorUsuarioAsync retornou {Count} pedidos", list?.Count ?? 0);
 
             _pedidos = list.Select(o => new OrderRow
             {
@@ -689,14 +748,18 @@ else
                 TotalTexto = o.TotalPedido.ToString("C"),
                 Status = o.Status
             }).ToList();
+            
+            Logger.LogInformation("Pedidos processados: {Count}", _pedidos.Count);
         }
         catch (Exception ex)
         {
+            Logger.LogError(ex, "Erro ao carregar pedidos. Mensagem: {Message}, StackTrace: {StackTrace}", ex.Message, ex.StackTrace);
             _erroPedidos = ex.Message;
         }
         finally
         {
             _loadingPedidos = false;
+            Logger.LogInformation("CarregarPedidosAsync finalizado. LoadingPedidos: {Loading}", _loadingPedidos);
             StateHasChanged();
         }
     }
@@ -862,23 +925,29 @@ else
     private async Task CarregarDetalhesAsync(OrderRow pedido)
     {
         pedido.ErroDetalhes = null;
+        Logger.LogInformation("CarregarDetalhesAsync iniciado para pedido {PedidoId}", pedido.Id);
 
         try
         {
             var state = await AuthStateProvider.GetAuthenticationStateAsync();
             var user = state.User;
             var userId = user?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            Logger.LogInformation("UserId obtido para detalhes do pedido {PedidoId}: {UserId}", pedido.Id, userId ?? "NULL");
 
             if (string.IsNullOrEmpty(userId))
             {
+                Logger.LogWarning("UserId vazio ao carregar detalhes do pedido {PedidoId}", pedido.Id);
                 pedido.ErroDetalhes = "Usuário não autenticado.";
                 return;
             }
 
+            Logger.LogInformation("Chamando OrderService.ObterPorIdAsync para pedido {PedidoId}", pedido.Id);
             var order = await OrderService.ObterPorIdAsync(pedido.Id);
+            Logger.LogInformation("OrderService.ObterPorIdAsync retornou para pedido {PedidoId}. Order é null: {IsNull}", pedido.Id, order is null);
 
             if (order is not null && order.ApplicationUserId == userId)
             {
+                Logger.LogInformation("Processando detalhes do pedido {PedidoId}. Itens: {ItemCount}", pedido.Id, order.Itens?.Count ?? 0);
                 pedido.Detalhes = new OrderDetails
                 {
                     DataLocal = order.DataPedido.ToLocalTime().ToString("g"),
@@ -894,24 +963,39 @@ else
                         Quantidade = i.Quantidade,
                         PrecoUnitario = i.PrecoUnitario,
                         Subtotal = i.PrecoUnitario * i.Quantidade,
-                        ImagemUrl = i.Product?.ImagemUrl
+                        ImagemUrl = i.Product?.ImagemUrl,
+                        ProductId = i.ProductId
                     }).ToList()
                 };
                 pedido.Detalhes.Subtotal = pedido.Detalhes.Itens.Sum(i => i.Subtotal);
                 pedido.Detalhes.Frete = pedido.Detalhes.TotalPedido - pedido.Detalhes.Subtotal;
+                
+                // Verificar quais produtos já foram avaliados neste pedido específico
+                if (pedido.Status == OrderStatus.Entregue)
+                {
+                    foreach (var item in pedido.Detalhes.Itens)
+                    {
+                        item.JaAvaliado = await ReviewService.UsuarioJaAvaliouNoPedidoAsync(userId!, item.ProductId, pedido.Id);
+                    }
+                }
+                
+                Logger.LogInformation("Detalhes do pedido {PedidoId} processados com sucesso", pedido.Id);
             }
             else
             {
+                Logger.LogWarning("Pedido {PedidoId} não encontrado ou não pertence ao userId {UserId}", pedido.Id, userId);
                 pedido.ErroDetalhes = "Pedido não encontrado ou não pertence a você.";
             }
         }
         catch (Exception ex)
         {
+            Logger.LogError(ex, "Erro ao carregar detalhes do pedido {PedidoId}. Mensagem: {Message}, StackTrace: {StackTrace}", pedido.Id, ex.Message, ex.StackTrace);
             pedido.ErroDetalhes = $"Erro ao carregar detalhes: {ex.Message}";
         }
         finally
         {
             pedido.CarregandoDetalhes = false;
+            Logger.LogInformation("CarregarDetalhesAsync finalizado para pedido {PedidoId}. CarregandoDetalhes: {Loading}", pedido.Id, pedido.CarregandoDetalhes);
             await InvokeAsync(StateHasChanged);
         }
     }
@@ -925,6 +1009,45 @@ else
             return user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
         }
         return string.Empty;
+    }
+
+    private async Task AbrirModalAvaliacao(int productId, string productName, int orderId)
+    {
+        var userId = await GetUserIdAsync();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            Snackbar.Add("Você precisa estar logado para avaliar um produto.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters<ReviewDialog>
+        {
+            { x => x.ProductId, productId },
+            { x => x.ProductName, productName },
+            { x => x.UserId, userId },
+            { x => x.OrderId, orderId }
+        };
+
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+
+        var dialog = await DialogService.ShowAsync<ReviewDialog>("Avaliar Produto", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            // Recarregar detalhes do pedido para atualizar status de avaliação
+            var pedido = _pedidos.FirstOrDefault(p => p.IsExpanded);
+            if (pedido != null)
+            {
+                await CarregarDetalhesAsync(pedido);
+            }
+            Snackbar.Add("Avaliação salva com sucesso!", Severity.Success);
+        }
     }
 
     private static string FormatEndereco(AddressDto a)
@@ -1145,6 +1268,8 @@ else
         public decimal PrecoUnitario { get; set; }
         public decimal Subtotal { get; set; }
         public string? ImagemUrl { get; set; }
+        public int ProductId { get; set; }
+        public bool JaAvaliado { get; set; }
     }
 
     private string DataNascimentoFormatada => _model.DataNascimento.ToString("dd/MM/yyyy");

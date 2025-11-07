@@ -2,7 +2,9 @@
 @using Microsoft.EntityFrameworkCore
 @using MudBlazor
 @using SmokeExpress.Web.Models
+@using SmokeExpress.Web.Services
 @inject IProductService ProductService
+@inject IReviewService ReviewService
 @inject ApplicationDbContext DbContext
 @inject NavigationManager Navigation
 
@@ -100,6 +102,12 @@
                                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                         <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" />
                                         <span>Relevância</span>
+                                    </MudStack>
+                                </MudSelectItem>
+                                <MudSelectItem Value="@ProductSortOrder.MelhoresAvaliados">
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Small" />
+                                        <span>Melhores Avaliados</span>
                                     </MudStack>
                                 </MudSelectItem>
                             </MudSelect>
@@ -230,6 +238,39 @@
                                 <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Outlined">
                                     @produto.Categoria?.Nome
                                 </MudChip>
+                                @if (_mediasAvaliacoes.TryGetValue(produto.Id, out var mediaAvaliacao) && mediaAvaliacao.HasValue)
+                                {
+                                    var mediaValor = mediaAvaliacao.Value;
+                                    var estrelasCheias = (int)Math.Floor(mediaValor);
+                                    var temMeiaEstrela = mediaValor - estrelasCheias >= 0.5m;
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                if (i <= estrelasCheias)
+                                                {
+                                                    <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #ff9800; font-size: 1rem;" />
+                                                }
+                                                else if (i == estrelasCheias + 1 && temMeiaEstrela)
+                                                {
+                                                    <div style="position: relative; display: inline-block;">
+                                                        <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #e0e0e0; font-size: 1rem;" />
+                                                        <div style="position: absolute; top: 0; left: 0; width: 50%; overflow: hidden;">
+                                                            <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #ff9800; font-size: 1rem;" />
+                                                        </div>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #e0e0e0; font-size: 1rem;" />
+                                                }
+                                            }
+                                        </MudStack>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary" Style="font-size: 0.875rem;">
+                                            (@mediaAvaliacao.Value.ToString("F1"))
+                                        </MudText>
+                                    </MudStack>
+                                }
                                 <MudText Typo="Typo.body2" Class="text-muted" Style="min-height: 60px;">
                                     @ObterResumo(produto.Descricao)
                                 </MudText>
@@ -315,6 +356,7 @@
     private bool _carregando = true;
     private string? _mensagemErro;
     private const int _pageSize = 12;
+    private Dictionary<int, decimal?> _mediasAvaliacoes = new();
 
     private int PageNumber => PageQuery ?? 1;
 
@@ -396,6 +438,12 @@
                 _filtros,
                 pageNumber,
                 _pageSize);
+
+            // Carregar médias de avaliações para os produtos
+            if (_resultado != null && _resultado.Items.Any())
+            {
+                await CarregarMediasAvaliacoesAsync();
+            }
         }
         catch (Exception ex)
         {
@@ -404,7 +452,16 @@
         finally
         {
             _carregando = false;
+            StateHasChanged();
         }
+    }
+
+    private async Task CarregarMediasAvaliacoesAsync()
+    {
+        if (_resultado == null || !_resultado.Items.Any()) return;
+
+        var productIds = _resultado.Items.Select(p => p.Id).ToList();
+        _mediasAvaliacoes = await ReviewService.ObterMediasAvaliacoesPorProdutosAsync(productIds);
     }
 
     private void AplicarFiltros()
