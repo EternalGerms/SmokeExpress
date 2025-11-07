@@ -72,12 +72,10 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
             .Where(o => o.DataPedido >= inicio.Value && o.DataPedido <= fim.Value);
 
         // Calcular vendas por período: agrupar Orders primeiro, depois JOIN com OrderItems
-        IQueryable<SalesByPeriodDto> queryResultado;
-
         if (periodo == PeriodFilter.EsteAno)
         {
-            // Primeiro agrupar Orders por mês
-            var pedidosAgrupados = queryPedidos
+            // Primeiro agrupar Orders por mês e materializar
+            var pedidosAgrupados = await queryPedidos
                 .GroupBy(o => new { o.DataPedido.Year, o.DataPedido.Month })
                 .Select(g => new
                 {
@@ -85,10 +83,11 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
                     g.Key.Month,
                     Receita = g.Sum(o => o.TotalPedido),
                     QuantidadePedidos = g.Count()
-                });
+                })
+                .ToListAsync(ct);
 
-            // Depois calcular quantidade de itens por mês e fazer JOIN
-            var itensPorMes = dbContext.OrderItems
+            // Depois calcular quantidade de itens por mês e materializar
+            var itensPorMes = await dbContext.OrderItems
                 .AsNoTracking()
                 .Where(oi => oi.Order.DataPedido >= inicio.Value && oi.Order.DataPedido <= fim.Value)
                 .GroupBy(oi => new { oi.Order.DataPedido.Year, oi.Order.DataPedido.Month })
@@ -97,36 +96,52 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
                     g.Key.Year,
                     g.Key.Month,
                     QuantidadeItens = g.Sum(oi => oi.Quantidade)
-                });
+                })
+                .ToListAsync(ct);
 
-            queryResultado = pedidosAgrupados
+            // Fazer JOIN em memória
+            var dadosAgrupados = pedidosAgrupados
                 .GroupJoin(
                     itensPorMes,
                     p => new { p.Year, p.Month },
                     i => new { i.Year, i.Month },
-                    (p, itens) => new SalesByPeriodDto
+                    (p, itens) => new
                     {
-                        Periodo = new DateTime(p.Year, p.Month, 1, 0, 0, 0, DateTimeKind.Utc).ToString("MM/yyyy"),
+                        Year = p.Year,
+                        Month = p.Month,
                         Receita = p.Receita,
                         QuantidadePedidos = p.QuantidadePedidos,
                         QuantidadeItensVendidos = itens.Select(i => i.QuantidadeItens).FirstOrDefault()
                     })
-                .OrderBy(x => x.Periodo);
+                .OrderBy(x => x.Year)
+                .ThenBy(x => x.Month)
+                .ToList();
+
+            return dadosAgrupados
+                .Select(x => new SalesByPeriodDto
+                {
+                    Periodo = new DateTime(x.Year, x.Month, 1, 0, 0, 0, DateTimeKind.Utc).ToString("MM/yyyy"),
+                    Receita = x.Receita,
+                    QuantidadePedidos = x.QuantidadePedidos,
+                    QuantidadeItensVendidos = x.QuantidadeItensVendidos
+                })
+                .ToList();
         }
         else
         {
-            // Primeiro agrupar Orders por dia
-            var pedidosAgrupados = queryPedidos
+            // Primeiro agrupar Orders por dia e materializar
+            var pedidosAgrupados = await queryPedidos
                 .GroupBy(o => o.DataPedido.Date)
                 .Select(g => new
                 {
                     Data = g.Key,
                     Receita = g.Sum(o => o.TotalPedido),
                     QuantidadePedidos = g.Count()
-                });
+                })
+                .ToListAsync(ct);
 
-            // Depois calcular quantidade de itens por dia e fazer JOIN
-            var itensPorDia = dbContext.OrderItems
+            // Depois calcular quantidade de itens por dia e materializar
+            var itensPorDia = await dbContext.OrderItems
                 .AsNoTracking()
                 .Where(oi => oi.Order.DataPedido >= inicio.Value && oi.Order.DataPedido <= fim.Value)
                 .GroupBy(oi => oi.Order.DataPedido.Date)
@@ -134,24 +149,35 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
                 {
                     Data = g.Key,
                     QuantidadeItens = g.Sum(oi => oi.Quantidade)
-                });
+                })
+                .ToListAsync(ct);
 
-            queryResultado = pedidosAgrupados
+            // Fazer JOIN em memória
+            var dadosAgrupados = pedidosAgrupados
                 .GroupJoin(
                     itensPorDia,
                     p => p.Data,
                     i => i.Data,
-                    (p, itens) => new SalesByPeriodDto
+                    (p, itens) => new
                     {
-                        Periodo = p.Data.ToString("dd/MM/yyyy"),
+                        Data = p.Data,
                         Receita = p.Receita,
                         QuantidadePedidos = p.QuantidadePedidos,
                         QuantidadeItensVendidos = itens.Select(i => i.QuantidadeItens).FirstOrDefault()
                     })
-                .OrderBy(x => x.Periodo);
-        }
+                .OrderBy(x => x.Data)
+                .ToList();
 
-        return await queryResultado.ToListAsync(ct);
+            return dadosAgrupados
+                .Select(x => new SalesByPeriodDto
+                {
+                    Periodo = x.Data.ToString("dd/MM/yyyy"),
+                    Receita = x.Receita,
+                    QuantidadePedidos = x.QuantidadePedidos,
+                    QuantidadeItensVendidos = x.QuantidadeItensVendidos
+                })
+                .ToList();
+        }
     }
 
     public async Task<IReadOnlyList<ProductSalesDto>> ObterProdutosMaisVendidosAsync(int top = 10, DateTime? dataInicio = null, DateTime? dataFim = null, CancellationToken ct = default)
@@ -197,62 +223,98 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
 
     public async Task<IReadOnlyList<ProductRatingDto>> ObterProdutosMelhoresAvaliadosAsync(int top = 10, CancellationToken ct = default)
     {
-        // Usar JOIN para evitar subconsultas aninhadas
-        var produtosComAvaliacoes = await dbContext.Products
+        // Agrupar Reviews primeiro para calcular agregações uma única vez e materializar
+        var avaliacoesAgrupadas = await dbContext.Reviews
             .AsNoTracking()
-            .GroupJoin(
-                dbContext.Reviews.AsNoTracking(),
-                produto => produto.Id,
-                review => review.ProductId,
-                (produto, reviews) => new
-                {
-                    Produto = produto,
-                    Reviews = reviews
-                })
-            .Select(g => new ProductRatingDto
+            .GroupBy(r => r.ProductId)
+            .Select(g => new
             {
-                ProductId = g.Produto.Id,
-                Nome = g.Produto.Nome,
-                ImagemUrl = g.Produto.ImagemUrl,
-                MediaAvaliacao = g.Reviews.Any() ? (decimal?)g.Reviews.Average(r => (decimal)r.Rating) : null,
-                TotalAvaliacoes = g.Reviews.Count()
+                ProductId = g.Key,
+                MediaAvaliacao = (decimal?)g.Average(r => (decimal)r.Rating),
+                TotalAvaliacoes = g.Count()
             })
-            .Where(p => p.MediaAvaliacao.HasValue && p.TotalAvaliacoes > 0)
+            .Where(a => a.MediaAvaliacao.HasValue && a.TotalAvaliacoes > 0)
+            .ToListAsync(ct);
+
+        if (avaliacoesAgrupadas.Count == 0)
+        {
+            return new List<ProductRatingDto>();
+        }
+
+        // Buscar apenas os produtos que têm avaliações
+        var productIds = avaliacoesAgrupadas.Select(a => a.ProductId).ToList();
+        var produtos = await dbContext.Products
+            .AsNoTracking()
+            .Where(p => productIds.Contains(p.Id))
+            .ToListAsync(ct);
+
+        // Fazer JOIN em memória e ordenar
+        var produtosComAvaliacoes = produtos
+            .Join(
+                avaliacoesAgrupadas,
+                produto => produto.Id,
+                avaliacao => avaliacao.ProductId,
+                (produto, avaliacao) => new ProductRatingDto
+                {
+                    ProductId = produto.Id,
+                    Nome = produto.Nome,
+                    ImagemUrl = produto.ImagemUrl,
+                    MediaAvaliacao = avaliacao.MediaAvaliacao,
+                    TotalAvaliacoes = avaliacao.TotalAvaliacoes
+                })
             .OrderByDescending(p => p.MediaAvaliacao)
             .ThenByDescending(p => p.TotalAvaliacoes)
             .Take(top)
-            .ToListAsync(ct);
+            .ToList();
 
         return produtosComAvaliacoes;
     }
 
     public async Task<IReadOnlyList<ProductRatingDto>> ObterProdutosPioresAvaliadosAsync(int top = 10, CancellationToken ct = default)
     {
-        // Usar JOIN para evitar subconsultas aninhadas
-        var produtosComAvaliacoes = await dbContext.Products
+        // Agrupar Reviews primeiro para calcular agregações uma única vez e materializar
+        var avaliacoesAgrupadas = await dbContext.Reviews
             .AsNoTracking()
-            .GroupJoin(
-                dbContext.Reviews.AsNoTracking(),
-                produto => produto.Id,
-                review => review.ProductId,
-                (produto, reviews) => new
-                {
-                    Produto = produto,
-                    Reviews = reviews
-                })
-            .Select(g => new ProductRatingDto
+            .GroupBy(r => r.ProductId)
+            .Select(g => new
             {
-                ProductId = g.Produto.Id,
-                Nome = g.Produto.Nome,
-                ImagemUrl = g.Produto.ImagemUrl,
-                MediaAvaliacao = g.Reviews.Any() ? (decimal?)g.Reviews.Average(r => (decimal)r.Rating) : null,
-                TotalAvaliacoes = g.Reviews.Count()
+                ProductId = g.Key,
+                MediaAvaliacao = (decimal?)g.Average(r => (decimal)r.Rating),
+                TotalAvaliacoes = g.Count()
             })
-            .Where(p => p.MediaAvaliacao.HasValue && p.TotalAvaliacoes > 0)
+            .Where(a => a.MediaAvaliacao.HasValue && a.TotalAvaliacoes > 0)
+            .ToListAsync(ct);
+
+        if (avaliacoesAgrupadas.Count == 0)
+        {
+            return new List<ProductRatingDto>();
+        }
+
+        // Buscar apenas os produtos que têm avaliações
+        var productIds = avaliacoesAgrupadas.Select(a => a.ProductId).ToList();
+        var produtos = await dbContext.Products
+            .AsNoTracking()
+            .Where(p => productIds.Contains(p.Id))
+            .ToListAsync(ct);
+
+        // Fazer JOIN em memória e ordenar
+        var produtosComAvaliacoes = produtos
+            .Join(
+                avaliacoesAgrupadas,
+                produto => produto.Id,
+                avaliacao => avaliacao.ProductId,
+                (produto, avaliacao) => new ProductRatingDto
+                {
+                    ProductId = produto.Id,
+                    Nome = produto.Nome,
+                    ImagemUrl = produto.ImagemUrl,
+                    MediaAvaliacao = avaliacao.MediaAvaliacao,
+                    TotalAvaliacoes = avaliacao.TotalAvaliacoes
+                })
             .OrderBy(p => p.MediaAvaliacao)
             .ThenBy(p => p.TotalAvaliacoes)
             .Take(top)
-            .ToListAsync(ct);
+            .ToList();
 
         return produtosComAvaliacoes;
     }
@@ -345,11 +407,11 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
         }).ToList();
 
         // 3. Vendas por período (agrupamento no banco com JOIN otimizado)
-        IQueryable<SalesByPeriodDto> queryVendasPorPeriodo;
+        List<SalesByPeriodDto> vendasPorPeriodo;
         if (periodo == PeriodFilter.EsteAno)
         {
-            // Primeiro agrupar Orders por mês
-            var pedidosAgrupados = queryPedidos
+            // Primeiro agrupar Orders por mês e materializar
+            var pedidosAgrupados = await queryPedidos
                 .GroupBy(o => new { o.DataPedido.Year, o.DataPedido.Month })
                 .Select(g => new
                 {
@@ -357,10 +419,11 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
                     g.Key.Month,
                     Receita = g.Sum(o => o.TotalPedido),
                     QuantidadePedidos = g.Count()
-                });
+                })
+                .ToListAsync(ct);
 
-            // Depois calcular quantidade de itens por mês e fazer JOIN
-            var itensPorMes = dbContext.OrderItems
+            // Depois calcular quantidade de itens por mês e materializar
+            var itensPorMes = await dbContext.OrderItems
                 .AsNoTracking()
                 .Where(oi => oi.Order.DataPedido >= inicio.Value && oi.Order.DataPedido <= fim.Value)
                 .GroupBy(oi => new { oi.Order.DataPedido.Year, oi.Order.DataPedido.Month })
@@ -369,36 +432,52 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
                     g.Key.Year,
                     g.Key.Month,
                     QuantidadeItens = g.Sum(oi => oi.Quantidade)
-                });
+                })
+                .ToListAsync(ct);
 
-            queryVendasPorPeriodo = pedidosAgrupados
+            // Fazer JOIN em memória
+            var dadosAgrupados = pedidosAgrupados
                 .GroupJoin(
                     itensPorMes,
                     p => new { p.Year, p.Month },
                     i => new { i.Year, i.Month },
-                    (p, itens) => new SalesByPeriodDto
+                    (p, itens) => new
                     {
-                        Periodo = new DateTime(p.Year, p.Month, 1, 0, 0, 0, DateTimeKind.Utc).ToString("MM/yyyy"),
+                        Year = p.Year,
+                        Month = p.Month,
                         Receita = p.Receita,
                         QuantidadePedidos = p.QuantidadePedidos,
                         QuantidadeItensVendidos = itens.Select(i => i.QuantidadeItens).FirstOrDefault()
                     })
-                .OrderBy(x => x.Periodo);
+                .OrderBy(x => x.Year)
+                .ThenBy(x => x.Month)
+                .ToList();
+
+            vendasPorPeriodo = dadosAgrupados
+                .Select(x => new SalesByPeriodDto
+                {
+                    Periodo = new DateTime(x.Year, x.Month, 1, 0, 0, 0, DateTimeKind.Utc).ToString("MM/yyyy"),
+                    Receita = x.Receita,
+                    QuantidadePedidos = x.QuantidadePedidos,
+                    QuantidadeItensVendidos = x.QuantidadeItensVendidos
+                })
+                .ToList();
         }
         else
         {
-            // Primeiro agrupar Orders por dia
-            var pedidosAgrupados = queryPedidos
+            // Primeiro agrupar Orders por dia e materializar
+            var pedidosAgrupados = await queryPedidos
                 .GroupBy(o => o.DataPedido.Date)
                 .Select(g => new
                 {
                     Data = g.Key,
                     Receita = g.Sum(o => o.TotalPedido),
                     QuantidadePedidos = g.Count()
-                });
+                })
+                .ToListAsync(ct);
 
-            // Depois calcular quantidade de itens por dia e fazer JOIN
-            var itensPorDia = dbContext.OrderItems
+            // Depois calcular quantidade de itens por dia e materializar
+            var itensPorDia = await dbContext.OrderItems
                 .AsNoTracking()
                 .Where(oi => oi.Order.DataPedido >= inicio.Value && oi.Order.DataPedido <= fim.Value)
                 .GroupBy(oi => oi.Order.DataPedido.Date)
@@ -406,24 +485,35 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
                 {
                     Data = g.Key,
                     QuantidadeItens = g.Sum(oi => oi.Quantidade)
-                });
+                })
+                .ToListAsync(ct);
 
-            queryVendasPorPeriodo = pedidosAgrupados
+            // Fazer JOIN em memória
+            var dadosAgrupados = pedidosAgrupados
                 .GroupJoin(
                     itensPorDia,
                     p => p.Data,
                     i => i.Data,
-                    (p, itens) => new SalesByPeriodDto
+                    (p, itens) => new
                     {
-                        Periodo = p.Data.ToString("dd/MM/yyyy"),
+                        Data = p.Data,
                         Receita = p.Receita,
                         QuantidadePedidos = p.QuantidadePedidos,
                         QuantidadeItensVendidos = itens.Select(i => i.QuantidadeItens).FirstOrDefault()
                     })
-                .OrderBy(x => x.Periodo);
-        }
+                .OrderBy(x => x.Data)
+                .ToList();
 
-        var vendasPorPeriodo = await queryVendasPorPeriodo.ToListAsync(ct);
+            vendasPorPeriodo = dadosAgrupados
+                .Select(x => new SalesByPeriodDto
+                {
+                    Periodo = x.Data.ToString("dd/MM/yyyy"),
+                    Receita = x.Receita,
+                    QuantidadePedidos = x.QuantidadePedidos,
+                    QuantidadeItensVendidos = x.QuantidadeItensVendidos
+                })
+                .ToList();
+        }
 
         // 4. Produtos mais vendidos (agrupamento no banco sem Include)
         var produtosMaisVendidos = await dbContext.OrderItems

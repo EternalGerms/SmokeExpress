@@ -494,16 +494,10 @@
             _produtosMaisVendidos = analyticsCompleto.ProdutosMaisVendidos.ToList();
             _pedidosPorStatus = analyticsCompleto.PedidosPorStatus.ToList();
 
-            // 2. Consultas de produtos em paralelo (não relacionadas ao período)
-            var taskMenorEstoque = AnalyticsService.ObterProdutosMenorEstoqueAsync(_topItems);
-            var taskMelhoresAvaliados = AnalyticsService.ObterProdutosMelhoresAvaliadosAsync(_topItems);
-            var taskPioresAvaliados = AnalyticsService.ObterProdutosPioresAvaliadosAsync(_topItems);
-
-            await Task.WhenAll(taskMenorEstoque, taskMelhoresAvaliados, taskPioresAvaliados);
-
-            _produtosMenorEstoque = (await taskMenorEstoque).ToList();
-            _produtosMelhoresAvaliados = (await taskMelhoresAvaliados).ToList();
-            _produtosPioresAvaliados = (await taskPioresAvaliados).ToList();
+            // 2. Consultas de produtos sequencialmente (evita concorrência no DbContext)
+            _produtosMenorEstoque = (await AnalyticsService.ObterProdutosMenorEstoqueAsync(_topItems)).ToList();
+            _produtosMelhoresAvaliados = (await AnalyticsService.ObterProdutosMelhoresAvaliadosAsync(_topItems)).ToList();
+            _produtosPioresAvaliados = (await AnalyticsService.ObterProdutosPioresAvaliadosAsync(_topItems)).ToList();
         }
         catch (Exception ex)
         {
