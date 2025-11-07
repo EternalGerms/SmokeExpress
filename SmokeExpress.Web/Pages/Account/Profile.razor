@@ -27,7 +27,7 @@
 }
 else if (!string.IsNullOrEmpty(_erro))
 {
-        <MudAlert Severity="Severity.Error" Class="mb-4" Dismissible="true" OnClose="@(() => _erro = null)">
+        <MudAlert Severity="Severity.Error" Class="mb-4" dismissible="true" onClose="@(() => _erro = null)">
             <MudText Typo="Typo.body1">@_erro</MudText>
         </MudAlert>
 }
@@ -51,7 +51,7 @@ else
                                         <MudItem xs="12" md="6">
                                             <MudStack Spacing="1">
                                                 <MudText Typo="Typo.caption" Color="Color.Secondary">Nome Completo</MudText>
-                                                <MudTextField Variant="Variant.Outlined" 
+                                                <MudTextField variant="Variant.Outlined" 
                                                             Value="@_model.NomeCompleto" 
                                                             ReadOnly="true"
                                                             Disabled="true"
@@ -62,7 +62,7 @@ else
                                         <MudItem xs="12" md="6">
                                             <MudStack Spacing="1">
                                                 <MudText Typo="Typo.caption" Color="Color.Secondary">CPF/CNPJ</MudText>
-                                                <MudTextField Variant="Variant.Outlined" 
+                                                <MudTextField variant="Variant.Outlined" 
                                                             Value="@_model.DocumentoFiscal" 
                                                             ReadOnly="true"
                                                             Disabled="true"
@@ -73,7 +73,7 @@ else
                                         <MudItem xs="12" md="6">
                                             <MudStack Spacing="1">
                                                 <MudText Typo="Typo.caption" Color="Color.Secondary">Data de Nascimento</MudText>
-                                                <MudTextField Variant="Variant.Outlined" 
+                                                <MudTextField variant="Variant.Outlined" 
                                                             Value="@DataNascimentoFormatada" 
                                                             ReadOnly="true"
                                                             Disabled="true"
@@ -84,7 +84,7 @@ else
                                         <MudItem xs="12" md="6">
                                             <MudStack Spacing="1">
                                                 <MudText Typo="Typo.caption" Color="Color.Secondary">Gênero</MudText>
-                                                <MudTextField Variant="Variant.Outlined" 
+                                                <MudTextField variant="Variant.Outlined" 
                                                             Value="@_model.Genero" 
                                                             ReadOnly="true"
                                                             Disabled="true"
@@ -97,7 +97,7 @@ else
                                                 <MudText Typo="Typo.caption" Color="Color.Secondary">Tipo de Cliente</MudText>
                                                 <MudChip T="string" Size="Size.Medium" 
                                                         Color="Color.Primary" 
-                                                        Variant="Variant.Filled"
+                                                        variant="Variant.Filled"
                                                         Icon="@Icons.Material.Filled.Star">
                                                     @_model.TipoCliente
                                                 </MudChip>
@@ -120,14 +120,14 @@ else
                                         <MudStack Spacing="3">
                                             <MudTextField @bind-Value="_emailModel.Email" 
                                                         Label="E-mail" 
-                                                        Variant="Variant.Outlined"
+                                                        variant="Variant.Outlined"
                                                         Adornment="Adornment.Start"
                                                         AdornmentIcon="@Icons.Material.Filled.Email"
                                                         Required="true"
                                                         RequiredError="E-mail é obrigatório"
                                                         HelperText="Digite seu novo endereço de e-mail"
                                                         InputType="InputType.Email" />
-                                            <MudButton Variant="Variant.Filled" 
+                                            <MudButton variant="Variant.Filled" 
                                                       Color="Color.Primary" 
                                                       ButtonType="ButtonType.Submit"
                                                       StartIcon="@Icons.Material.Filled.Save"
@@ -153,7 +153,7 @@ else
                                         <MudStack Spacing="3">
                                             <MudTextField @bind-Value="_senha.SenhaAtual" 
                                                         Label="Senha Atual" 
-                                                        Variant="Variant.Outlined"
+                                                        variant="Variant.Outlined"
                                                         Adornment="Adornment.Start"
                                                         AdornmentIcon="@Icons.Material.Filled.Lock"
                                                         InputType="InputType.Password"
@@ -161,7 +161,7 @@ else
                                                         RequiredError="Senha atual é obrigatória" />
                                             <MudTextField @bind-Value="_senha.NovaSenha" 
                                                         Label="Nova Senha" 
-                                                        Variant="Variant.Outlined"
+                                                        variant="Variant.Outlined"
                                                         Adornment="Adornment.Start"
                                                         AdornmentIcon="@Icons.Material.Filled.LockOpen"
                                                         InputType="InputType.Password"
@@ -170,13 +170,13 @@ else
                                                         HelperText="Mínimo de 8 caracteres" />
                                             <MudTextField @bind-Value="_senha.ConfirmacaoSenha" 
                                                         Label="Confirmar Nova Senha" 
-                                                        Variant="Variant.Outlined"
+                                                        variant="Variant.Outlined"
                                                         Adornment="Adornment.Start"
                                                         AdornmentIcon="@Icons.Material.Filled.LockReset"
                                                         InputType="InputType.Password"
                                                         Required="true"
                                                         RequiredError="Confirmação de senha é obrigatória" />
-                                            <MudButton Variant="Variant.Filled" 
+                                            <MudButton variant="Variant.Filled" 
                                                       Color="Color.Primary" 
                                                       ButtonType="ButtonType.Submit"
                                                       StartIcon="@Icons.Material.Filled.Security"
@@ -201,7 +201,7 @@ else
                                 <MudText Typo="Typo.body2" Color="Color.Secondary" Class="text-center">@_model.Email</MudText>
                                 <MudChip T="string" Size="Size.Small" 
                                         Color="Color.Success" 
-                                        Variant="Variant.Filled"
+                                        variant="Variant.Filled"
                                         Icon="@Icons.Material.Filled.CheckCircle">
                                     Conta Ativa
                                 </MudChip>
@@ -226,10 +226,10 @@ else
                                 <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-2" />
                                 Meus Endereços
                             </MudText>
-                            <MudButton Variant="Variant.Filled" 
+                            <MudButton variant="Variant.Filled" 
                                       Color="Color.Primary" 
                                       StartIcon="@Icons.Material.Filled.Add"
-                                      OnClick="NovoEndereco">
+                                      onClick="NovoEndereco">
                                 Novo Endereço
                             </MudButton>
                         </MudStack>
@@ -261,7 +261,7 @@ else
                                                         {
                                                             <MudChip T="string" Size="Size.Small" 
                                                                     Color="Color.Success" 
-                                                                    Variant="Variant.Filled"
+                                                                    variant="Variant.Filled"
                                                                     Icon="@Icons.Material.Filled.Star">
                                                                 Padrão
                                                             </MudChip>
@@ -270,27 +270,27 @@ else
                                                     <MudDivider />
                                                     <MudStack Row="true" Spacing="2">
                                                         <MudButton Size="Size.Small" 
-                                                                  Variant="Variant.Outlined" 
+                                                                  variant="Variant.Outlined" 
                                                                   Color="Color.Primary"
                                                                   StartIcon="@Icons.Material.Filled.Edit"
-                                                                  OnClick="@(() => EditarEndereco(endereco))">
+                                                                  onClick="@(() => EditarEndereco(endereco))">
                                                             Editar
                                                         </MudButton>
                                                         @if (!endereco.IsDefault)
                                                         {
                                                             <MudButton Size="Size.Small" 
-                                                                      Variant="Variant.Outlined" 
+                                                                      variant="Variant.Outlined" 
                                                                       Color="Color.Success"
                                                                       StartIcon="@Icons.Material.Filled.Star"
-                                                                      OnClick="@(() => TornarPadraoEndereco(endereco))">
+                                                                      onClick="@(() => TornarPadraoEndereco(endereco))">
                                                                 Tornar Padrão
                                                             </MudButton>
                                                         }
                                                         <MudButton Size="Size.Small" 
-                                                                  Variant="Variant.Outlined" 
+                                                                  variant="Variant.Outlined" 
                                                                   Color="Color.Error"
                                                                   StartIcon="@Icons.Material.Filled.Delete"
-                                                                  OnClick="@(() => ExcluirEndereco(endereco))">
+                                                                  onClick="@(() => ExcluirEndereco(endereco))">
                                                             Excluir
                                                         </MudButton>
                                                     </MudStack>
@@ -326,7 +326,7 @@ else
                         <MudText Typo="Typo.body2" Color="Color.Secondary">
                             Quando você fizer um pedido, ele aparecerá aqui.
                         </MudText>
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/" Class="mt-4">
+                        <MudButton variant="Variant.Filled" Color="Color.Primary" Href="/" Class="mt-4">
                             <MudIcon Icon="@Icons.Material.Filled.Store" Class="mr-2" />
                             Ir para a loja
                         </MudButton>
@@ -341,7 +341,7 @@ else
                                 <MudCardContent>
                                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="mb-2">
                                         <MudText Typo="Typo.h6" Class="mb-0">Pedido #@pedido.Id</MudText>
-                                        <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(pedido.Status)" Variant="Variant.Filled">
+                                        <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(pedido.Status)" variant="Variant.Filled">
                                             @pedido.StatusTexto
                                         </MudChip>
                                         <MudSpacer />
@@ -354,9 +354,9 @@ else
                                         <MudText Typo="Typo.body2" Color="Color.Secondary">@pedido.DataPedidoLocal</MudText>
                                         <MudSpacer />
                                         <MudButton Size="Size.Small" 
-                                                  Variant="Variant.Text" 
+                                                  variant="Variant.Text" 
                                                   Color="Color.Primary"
-                                                  OnClick="@(() => TogglePedido(pedido))"
+                                                  onClick="@(() => TogglePedido(pedido))"
                                                   EndIcon="@(pedido.IsExpanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)">
                                             @(pedido.IsExpanded ? "Ocultar" : "Ver") detalhes
                                         </MudButton>
@@ -403,7 +403,7 @@ else
                                                                         </MudStack>
                                                                     </MudTd>
                                                                     <MudTd DataLabel="Quantidade" align="Align.Right">
-                                                                        <MudChip T="int" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
+                                                                        <MudChip T="int" Size="Size.Small" Color="Color.Primary" variant="Variant.Filled">
                                                                             @context.Quantidade
                                                                         </MudChip>
                                                                     </MudTd>
@@ -420,7 +420,7 @@ else
                                                                         <MudTd DataLabel="Ações" align="Align.Center">
                                                                             @if (context.JaAvaliado)
                                                                             {
-                                                                                <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">
+                                                                                <MudChip T="string" Size="Size.Small" Color="Color.Success" variant="Variant.Filled">
                                                                                     <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Class="mr-1" />
                                                                                     Avaliado
                                                                                 </MudChip>
@@ -428,10 +428,10 @@ else
                                                                             else
                                                                             {
                                                                                 <MudButton Size="Size.Small" 
-                                                                                          Variant="Variant.Outlined" 
+                                                                                          variant="Variant.Outlined" 
                                                                                           Color="Color.Primary"
                                                                                           StartIcon="@Icons.Material.Filled.Star"
-                                                                                          OnClick="@(() => AbrirModalAvaliacao(context.ProductId, context.Nome, pedido.Id))">
+                                                                                          onClick="@(() => AbrirModalAvaliacao(context.ProductId, context.Nome, pedido.Id))">
                                                                                     Deixar Avaliação
                                                                                 </MudButton>
                                                                             }
@@ -497,7 +497,7 @@ else
                                                                         <MudText Typo="Typo.caption" Color="Color.Secondary">Status</MudText>
                                                                         <MudChip T="string" Size="Size.Medium" 
                                                                                 Color="@GetStatusColor(pedido.Status)" 
-                                                                                Variant="Variant.Filled"
+                                                                                variant="Variant.Filled"
                                                                                 Icon="@GetStatusIcon(pedido.Status)">
                                                                             @pedido.StatusTexto
                                                                         </MudChip>
@@ -531,7 +531,7 @@ else
 </MudContainer>
 
 <!-- Dialog para Editar/Criar Endereço -->
-<MudDialog @bind-IsVisible="_showEnderecoDialog">
+<MudDialog @bind-isVisible="_showEnderecoDialog">
     <TitleContent>
         <MudText Typo="Typo.h6">@(_editandoEndereco?.Id == 0 ? "Novo Endereço" : "Editar Endereço")</MudText>
     </TitleContent>
@@ -543,7 +543,7 @@ else
                 <MudStack Spacing="3">
                     <MudTextField @bind-Value="_editandoEndereco.Rua" 
                                 Label="Rua" 
-                                Variant="Variant.Outlined"
+                                variant="Variant.Outlined"
                                 Required="true"
                                 RequiredError="Rua é obrigatória" />
                     <MudGrid Spacing="2">
@@ -551,12 +551,12 @@ else
                             <MudTextField Value="@_numeroBinding" 
                                         ValueChanged="@((string value) => _numeroBinding = new string((value ?? string.Empty).Where(char.IsDigit).ToArray()))"
                                         Label="Número" 
-                                        Variant="Variant.Outlined" />
+                                        variant="Variant.Outlined" />
                         </MudItem>
                         <MudItem xs="12" sm="8">
                             <MudTextField @bind-Value="_editandoEndereco.Bairro" 
                                         Label="Bairro" 
-                                        Variant="Variant.Outlined"
+                                        variant="Variant.Outlined"
                                         Required="true"
                                         RequiredError="Bairro é obrigatório" />
                         </MudItem>
@@ -565,14 +565,14 @@ else
                         <MudItem xs="12" sm="6">
                             <MudTextField @bind-Value="_editandoEndereco.Cidade" 
                                         Label="Cidade" 
-                                        Variant="Variant.Outlined"
+                                        variant="Variant.Outlined"
                                         Required="true"
                                         RequiredError="Cidade é obrigatória" />
                         </MudItem>
                         <MudItem xs="12" sm="6">
                             <MudTextField @bind-Value="_editandoEndereco.Complemento" 
                                         Label="Complemento" 
-                                        Variant="Variant.Outlined" />
+                                        variant="Variant.Outlined" />
                         </MudItem>
                     </MudGrid>
                     <MudCheckBox @bind-Value="_editandoEndereco.IsDefault" 
@@ -583,10 +583,10 @@ else
         }
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="CancelarEndereco">Cancelar</MudButton>
+        <MudButton onClick="CancelarEndereco">Cancelar</MudButton>
         <MudButton Color="Color.Primary" 
-                  Variant="Variant.Filled"
-                  OnClick="SalvarEnderecoAsync"
+                  variant="Variant.Filled"
+                  onClick="SalvarEnderecoAsync"
                   Disabled="@_savingEndereco">
             @(_savingEndereco ? "Salvando..." : "Salvar")
         </MudButton>

@@ -26,12 +26,12 @@
                                   Lines="4"
                                   Counter="1000"
                                   MaxLength="1000"
-                                  Variant="Variant.Outlined"
+                                  variant="Variant.Outlined"
                                   HelperText="Máximo de 1000 caracteres" />
 
                     <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="2" Class="mt-4">
-                        <MudButton OnClick="Cancelar">Cancelar</MudButton>
-                        <MudButton Variant="Variant.Filled" 
+                        <MudButton onClick="Cancelar">Cancelar</MudButton>
+                        <MudButton variant="Variant.Filled" 
                                   Color="Color.Primary" 
                                   ButtonType="ButtonType.Submit"
                                   Disabled="@(_model.Rating < 1 || _model.Rating > 5)">

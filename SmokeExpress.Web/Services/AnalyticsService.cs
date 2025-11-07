@@ -6,7 +6,7 @@ using SmokeExpress.Web.Models.Dashboard;
 
 namespace SmokeExpress.Web.Services;
 
-public class AnalyticsService(ApplicationDbContext dbContext, ILogger<AnalyticsService> logger) : IAnalyticsService
+public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsService
 {
     public async Task<DashboardSummaryDto> ObterResumoAsync(DateTime? dataInicio = null, DateTime? dataFim = null, CancellationToken ct = default)
     {
@@ -25,10 +25,9 @@ public class AnalyticsService(ApplicationDbContext dbContext, ILogger<AnalyticsS
             queryPedidos = queryPedidos.Where(o => o.DataPedido >= inicio.Value && o.DataPedido <= fim.Value);
         }
 
-        var pedidos = await queryPedidos.ToListAsync(ct);
-
-        var receitaTotal = pedidos.Sum(o => o.TotalPedido);
-        var totalPedidos = pedidos.Count;
+        // Calcular agregados diretamente no banco
+        var receitaTotal = await queryPedidos.SumAsync(o => o.TotalPedido, ct);
+        var totalPedidos = await queryPedidos.CountAsync(ct);
         var mediaValorPedido = totalPedidos > 0 ? receitaTotal / totalPedidos : 0m;
 
         var clientesAtivos = await queryPedidos
@@ -36,8 +35,16 @@ public class AnalyticsService(ApplicationDbContext dbContext, ILogger<AnalyticsS
             .Distinct()
             .CountAsync(ct);
 
-        var totalProdutos = await dbContext.Products.CountAsync(ct);
-        var produtosSemEstoque = await dbContext.Products.CountAsync(p => p.Estoque <= 0, ct);
+        // Combinar queries de produtos em uma única consulta usando projeção
+        var produtosStats = await dbContext.Products
+            .AsNoTracking()
+            .GroupBy(p => 1)
+            .Select(g => new
+            {
+                TotalProdutos = g.Count(),
+                ProdutosSemEstoque = g.Count(p => p.Estoque <= 0)
+            })
+            .FirstOrDefaultAsync(ct);
 
         return new DashboardSummaryDto
         {
@@ -45,8 +52,8 @@ public class AnalyticsService(ApplicationDbContext dbContext, ILogger<AnalyticsS
             TotalPedidos = totalPedidos,
             MediaValorPedido = mediaValorPedido,
             TotalClientesAtivos = clientesAtivos,
-            TotalProdutos = totalProdutos,
-            TotalProdutosSemEstoque = produtosSemEstoque
+            TotalProdutos = produtosStats?.TotalProdutos ?? 0,
+            TotalProdutosSemEstoque = produtosStats?.ProdutosSemEstoque ?? 0
         };
     }
 
@@ -59,61 +66,92 @@ public class AnalyticsService(ApplicationDbContext dbContext, ILogger<AnalyticsS
             return new List<SalesByPeriodDto>();
         }
 
-        var pedidos = await dbContext.Orders
+        // Consulta base de pedidos filtrados
+        var queryPedidos = dbContext.Orders
             .AsNoTracking()
-            .Include(o => o.Itens)
-            .Where(o => o.DataPedido >= inicio.Value && o.DataPedido <= fim.Value)
-            .ToListAsync(ct);
+            .Where(o => o.DataPedido >= inicio.Value && o.DataPedido <= fim.Value);
 
-        var resultado = new List<SalesByPeriodDto>();
+        // Calcular vendas por período: agrupar Orders primeiro, depois JOIN com OrderItems
+        IQueryable<SalesByPeriodDto> queryResultado;
 
-        if (periodo == PeriodFilter.Personalizado || periodo == PeriodFilter.Hoje)
+        if (periodo == PeriodFilter.EsteAno)
         {
-            // Agrupar por dia
-            resultado = pedidos
-                .GroupBy(o => o.DataPedido.Date)
-                .Select(g => new SalesByPeriodDto
-                {
-                    Periodo = g.Key.ToString("dd/MM/yyyy"),
-                    Receita = g.Sum(o => o.TotalPedido),
-                    QuantidadePedidos = g.Count(),
-                    QuantidadeItensVendidos = g.SelectMany(o => o.Itens).Sum(i => i.Quantidade)
-                })
-                .OrderBy(x => x.Periodo)
-                .ToList();
-        }
-        else if (periodo == PeriodFilter.EstaSemana || periodo == PeriodFilter.EsteMes)
-        {
-            // Agrupar por dia
-            resultado = pedidos
-                .GroupBy(o => o.DataPedido.Date)
-                .Select(g => new SalesByPeriodDto
-                {
-                    Periodo = g.Key.ToString("dd/MM/yyyy"),
-                    Receita = g.Sum(o => o.TotalPedido),
-                    QuantidadePedidos = g.Count(),
-                    QuantidadeItensVendidos = g.SelectMany(o => o.Itens).Sum(i => i.Quantidade)
-                })
-                .OrderBy(x => x.Periodo)
-                .ToList();
-        }
-        else if (periodo == PeriodFilter.EsteAno)
-        {
-            // Agrupar por mês
-            resultado = pedidos
+            // Primeiro agrupar Orders por mês
+            var pedidosAgrupados = queryPedidos
                 .GroupBy(o => new { o.DataPedido.Year, o.DataPedido.Month })
-                .Select(g => new SalesByPeriodDto
+                .Select(g => new
                 {
-                    Periodo = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MM/yyyy"),
+                    g.Key.Year,
+                    g.Key.Month,
                     Receita = g.Sum(o => o.TotalPedido),
-                    QuantidadePedidos = g.Count(),
-                    QuantidadeItensVendidos = g.SelectMany(o => o.Itens).Sum(i => i.Quantidade)
-                })
-                .OrderBy(x => x.Periodo)
-                .ToList();
+                    QuantidadePedidos = g.Count()
+                });
+
+            // Depois calcular quantidade de itens por mês e fazer JOIN
+            var itensPorMes = dbContext.OrderItems
+                .AsNoTracking()
+                .Where(oi => oi.Order.DataPedido >= inicio.Value && oi.Order.DataPedido <= fim.Value)
+                .GroupBy(oi => new { oi.Order.DataPedido.Year, oi.Order.DataPedido.Month })
+                .Select(g => new
+                {
+                    g.Key.Year,
+                    g.Key.Month,
+                    QuantidadeItens = g.Sum(oi => oi.Quantidade)
+                });
+
+            queryResultado = pedidosAgrupados
+                .GroupJoin(
+                    itensPorMes,
+                    p => new { p.Year, p.Month },
+                    i => new { i.Year, i.Month },
+                    (p, itens) => new SalesByPeriodDto
+                    {
+                        Periodo = new DateTime(p.Year, p.Month, 1, 0, 0, 0, DateTimeKind.Utc).ToString("MM/yyyy"),
+                        Receita = p.Receita,
+                        QuantidadePedidos = p.QuantidadePedidos,
+                        QuantidadeItensVendidos = itens.Select(i => i.QuantidadeItens).FirstOrDefault()
+                    })
+                .OrderBy(x => x.Periodo);
+        }
+        else
+        {
+            // Primeiro agrupar Orders por dia
+            var pedidosAgrupados = queryPedidos
+                .GroupBy(o => o.DataPedido.Date)
+                .Select(g => new
+                {
+                    Data = g.Key,
+                    Receita = g.Sum(o => o.TotalPedido),
+                    QuantidadePedidos = g.Count()
+                });
+
+            // Depois calcular quantidade de itens por dia e fazer JOIN
+            var itensPorDia = dbContext.OrderItems
+                .AsNoTracking()
+                .Where(oi => oi.Order.DataPedido >= inicio.Value && oi.Order.DataPedido <= fim.Value)
+                .GroupBy(oi => oi.Order.DataPedido.Date)
+                .Select(g => new
+                {
+                    Data = g.Key,
+                    QuantidadeItens = g.Sum(oi => oi.Quantidade)
+                });
+
+            queryResultado = pedidosAgrupados
+                .GroupJoin(
+                    itensPorDia,
+                    p => p.Data,
+                    i => i.Data,
+                    (p, itens) => new SalesByPeriodDto
+                    {
+                        Periodo = p.Data.ToString("dd/MM/yyyy"),
+                        Receita = p.Receita,
+                        QuantidadePedidos = p.QuantidadePedidos,
+                        QuantidadeItensVendidos = itens.Select(i => i.QuantidadeItens).FirstOrDefault()
+                    })
+                .OrderBy(x => x.Periodo);
         }
 
-        return resultado;
+        return await queryResultado.ToListAsync(ct);
     }
 
     public async Task<IReadOnlyList<ProductSalesDto>> ObterProdutosMaisVendidosAsync(int top = 10, DateTime? dataInicio = null, DateTime? dataFim = null, CancellationToken ct = default)
@@ -127,13 +165,9 @@ public class AnalyticsService(ApplicationDbContext dbContext, ILogger<AnalyticsS
             fim = DateTime.UtcNow;
         }
 
-        var query = dbContext.OrderItems
+        var produtosVendidos = await dbContext.OrderItems
             .AsNoTracking()
-            .Include(oi => oi.Order)
-            .Include(oi => oi.Product)
-            .Where(oi => oi.Order.DataPedido >= inicio.Value && oi.Order.DataPedido <= fim.Value);
-
-        var produtosVendidos = await query
+            .Where(oi => oi.Order.DataPedido >= inicio.Value && oi.Order.DataPedido <= fim.Value)
             .GroupBy(oi => new { oi.ProductId, oi.Product.Nome, oi.Product.ImagemUrl })
             .Select(g => new ProductSalesDto
             {
@@ -163,19 +197,25 @@ public class AnalyticsService(ApplicationDbContext dbContext, ILogger<AnalyticsS
 
     public async Task<IReadOnlyList<ProductRatingDto>> ObterProdutosMelhoresAvaliadosAsync(int top = 10, CancellationToken ct = default)
     {
+        // Usar JOIN para evitar subconsultas aninhadas
         var produtosComAvaliacoes = await dbContext.Products
             .AsNoTracking()
-            .Select(p => new ProductRatingDto
+            .GroupJoin(
+                dbContext.Reviews.AsNoTracking(),
+                produto => produto.Id,
+                review => review.ProductId,
+                (produto, reviews) => new
+                {
+                    Produto = produto,
+                    Reviews = reviews
+                })
+            .Select(g => new ProductRatingDto
             {
-                ProductId = p.Id,
-                Nome = p.Nome,
-                ImagemUrl = p.ImagemUrl,
-                MediaAvaliacao = dbContext.Reviews
-                    .Where(r => r.ProductId == p.Id)
-                    .Select(r => (decimal?)r.Rating)
-                    .DefaultIfEmpty()
-                    .Average(),
-                TotalAvaliacoes = dbContext.Reviews.Count(r => r.ProductId == p.Id)
+                ProductId = g.Produto.Id,
+                Nome = g.Produto.Nome,
+                ImagemUrl = g.Produto.ImagemUrl,
+                MediaAvaliacao = g.Reviews.Any() ? (decimal?)g.Reviews.Average(r => (decimal)r.Rating) : null,
+                TotalAvaliacoes = g.Reviews.Count()
             })
             .Where(p => p.MediaAvaliacao.HasValue && p.TotalAvaliacoes > 0)
             .OrderByDescending(p => p.MediaAvaliacao)
@@ -188,19 +228,25 @@ public class AnalyticsService(ApplicationDbContext dbContext, ILogger<AnalyticsS
 
     public async Task<IReadOnlyList<ProductRatingDto>> ObterProdutosPioresAvaliadosAsync(int top = 10, CancellationToken ct = default)
     {
+        // Usar JOIN para evitar subconsultas aninhadas
         var produtosComAvaliacoes = await dbContext.Products
             .AsNoTracking()
-            .Select(p => new ProductRatingDto
+            .GroupJoin(
+                dbContext.Reviews.AsNoTracking(),
+                produto => produto.Id,
+                review => review.ProductId,
+                (produto, reviews) => new
+                {
+                    Produto = produto,
+                    Reviews = reviews
+                })
+            .Select(g => new ProductRatingDto
             {
-                ProductId = p.Id,
-                Nome = p.Nome,
-                ImagemUrl = p.ImagemUrl,
-                MediaAvaliacao = dbContext.Reviews
-                    .Where(r => r.ProductId == p.Id)
-                    .Select(r => (decimal?)r.Rating)
-                    .DefaultIfEmpty()
-                    .Average(),
-                TotalAvaliacoes = dbContext.Reviews.Count(r => r.ProductId == p.Id)
+                ProductId = g.Produto.Id,
+                Nome = g.Produto.Nome,
+                ImagemUrl = g.Produto.ImagemUrl,
+                MediaAvaliacao = g.Reviews.Any() ? (decimal?)g.Reviews.Average(r => (decimal)r.Rating) : null,
+                TotalAvaliacoes = g.Reviews.Count()
             })
             .Where(p => p.MediaAvaliacao.HasValue && p.TotalAvaliacoes > 0)
             .OrderBy(p => p.MediaAvaliacao)
@@ -244,6 +290,186 @@ public class AnalyticsService(ApplicationDbContext dbContext, ILogger<AnalyticsS
         }).ToList();
 
         return pedidosPorStatus;
+    }
+
+    public async Task<DashboardAnalyticsDto> ObterAnalyticsCompletoAsync(PeriodFilter periodo, int topProdutos = 10, DateTime? dataInicio = null, DateTime? dataFim = null, CancellationToken ct = default)
+    {
+        var (inicio, fim) = ObterDatasFiltro(dataInicio, dataFim, periodo);
+
+        if (!inicio.HasValue || !fim.HasValue)
+        {
+            return new DashboardAnalyticsDto
+            {
+                Resumo = new DashboardSummaryDto(),
+                PedidosPorStatus = new List<OrderStatusCountDto>(),
+                VendasPorPeriodo = new List<SalesByPeriodDto>(),
+                ProdutosMaisVendidos = new List<ProductSalesDto>()
+            };
+        }
+
+        // Consulta base de pedidos filtrados (reutilizada para múltiplas agregações)
+        var queryPedidos = dbContext.Orders
+            .AsNoTracking()
+            .Where(o => o.DataPedido >= inicio.Value && o.DataPedido <= fim.Value);
+
+        // 1. Calcular resumo (agregados no banco)
+        var receitaTotal = await queryPedidos.SumAsync(o => o.TotalPedido, ct);
+        var totalPedidos = await queryPedidos.CountAsync(ct);
+        var mediaValorPedido = totalPedidos > 0 ? receitaTotal / totalPedidos : 0m;
+        var clientesAtivos = await queryPedidos
+            .Select(o => o.ApplicationUserId)
+            .Distinct()
+            .CountAsync(ct);
+
+        // 2. Pedidos por status (agrupamento no banco)
+        var pedidosAgrupadosPorStatus = await queryPedidos
+            .GroupBy(o => o.Status)
+            .Select(g => new { Status = g.Key, Quantidade = g.Count(), TotalReceita = g.Sum(o => o.TotalPedido) })
+            .ToListAsync(ct);
+
+        var pedidosPorStatus = pedidosAgrupadosPorStatus.Select(g => new OrderStatusCountDto
+        {
+            Status = g.Status,
+            StatusTexto = g.Status switch
+            {
+                OrderStatus.Processando => "Processando",
+                OrderStatus.Confirmado => "Confirmado",
+                OrderStatus.EmPreparacao => "Em Preparação",
+                OrderStatus.Enviado => "Enviado",
+                OrderStatus.Entregue => "Entregue",
+                OrderStatus.Cancelado => "Cancelado",
+                _ => g.Status.ToString()
+            },
+            Quantidade = g.Quantidade,
+            TotalReceita = g.TotalReceita
+        }).ToList();
+
+        // 3. Vendas por período (agrupamento no banco com JOIN otimizado)
+        IQueryable<SalesByPeriodDto> queryVendasPorPeriodo;
+        if (periodo == PeriodFilter.EsteAno)
+        {
+            // Primeiro agrupar Orders por mês
+            var pedidosAgrupados = queryPedidos
+                .GroupBy(o => new { o.DataPedido.Year, o.DataPedido.Month })
+                .Select(g => new
+                {
+                    g.Key.Year,
+                    g.Key.Month,
+                    Receita = g.Sum(o => o.TotalPedido),
+                    QuantidadePedidos = g.Count()
+                });
+
+            // Depois calcular quantidade de itens por mês e fazer JOIN
+            var itensPorMes = dbContext.OrderItems
+                .AsNoTracking()
+                .Where(oi => oi.Order.DataPedido >= inicio.Value && oi.Order.DataPedido <= fim.Value)
+                .GroupBy(oi => new { oi.Order.DataPedido.Year, oi.Order.DataPedido.Month })
+                .Select(g => new
+                {
+                    g.Key.Year,
+                    g.Key.Month,
+                    QuantidadeItens = g.Sum(oi => oi.Quantidade)
+                });
+
+            queryVendasPorPeriodo = pedidosAgrupados
+                .GroupJoin(
+                    itensPorMes,
+                    p => new { p.Year, p.Month },
+                    i => new { i.Year, i.Month },
+                    (p, itens) => new SalesByPeriodDto
+                    {
+                        Periodo = new DateTime(p.Year, p.Month, 1, 0, 0, 0, DateTimeKind.Utc).ToString("MM/yyyy"),
+                        Receita = p.Receita,
+                        QuantidadePedidos = p.QuantidadePedidos,
+                        QuantidadeItensVendidos = itens.Select(i => i.QuantidadeItens).FirstOrDefault()
+                    })
+                .OrderBy(x => x.Periodo);
+        }
+        else
+        {
+            // Primeiro agrupar Orders por dia
+            var pedidosAgrupados = queryPedidos
+                .GroupBy(o => o.DataPedido.Date)
+                .Select(g => new
+                {
+                    Data = g.Key,
+                    Receita = g.Sum(o => o.TotalPedido),
+                    QuantidadePedidos = g.Count()
+                });
+
+            // Depois calcular quantidade de itens por dia e fazer JOIN
+            var itensPorDia = dbContext.OrderItems
+                .AsNoTracking()
+                .Where(oi => oi.Order.DataPedido >= inicio.Value && oi.Order.DataPedido <= fim.Value)
+                .GroupBy(oi => oi.Order.DataPedido.Date)
+                .Select(g => new
+                {
+                    Data = g.Key,
+                    QuantidadeItens = g.Sum(oi => oi.Quantidade)
+                });
+
+            queryVendasPorPeriodo = pedidosAgrupados
+                .GroupJoin(
+                    itensPorDia,
+                    p => p.Data,
+                    i => i.Data,
+                    (p, itens) => new SalesByPeriodDto
+                    {
+                        Periodo = p.Data.ToString("dd/MM/yyyy"),
+                        Receita = p.Receita,
+                        QuantidadePedidos = p.QuantidadePedidos,
+                        QuantidadeItensVendidos = itens.Select(i => i.QuantidadeItens).FirstOrDefault()
+                    })
+                .OrderBy(x => x.Periodo);
+        }
+
+        var vendasPorPeriodo = await queryVendasPorPeriodo.ToListAsync(ct);
+
+        // 4. Produtos mais vendidos (agrupamento no banco sem Include)
+        var produtosMaisVendidos = await dbContext.OrderItems
+            .AsNoTracking()
+            .Where(oi => oi.Order.DataPedido >= inicio.Value && oi.Order.DataPedido <= fim.Value)
+            .GroupBy(oi => new { oi.ProductId, oi.Product.Nome, oi.Product.ImagemUrl })
+            .Select(g => new ProductSalesDto
+            {
+                ProductId = g.Key.ProductId,
+                Nome = g.Key.Nome,
+                QuantidadeVendida = g.Sum(oi => oi.Quantidade),
+                Receita = g.Sum(oi => oi.Quantidade * oi.PrecoUnitario),
+                ImagemUrl = g.Key.ImagemUrl
+            })
+            .OrderByDescending(p => p.QuantidadeVendida)
+            .Take(topProdutos)
+            .ToListAsync(ct);
+
+        // 5. Estatísticas de produtos (total e sem estoque)
+        var produtosStats = await dbContext.Products
+            .AsNoTracking()
+            .GroupBy(p => 1)
+            .Select(g => new
+            {
+                TotalProdutos = g.Count(),
+                ProdutosSemEstoque = g.Count(p => p.Estoque <= 0)
+            })
+            .FirstOrDefaultAsync(ct);
+
+        var resumo = new DashboardSummaryDto
+        {
+            ReceitaTotal = receitaTotal,
+            TotalPedidos = totalPedidos,
+            MediaValorPedido = mediaValorPedido,
+            TotalClientesAtivos = clientesAtivos,
+            TotalProdutos = produtosStats?.TotalProdutos ?? 0,
+            TotalProdutosSemEstoque = produtosStats?.ProdutosSemEstoque ?? 0
+        };
+
+        return new DashboardAnalyticsDto
+        {
+            Resumo = resumo,
+            PedidosPorStatus = pedidosPorStatus,
+            VendasPorPeriodo = vendasPorPeriodo,
+            ProdutosMaisVendidos = produtosMaisVendidos
+        };
     }
 
     private (DateTime?, DateTime?) ObterDatasFiltro(DateTime? dataInicio = null, DateTime? dataFim = null, PeriodFilter? periodo = null)

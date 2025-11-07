@@ -23,7 +23,7 @@
             <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
                 O produto solicitado não foi encontrado ou não está mais disponível.
             </MudText>
-            <MudButton Variant="Variant.Filled" 
+            <MudButton variant="Variant.Filled" 
                       Color="Color.Primary" 
                       Href="/produtos"
                       StartIcon="@Icons.Material.Filled.Store">
@@ -69,7 +69,7 @@
                         <MudChip T="string" 
                                Size="Size.Medium" 
                                Color="Color.Secondary" 
-                               Variant="Variant.Outlined"
+                               variant="Variant.Outlined"
                                Icon="@Icons.Material.Filled.Category">
                             @_produto.Categoria?.Nome
                         </MudChip>
@@ -87,7 +87,7 @@
                             <MudChip T="string" 
                                    Size="Size.Medium" 
                                    Color="Color.Success" 
-                                   Variant="Variant.Filled"
+                                   variant="Variant.Filled"
                                    Icon="@Icons.Material.Filled.CheckCircle">
                                 Em estoque - @_produto.Estoque unidades disponíveis
                             </MudChip>
@@ -97,7 +97,7 @@
                             <MudChip T="string" 
                                    Size="Size.Medium" 
                                    Color="Color.Error" 
-                                   Variant="Variant.Filled"
+                                   variant="Variant.Filled"
                                    Icon="@Icons.Material.Filled.Cancel">
                                 Sem estoque no momento
                             </MudChip>
@@ -132,20 +132,20 @@
                                 <MudNumericField @bind-Value="_quantidadeSelecionada" 
                                                Min="1" 
                                                Max="@(_produto.Estoque > 0 ? _produto.Estoque : 1)"
-                                               Variant="Variant.Outlined"
+                                               variant="Variant.Outlined"
                                                Style="max-width: 150px;" />
                             </MudStack>
 
                             @if (!string.IsNullOrWhiteSpace(_feedback))
                             {
-                                <MudAlert Severity="Severity.Success" Dismissible="true" OnClose="@(() => _feedback = null)">
+                                <MudAlert Severity="Severity.Success" dismissible="true" onClose="@(() => _feedback = null)">
                                     <MudText Typo="Typo.body2">@_feedback</MudText>
                                 </MudAlert>
                             }
 
                             @if (!string.IsNullOrEmpty(_mensagemErro))
                             {
-                                <MudAlert Severity="Severity.Error" Dismissible="true" OnClose="@(() => _mensagemErro = null)">
+                                <MudAlert Severity="Severity.Error" dismissible="true" onClose="@(() => _mensagemErro = null)">
                                     <MudText Typo="Typo.body2">@_mensagemErro</MudText>
                                 </MudAlert>
                             }
@@ -153,11 +153,11 @@
                             <MudStack Row="true" Spacing="2">
                                 @if (_produto.Estoque > 0)
                                 {
-                                    <MudButton Variant="Variant.Filled" 
+                                    <MudButton variant="Variant.Filled" 
                                              Color="Color.Primary" 
                                              Size="Size.Large"
                                              StartIcon="@Icons.Material.Filled.ShoppingCart"
-                                             OnClick="AdicionarAoCarrinhoAsync"
+                                             onClick="AdicionarAoCarrinhoAsync"
                                              Disabled="@_adicionando"
                                              FullWidth="true"
                                              Class="flex-fill">
@@ -166,7 +166,7 @@
                                 }
                                 else
                                 {
-                                    <MudButton Variant="Variant.Filled" 
+                                    <MudButton variant="Variant.Filled" 
                                              Color="Color.Default" 
                                              Size="Size.Large"
                                              StartIcon="@Icons.Material.Filled.RemoveShoppingCart"
@@ -176,7 +176,7 @@
                                         Produto sem estoque
                                     </MudButton>
                                 }
-                                <MudButton Variant="Variant.Outlined" 
+                                <MudButton variant="Variant.Outlined" 
                                          Color="Color.Secondary" 
                                          Size="Size.Large"
                                          StartIcon="@Icons.Material.Filled.ArrowBack"

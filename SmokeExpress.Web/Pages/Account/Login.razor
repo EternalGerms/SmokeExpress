@@ -34,7 +34,7 @@
                           @bind-Value="_model.Email"
                           InputType="InputType.Email"
                           Immediate="true"
-                          Variant="Variant.Outlined" />
+                          variant="Variant.Outlined" />
             <input type="hidden" name="Email" value="@_model.Email" />
 
             <MudTextField Label="Senha"
@@ -45,7 +45,7 @@
                           OnAdornmentClick="ToggleSenhaVisibility"
                           AdornmentAriaLabel="Alternar visibilidade da senha"
                           Immediate="true"
-                          Variant="Variant.Outlined" />
+                          variant="Variant.Outlined" />
             <input type="hidden" name="Password" value="@_model.Senha" />
 
             <MudCheckBox Label="Manter-me conectado"
@@ -53,7 +53,7 @@
             <input type="hidden" name="RememberMe" value="@(_model.LembrarMe ? "true" : "false")" />
         </MudStack>
 
-        <MudButton Variant="Variant.Filled"
+        <MudButton variant="Variant.Filled"
                    Color="Color.Primary"
                    Size="Size.Large"
                    FullWidth="true"

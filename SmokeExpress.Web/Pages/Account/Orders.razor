@@ -29,7 +29,7 @@ else if (_pedidos.Count == 0)
             <MudText Typo="Typo.body2" Color="Color.Secondary">
                 Quando você fizer um pedido, ele aparecerá aqui.
             </MudText>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/" Class="mt-4">
+            <MudButton variant="Variant.Filled" Color="Color.Primary" Href="/" Class="mt-4">
                 <MudIcon Icon="@Icons.Material.Filled.Store" Class="mr-2" />
                 Ir para a loja
             </MudButton>
@@ -44,7 +44,7 @@ else
                     <MudCardContent>
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="mb-2">
                             <MudText Typo="Typo.h6" Class="mb-0">Pedido #@pedido.Id</MudText>
-                            <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(pedido.Status)" Variant="Variant.Filled">
+                            <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(pedido.Status)" variant="Variant.Filled">
                                 @pedido.StatusTexto
                             </MudChip>
                             <MudSpacer />
@@ -57,9 +57,9 @@ else
                             <MudText Typo="Typo.body2" Color="Color.Secondary">@pedido.DataPedidoLocal</MudText>
                             <MudSpacer />
                             <MudButton Size="Size.Small" 
-                                      Variant="Variant.Text" 
+                                      variant="Variant.Text" 
                                       Color="Color.Primary"
-                                      OnClick="@(() => TogglePedido(pedido))"
+                                      onClick="@(() => TogglePedido(pedido))"
                                       EndIcon="@(pedido.IsExpanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)">
                                 @(pedido.IsExpanded ? "Ocultar" : "Ver") detalhes
                             </MudButton>
@@ -102,7 +102,7 @@ else
                                                             </MudStack>
                                                         </MudTd>
                                                         <MudTd DataLabel="Quantidade" align="Align.Right">
-                                                            <MudChip T="int" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
+                                                            <MudChip T="int" Size="Size.Small" Color="Color.Primary" variant="Variant.Filled">
                                                                 @context.Quantidade
                                                             </MudChip>
                                                         </MudTd>
@@ -174,7 +174,7 @@ else
                                                             <MudText Typo="Typo.caption" Color="Color.Secondary">Status</MudText>
                                                             <MudChip T="string" Size="Size.Medium" 
                                                                     Color="@GetStatusColor(pedido.Status)" 
-                                                                    Variant="Variant.Filled"
+                                                                    variant="Variant.Filled"
                                                                     Icon="@GetStatusIcon(pedido.Status)">
                                                                 @pedido.StatusTexto
                                                             </MudChip>

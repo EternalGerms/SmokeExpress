@@ -22,7 +22,7 @@
                 <MudItem xs="12" md="4">
                     <MudSelect @bind-Value="_periodoFiltro" 
                                Label="Período" 
-                               Variant="Variant.Outlined"
+                               variant="Variant.Outlined"
                                T="PeriodFilter">
                         <MudSelectItem Value="@PeriodFilter.Hoje">Hoje</MudSelectItem>
                         <MudSelectItem Value="@PeriodFilter.EstaSemana">Esta Semana</MudSelectItem>
@@ -36,18 +36,18 @@
                     <MudItem xs="12" md="4">
                         <MudDatePicker @bind-Date="_dataInicio" 
                                       Label="Data Início" 
-                                      Variant="Variant.Outlined" />
+                                      variant="Variant.Outlined" />
                     </MudItem>
                     <MudItem xs="12" md="4">
                         <MudDatePicker @bind-Date="_dataFim" 
                                       Label="Data Fim" 
-                                      Variant="Variant.Outlined" />
+                                      variant="Variant.Outlined" />
                     </MudItem>
                 }
                 <MudItem xs="12" md="4">
                     <MudSelect @bind-Value="_topItems" 
                                Label="Quantidade de Itens" 
-                               Variant="Variant.Outlined"
+                               variant="Variant.Outlined"
                                T="int">
                         <MudSelectItem Value="5">Top 5</MudSelectItem>
                         <MudSelectItem Value="10">Top 10</MudSelectItem>
@@ -55,11 +55,11 @@
                     </MudSelect>
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudButton Variant="Variant.Filled" 
+                    <MudButton variant="Variant.Filled" 
                               Color="Color.Primary" 
                               FullWidth="true"
                               StartIcon="@Icons.Material.Filled.Refresh"
-                              OnClick="CarregarDadosAsync"
+                              onClick="CarregarDadosAsync"
                               Disabled="@_carregando"
                               Class="mt-4">
                         @(_carregando ? "Carregando..." : "Atualizar Dados")
@@ -145,7 +145,7 @@
                                         <MudText Typo="Typo.body1" Class="font-weight-bold">@venda.Periodo</MudText>
                                         <MudText Typo="Typo.body1" Color="Color.Success">@venda.Receita.ToString("C")</MudText>
                                     </MudStack>
-                                    <MudProgressLinear Color="Color.Success" Value="@((double)porcentagem)" Variant="Variant.Filled" Class="mb-2" />
+                                    <MudProgressLinear Color="Color.Success" Value="@((double)porcentagem)" variant="Variant.Filled" Class="mb-2" />
                                     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                                         <MudText Typo="Typo.caption" Color="Color.Secondary">
                                             @venda.QuantidadePedidos pedido(s) • @venda.QuantidadeItensVendidos item(ns)
@@ -169,15 +169,15 @@
                     <MudTable Items="@_vendasPorPeriodo" Hover="true" Dense="true">
                         <HeaderContent>
                             <MudTh>Período</MudTh>
-                            <MudTh Align="Align.Right">Receita</MudTh>
-                            <MudTh Align="Align.Right">Pedidos</MudTh>
-                            <MudTh Align="Align.Right">Itens Vendidos</MudTh>
+                            <MudTh align="Align.Right">Receita</MudTh>
+                            <MudTh align="Align.Right">Pedidos</MudTh>
+                            <MudTh align="Align.Right">Itens Vendidos</MudTh>
                         </HeaderContent>
                         <RowTemplate>
                             <MudTd DataLabel="Período">@context.Periodo</MudTd>
-                            <MudTd DataLabel="Receita" Align="Align.Right">@context.Receita.ToString("C")</MudTd>
-                            <MudTd DataLabel="Pedidos" Align="Align.Right">@context.QuantidadePedidos</MudTd>
-                            <MudTd DataLabel="Itens Vendidos" Align="Align.Right">@context.QuantidadeItensVendidos</MudTd>
+                            <MudTd DataLabel="Receita" align="Align.Right">@context.Receita.ToString("C")</MudTd>
+                            <MudTd DataLabel="Pedidos" align="Align.Right">@context.QuantidadePedidos</MudTd>
+                            <MudTd DataLabel="Itens Vendidos" align="Align.Right">@context.QuantidadeItensVendidos</MudTd>
                         </RowTemplate>
                     </MudTable>
                 </MudCardContent>
@@ -236,7 +236,7 @@
                             <MudTable Items="@_produtosMenorEstoque" Hover="true" Dense="true">
                                 <HeaderContent>
                                     <MudTh>Produto</MudTh>
-                                    <MudTh Align="Align.Right">Estoque</MudTh>
+                                    <MudTh align="Align.Right">Estoque</MudTh>
                                 </HeaderContent>
                                 <RowTemplate>
                                     <MudTd DataLabel="Produto">
@@ -250,7 +250,7 @@
                                             <MudText Typo="Typo.body2">@context.Nome</MudText>
                                         </MudStack>
                                     </MudTd>
-                                    <MudTd DataLabel="Estoque" Align="Align.Right">
+                                    <MudTd DataLabel="Estoque" align="Align.Right">
                                         <MudChip T="string" Size="Size.Small" Color="@(context.Estoque <= 5 ? Color.Error : context.Estoque <= 10 ? Color.Warning : Color.Success)">
                                             @context.Estoque
                                         </MudChip>
@@ -278,8 +278,8 @@
                             <MudTable Items="@_produtosMaisVendidos" Hover="true" Dense="true">
                                 <HeaderContent>
                                     <MudTh>Produto</MudTh>
-                                    <MudTh Align="Align.Right">Quantidade</MudTh>
-                                    <MudTh Align="Align.Right">Receita</MudTh>
+                                    <MudTh align="Align.Right">Quantidade</MudTh>
+                                    <MudTh align="Align.Right">Receita</MudTh>
                                 </HeaderContent>
                                 <RowTemplate>
                                     <MudTd DataLabel="Produto">
@@ -293,8 +293,8 @@
                                             <MudText Typo="Typo.body2">@context.Nome</MudText>
                                         </MudStack>
                                     </MudTd>
-                                    <MudTd DataLabel="Quantidade" Align="Align.Right">@context.QuantidadeVendida</MudTd>
-                                    <MudTd DataLabel="Receita" Align="Align.Right">@context.Receita.ToString("C")</MudTd>
+                                    <MudTd DataLabel="Quantidade" align="Align.Right">@context.QuantidadeVendida</MudTd>
+                                    <MudTd DataLabel="Receita" align="Align.Right">@context.Receita.ToString("C")</MudTd>
                                 </RowTemplate>
                             </MudTable>
                         }
@@ -318,8 +318,8 @@
                             <MudTable Items="@_produtosMelhoresAvaliados" Hover="true" Dense="true">
                                 <HeaderContent>
                                     <MudTh>Produto</MudTh>
-                                    <MudTh Align="Align.Center">Avaliação</MudTh>
-                                    <MudTh Align="Align.Right">Total</MudTh>
+                                    <MudTh align="Align.Center">Avaliação</MudTh>
+                                    <MudTh align="Align.Right">Total</MudTh>
                                 </HeaderContent>
                                 <RowTemplate>
                                     <MudTd DataLabel="Produto">
@@ -333,7 +333,7 @@
                                             <MudText Typo="Typo.body2">@context.Nome</MudText>
                                         </MudStack>
                                     </MudTd>
-                                    <MudTd DataLabel="Avaliação" Align="Align.Center">
+                                    <MudTd DataLabel="Avaliação" align="Align.Center">
                                         @if (context.MediaAvaliacao.HasValue)
                                         {
                                             var mediaValor = context.MediaAvaliacao.Value;
@@ -363,7 +363,7 @@
                                             </MudStack>
                                         }
                                     </MudTd>
-                                    <MudTd DataLabel="Total" Align="Align.Right">@context.TotalAvaliacoes</MudTd>
+                                    <MudTd DataLabel="Total" align="Align.Right">@context.TotalAvaliacoes</MudTd>
                                 </RowTemplate>
                             </MudTable>
                         }
@@ -387,8 +387,8 @@
                             <MudTable Items="@_produtosPioresAvaliados" Hover="true" Dense="true">
                                 <HeaderContent>
                                     <MudTh>Produto</MudTh>
-                                    <MudTh Align="Align.Center">Avaliação</MudTh>
-                                    <MudTh Align="Align.Right">Total</MudTh>
+                                    <MudTh align="Align.Center">Avaliação</MudTh>
+                                    <MudTh align="Align.Right">Total</MudTh>
                                 </HeaderContent>
                                 <RowTemplate>
                                     <MudTd DataLabel="Produto">
@@ -402,7 +402,7 @@
                                             <MudText Typo="Typo.body2">@context.Nome</MudText>
                                         </MudStack>
                                     </MudTd>
-                                    <MudTd DataLabel="Avaliação" Align="Align.Center">
+                                    <MudTd DataLabel="Avaliação" align="Align.Center">
                                         @if (context.MediaAvaliacao.HasValue)
                                         {
                                             var mediaValor = context.MediaAvaliacao.Value;
@@ -432,7 +432,7 @@
                                             </MudStack>
                                         }
                                     </MudTd>
-                                    <MudTd DataLabel="Total" Align="Align.Right">@context.TotalAvaliacoes</MudTd>
+                                    <MudTd DataLabel="Total" align="Align.Right">@context.TotalAvaliacoes</MudTd>
                                 </RowTemplate>
                             </MudTable>
                         }
@@ -482,13 +482,28 @@
             var dataInicio = _periodoFiltro == PeriodFilter.Personalizado ? _dataInicio : null;
             var dataFim = _periodoFiltro == PeriodFilter.Personalizado ? _dataFim : null;
 
-            _resumo = await AnalyticsService.ObterResumoAsync(dataInicio, dataFim);
-            _vendasPorPeriodo = (await AnalyticsService.ObterVendasPorPeriodoAsync(_periodoFiltro, dataInicio, dataFim)).ToList();
-            _produtosMaisVendidos = (await AnalyticsService.ObterProdutosMaisVendidosAsync(_topItems, dataInicio, dataFim)).ToList();
-            _produtosMenorEstoque = (await AnalyticsService.ObterProdutosMenorEstoqueAsync(_topItems)).ToList();
-            _produtosMelhoresAvaliados = (await AnalyticsService.ObterProdutosMelhoresAvaliadosAsync(_topItems)).ToList();
-            _produtosPioresAvaliados = (await AnalyticsService.ObterProdutosPioresAvaliadosAsync(_topItems)).ToList();
-            _pedidosPorStatus = (await AnalyticsService.ObterPedidosPorStatusAsync(dataInicio, dataFim)).ToList();
+            // 1. Consulta consolidada para estatísticas relacionadas a pedidos/vendas
+            var analyticsCompleto = await AnalyticsService.ObterAnalyticsCompletoAsync(
+                _periodoFiltro, 
+                _topItems, 
+                dataInicio, 
+                dataFim);
+
+            _resumo = analyticsCompleto.Resumo;
+            _vendasPorPeriodo = analyticsCompleto.VendasPorPeriodo.ToList();
+            _produtosMaisVendidos = analyticsCompleto.ProdutosMaisVendidos.ToList();
+            _pedidosPorStatus = analyticsCompleto.PedidosPorStatus.ToList();
+
+            // 2. Consultas de produtos em paralelo (não relacionadas ao período)
+            var taskMenorEstoque = AnalyticsService.ObterProdutosMenorEstoqueAsync(_topItems);
+            var taskMelhoresAvaliados = AnalyticsService.ObterProdutosMelhoresAvaliadosAsync(_topItems);
+            var taskPioresAvaliados = AnalyticsService.ObterProdutosPioresAvaliadosAsync(_topItems);
+
+            await Task.WhenAll(taskMenorEstoque, taskMelhoresAvaliados, taskPioresAvaliados);
+
+            _produtosMenorEstoque = (await taskMenorEstoque).ToList();
+            _produtosMelhoresAvaliados = (await taskMelhoresAvaliados).ToList();
+            _produtosPioresAvaliados = (await taskPioresAvaliados).ToList();
         }
         catch (Exception ex)
         {

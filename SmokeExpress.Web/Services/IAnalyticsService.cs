@@ -19,5 +19,7 @@ public interface IAnalyticsService
     Task<IReadOnlyList<ProductRatingDto>> ObterProdutosPioresAvaliadosAsync(int top = 10, CancellationToken ct = default);
     
     Task<IReadOnlyList<OrderStatusCountDto>> ObterPedidosPorStatusAsync(DateTime? dataInicio = null, DateTime? dataFim = null, CancellationToken ct = default);
+    
+    Task<DashboardAnalyticsDto> ObterAnalyticsCompletoAsync(PeriodFilter periodo, int topProdutos = 10, DateTime? dataInicio = null, DateTime? dataFim = null, CancellationToken ct = default);
 }
 

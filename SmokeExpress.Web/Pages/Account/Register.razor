@@ -29,13 +29,13 @@
             </MudAlert>
         }
 
-        <MudGrid GutterSize="GutterSize.Small">
+        <MudGrid gutterSize="GutterSize.Small">
             <MudItem xs="12" md="6">
                 <MudTextField Label="Nome completo"
                               For="@(() => _model.NomeCompleto)"
                               @bind-Value="_model.NomeCompleto"
                               Immediate="true"
-                              Variant="Variant.Outlined" />
+                              variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" md="6">
                 <MudTextField Label="E-mail"
@@ -43,7 +43,7 @@
                               @bind-Value="_model.Email"
                               InputType="InputType.Email"
                               Immediate="true"
-                              Variant="Variant.Outlined" />
+                              variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" md="4">
                 <MudTextField Label="CPF"
@@ -51,7 +51,7 @@
                               @bind-Value="_model.Cpf"
                               Immediate="true"
                               HelperText="Digite apenas números."
-                              Variant="Variant.Outlined" 
+                              variant="Variant.Outlined" 
                               Mask="@(new PatternMask("000.000.000-00"))"/>
             </MudItem>
             <MudItem xs="12" md="4">
@@ -60,7 +60,7 @@
                            @bind-Value="_model.Genero"
                            Dense="true"
                            Placeholder="Selecione..."
-                           Variant="Variant.Outlined"
+                           variant="Variant.Outlined"
                            Required="true"
                            >
                            @foreach (var genero in _generos){
@@ -73,10 +73,10 @@
                                For="@(() => _model.DataNascimento)"
                                @bind-Date="_model.DataNascimento"
                                DateFormat="dd/MM/yyyy"
-                               DisplayFormat="dd/MM/yyyy"
+                               displayFormat="dd/MM/yyyy"
                                Culture="@CultureInfo.GetCultureInfo("pt-BR")"
                                Required="true"
-                               Variant="Variant.Outlined" />
+                               variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" md="6">
                 <MudTextField Label="Senha"
@@ -88,7 +88,7 @@
                               OnAdornmentClick="ToggleSenhaVisibility"
                               AdornmentAriaLabel="Alternar visibilidade da senha"
                               Immediate="true"
-                              Variant="Variant.Outlined" />
+                              variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" md="6">
                 <MudTextField Label="Confirmar senha"
@@ -100,7 +100,7 @@
                               OnAdornmentClick="ToggleConfirmacaoSenhaVisibility"
                               AdornmentAriaLabel="Alternar visibilidade da confirmação de senha"
                               Immediate="true"
-                              Variant="Variant.Outlined" />
+                              variant="Variant.Outlined" />
             </MudItem>
         </MudGrid>
 
@@ -113,7 +113,7 @@
                          @bind-Value="_model.ConsentiuMarketing" />
         </MudStack>
 
-        <MudButton Variant="Variant.Filled"
+        <MudButton variant="Variant.Filled"
                    Color="Color.Primary"
                    Size="Size.Large"
                    FullWidth="true"
