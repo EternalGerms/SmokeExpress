@@ -564,9 +564,27 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
 
     private (DateTime?, DateTime?) ObterDatasFiltro(DateTime? dataInicio = null, DateTime? dataFim = null, PeriodFilter? periodo = null)
     {
+        // 1. Definir valores padrão (aplicar preenchimento de nulos)
         DateTime? inicio = dataInicio;
         DateTime? fim = dataFim;
 
+        // Preencher valores nulos com padrão (últimos 30 dias)
+        if (!inicio.HasValue && !fim.HasValue)
+        {
+            var agora = DateTime.UtcNow;
+            fim = agora;
+            inicio = agora.AddDays(-30);
+        }
+        else if (!fim.HasValue)
+        {
+            fim = DateTime.UtcNow;
+        }
+        else if (!inicio.HasValue)
+        {
+            inicio = fim.Value.AddDays(-30);
+        }
+
+        // 2. Se período é um preset, sobrescrever com valores do preset
         if (periodo.HasValue && periodo.Value != PeriodFilter.Personalizado)
         {
             var agora = DateTime.UtcNow;
@@ -591,41 +609,14 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
                     break;
             }
         }
-        else if (periodo == PeriodFilter.Personalizado)
+
+        // 3. Validar datas personalizadas (se aplicável)
+        if (periodo == PeriodFilter.Personalizado)
         {
-            // Se personalizado, usar as datas fornecidas
-            // Se não especificou, usar último mês como padrão
-            if (!inicio.HasValue && !fim.HasValue)
+            // Garantir que inicio <= fim
+            if (inicio.HasValue && fim.HasValue && inicio.Value > fim.Value)
             {
-                var agora = DateTime.UtcNow;
-                fim = agora;
-                inicio = agora.AddDays(-30);
-            }
-            else if (!fim.HasValue)
-            {
-                fim = DateTime.UtcNow;
-            }
-            else if (!inicio.HasValue)
-            {
-                inicio = fim.Value.AddDays(-30);
-            }
-        }
-        else
-        {
-            // Se não especificou período nem datas, usar um período padrão (últimos 30 dias)
-            if (!inicio.HasValue && !fim.HasValue)
-            {
-                var agora = DateTime.UtcNow;
-                fim = agora;
-                inicio = agora.AddDays(-30);
-            }
-            else if (!fim.HasValue)
-            {
-                fim = DateTime.UtcNow;
-            }
-            else if (!inicio.HasValue)
-            {
-                inicio = fim.Value.AddDays(-30);
+                (inicio, fim) = (fim, inicio); // Trocar se invertido
             }
         }
 
