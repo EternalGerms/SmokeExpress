@@ -7,6 +7,7 @@ using SmokeExpress.Web.Data;
 using SmokeExpress.Web.Exceptions;
 using SmokeExpress.Web.Models;
 using SmokeExpress.Web.Helpers;
+using SmokeExpress.Web.Resources;
 
 namespace SmokeExpress.Web.Services;
 
@@ -284,7 +285,7 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
         catch (DbUpdateException ex)
         {
             logger.LogError(ex, "Erro ao salvar produto no banco de dados");
-            throw new BusinessException("Erro ao criar produto. Tente novamente.");
+            throw new BusinessException(ErrorMessages.ErrorCreatingProduct);
         }
         catch (Exception ex)
         {
@@ -330,7 +331,7 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
         catch (DbUpdateException ex)
         {
             logger.LogError(ex, "Erro ao atualizar produto {ProductId} no banco de dados", product.Id);
-            throw new BusinessException("Erro ao atualizar produto. Tente novamente.");
+            throw new BusinessException(ErrorMessages.ErrorUpdatingProduct);
         }
         catch (Exception ex)
         {
@@ -348,7 +349,7 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
         var validacao = await ValidarRemocaoAsync(id, cancellationToken);
         if (!validacao.IsSuccess)
         {
-            if (validacao.ErrorMessage!.Contains("não encontrado"))
+            if (validacao.ErrorMessage!.Contains("não encontrado") || validacao.ErrorMessage.Contains("não encontrada"))
             {
                 throw new NotFoundException("Produto", id);
             }
@@ -373,7 +374,7 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
         catch (DbUpdateException ex)
         {
             logger.LogError(ex, "Erro ao remover produto {ProductId} do banco de dados", id);
-            throw new BusinessException("Erro ao remover produto. Tente novamente.");
+            throw new BusinessException(ErrorMessages.ErrorRemovingProduct);
         }
         catch (Exception ex)
         {
@@ -388,22 +389,22 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
     {
         if (product == null)
         {
-            return Result.Failure("Produto não pode ser nulo.");
+            return Result.Failure(ErrorMessages.ProductCannotBeNull);
         }
 
         if (string.IsNullOrWhiteSpace(product.Nome))
         {
-            return Result.Failure("O nome do produto é obrigatório.");
+            return Result.Failure(ErrorMessages.ProductNameRequired);
         }
 
         if (product.Preco < 0)
         {
-            return Result.Failure("O preço do produto não pode ser negativo.");
+            return Result.Failure(ErrorMessages.ProductPriceCannotBeNegative);
         }
 
         if (product.Estoque < 0)
         {
-            return Result.Failure("O estoque do produto não pode ser negativo.");
+            return Result.Failure(ErrorMessages.ProductStockCannotBeNegative);
         }
 
         // Validar se a categoria existe
@@ -414,7 +415,7 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
             
             if (!categoriaExiste)
             {
-                return Result.Failure($"Categoria com ID {product.CategoriaId} não encontrada.");
+                return Result.Failure(string.Format(ErrorMessages.CategoryWithIdNotFound, product.CategoriaId));
             }
         }
 
@@ -429,12 +430,12 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
 
         if (existente == null)
         {
-            return Result.Failure($"Produto com ID {id} não encontrado.");
+            return Result.Failure(string.Format(ErrorMessages.ProductWithIdNotFound, id));
         }
 
         if (existente.ItensPedido.Any())
         {
-            return Result.Failure($"Não é possível excluir o produto '{existente.Nome}' pois ele possui pedidos associados.");
+            return Result.Failure(string.Format(ErrorMessages.CannotDeleteProductWithOrders, existente.Nome));
         }
 
         return Result.Success();

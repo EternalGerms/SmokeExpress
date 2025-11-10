@@ -1,4 +1,6 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
+using SmokeExpress.Web.Resources;
+
 namespace SmokeExpress.Web.Common;
 
 public static class Guard
@@ -15,7 +17,7 @@ public static class Guard
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException($"{paramName} não pode ser vazio.", paramName);
+            throw new ArgumentException(string.Format(ErrorMessages.ParameterCannotBeEmpty, paramName), paramName);
         }
     }
 
@@ -23,7 +25,7 @@ public static class Guard
     {
         if (value < 0)
         {
-            throw new ArgumentException($"{paramName} não pode ser negativo.", paramName);
+            throw new ArgumentException(string.Format(ErrorMessages.ParameterCannotBeNegative, paramName), paramName);
         }
     }
 }

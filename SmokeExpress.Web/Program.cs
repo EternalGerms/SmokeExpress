@@ -9,6 +9,7 @@ using MudBlazor.Services;
 using SmokeExpress.Web.Constants;
 using SmokeExpress.Web.Data;
 using SmokeExpress.Web.Models;
+using SmokeExpress.Web.Resources;
 using SmokeExpress.Web.Security;
 using SmokeExpress.Web.Services;
 using SmokeExpress.Web.Routing;
@@ -17,7 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Configuração da conexão com o SQL Server
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("A string de conexão 'DefaultConnection' não foi configurada.");
+    ?? throw new InvalidOperationException(ErrorMessages.ConnectionStringNotConfigured);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));

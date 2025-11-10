@@ -5,6 +5,7 @@ using SmokeExpress.Web.Common;
 using SmokeExpress.Web.Data;
 using SmokeExpress.Web.Exceptions;
 using SmokeExpress.Web.Models;
+using SmokeExpress.Web.Resources;
 
 namespace SmokeExpress.Web.Services;
 
@@ -52,7 +53,7 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
         catch (DbUpdateException ex)
         {
             logger.LogError(ex, "Erro ao salvar avaliação no banco de dados");
-            throw new BusinessException("Erro ao criar avaliação. Tente novamente.");
+            throw new BusinessException(ErrorMessages.ErrorCreatingReview);
         }
         catch (Exception ex)
         {
@@ -208,19 +209,19 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
     {
         if (string.IsNullOrWhiteSpace(userId))
         {
-            return Result.Failure("UserId não pode ser vazio.");
+            return Result.Failure(ErrorMessages.UserIdCannotBeEmpty);
         }
 
         if (rating < 0 || rating > 5)
         {
-            return Result.Failure("Rating deve estar entre 0 e 5.");
+            return Result.Failure(ErrorMessages.InvalidRating);
         }
 
         // Verificar se o produto existe
         var produtoExiste = await dbContext.Products.AnyAsync(p => p.Id == productId, ct);
         if (!produtoExiste)
         {
-            return Result.Failure($"Produto com ID {productId} não encontrado.");
+            return Result.Failure(string.Format(ErrorMessages.ProductWithIdNotFoundForReview, productId));
         }
 
         // Se OrderId foi fornecido, verificar se o pedido existe
@@ -229,7 +230,7 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
             var pedidoExiste = await dbContext.Orders.AnyAsync(o => o.Id == orderId.Value && o.ApplicationUserId == userId, ct);
             if (!pedidoExiste)
             {
-                return Result.Failure($"Pedido com ID {orderId.Value} não encontrado ou não pertence ao usuário.");
+                return Result.Failure(string.Format(ErrorMessages.OrderNotFoundOrNotOwned, orderId.Value));
             }
         }
 

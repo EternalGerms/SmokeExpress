@@ -420,6 +420,242 @@
             DTO simplificado de produto para APIs e operações leves.
             </summary>
         </member>
+        <member name="T:SmokeExpress.Web.Resources.ErrorMessages">
+            <summary>
+            Mensagens de erro centralizadas do sistema.
+            Todas as mensagens de erro devem ser definidas aqui para garantir consistência.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.InvalidUserId">
+            <summary>
+            UserId inválido ou vazio.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.UserIdCannotBeEmpty">
+            <summary>
+            UserId não pode ser vazio.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.EmptyCart">
+            <summary>
+            Carrinho de compras vazio.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.InvalidQuantity">
+            <summary>
+            Quantidade inválida em um ou mais itens.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.InvalidRating">
+            <summary>
+            Rating deve estar entre 0 e 5.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ProductCannotBeNull">
+            <summary>
+            Produto não pode ser nulo.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.CategoryCannotBeNull">
+            <summary>
+            Categoria não pode ser nula.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.AddressCannotBeNull">
+            <summary>
+            Endereço não pode ser nulo.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ProductNameRequired">
+            <summary>
+            O nome do produto é obrigatório.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.CategoryNameRequired">
+            <summary>
+            O nome da categoria é obrigatório.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ProductPriceCannotBeNegative">
+            <summary>
+            O preço do produto não pode ser negativo.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ProductStockCannotBeNegative">
+            <summary>
+            O estoque do produto não pode ser negativo.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ErrorCreatingProduct">
+            <summary>
+            Erro ao criar produto. Tente novamente.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ErrorUpdatingProduct">
+            <summary>
+            Erro ao atualizar produto. Tente novamente.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ErrorRemovingProduct">
+            <summary>
+            Erro ao remover produto. Tente novamente.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ErrorCreatingCategory">
+            <summary>
+            Erro ao criar categoria. Tente novamente.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ErrorUpdatingCategory">
+            <summary>
+            Erro ao atualizar categoria. Tente novamente.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ErrorRemovingCategory">
+            <summary>
+            Erro ao remover categoria. Tente novamente.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ErrorCreatingAddress">
+            <summary>
+            Erro ao criar endereço. Tente novamente.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ErrorUpdatingAddress">
+            <summary>
+            Erro ao atualizar endereço. Tente novamente.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ErrorRemovingAddress">
+            <summary>
+            Erro ao remover endereço. Tente novamente.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ErrorSettingDefaultAddress">
+            <summary>
+            Erro ao definir endereço como padrão. Tente novamente.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ErrorProcessingOrder">
+            <summary>
+            Erro ao processar pedido. Tente novamente.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ErrorUpdatingOrderStatus">
+            <summary>
+            Erro ao atualizar status do pedido. Tente novamente.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ErrorCreatingReview">
+            <summary>
+            Erro ao criar avaliação. Tente novamente.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.InsufficientStock">
+            <summary>
+            Quantidade acima do estoque para '{0}'. Disponível: {1}.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.CannotDeleteProductWithOrders">
+            <summary>
+            Não é possível excluir o produto '{0}' pois ele possui pedidos associados.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.CannotDeleteCategoryWithProducts">
+            <summary>
+            Não é possível excluir a categoria '{0}' pois ela possui produtos associados.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ProductNotFound">
+            <summary>
+            Produto não encontrado.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ProductWithIdNotFound">
+            <summary>
+            Produto com ID {0} não encontrado.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.CategoryWithIdNotFound">
+            <summary>
+            Categoria com ID {0} não encontrada.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ProductsNotFound">
+            <summary>
+            Um ou mais produtos não foram encontrados.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.OrderNotFound">
+            <summary>
+            Pedido não encontrado.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.OrderNotFoundOrNotOwned">
+            <summary>
+            Pedido com ID {0} não encontrado ou não pertence ao usuário.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ProductWithIdNotFoundForReview">
+            <summary>
+            Produto com ID {0} não encontrado.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.AddressRequired">
+            <summary>
+            Endereço de entrega é obrigatório.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.AddressStreetRequired">
+            <summary>
+            O campo Rua do endereço de entrega é obrigatório.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.AddressCityRequired">
+            <summary>
+            O campo Cidade do endereço de entrega é obrigatório.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.AddressNeighborhoodRequired">
+            <summary>
+            O campo Bairro do endereço de entrega é obrigatório.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.AddressStreetRequiredSimple">
+            <summary>
+            O campo Rua do endereço é obrigatório.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.AddressCityRequiredSimple">
+            <summary>
+            O campo Cidade do endereço é obrigatório.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.AddressNeighborhoodRequiredSimple">
+            <summary>
+            O campo Bairro do endereço é obrigatório.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.InvalidDeliveryAddress">
+            <summary>
+            Por favor, selecione um endereço de entrega válido antes de finalizar o pedido.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ParameterCannotBeEmpty">
+            <summary>
+            {0} não pode ser vazio.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ParameterCannotBeNegative">
+            <summary>
+            {0} não pode ser negativo.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Resources.ErrorMessages.ConnectionStringNotConfigured">
+            <summary>
+            A string de conexão 'DefaultConnection' não foi configurada.
+            </summary>
+        </member>
         <member name="T:SmokeExpress.Web.Routing.AccountEndpointRouteBuilderExtensions">
             <summary>
             Extensões responsáveis por organizar os endpoints de autenticação utilizados pelos componentes Blazor.

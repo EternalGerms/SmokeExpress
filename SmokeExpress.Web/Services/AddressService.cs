@@ -5,6 +5,7 @@ using SmokeExpress.Web.Common;
 using SmokeExpress.Web.Data;
 using SmokeExpress.Web.Exceptions;
 using SmokeExpress.Web.Models;
+using SmokeExpress.Web.Resources;
 
 namespace SmokeExpress.Web.Services;
 
@@ -54,7 +55,7 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
         catch (DbUpdateException ex)
         {
             logger.LogError(ex, "Erro ao salvar endereço no banco de dados. UserId: {UserId}", userId);
-            throw new BusinessException("Erro ao criar endereço. Tente novamente.");
+            throw new BusinessException(ErrorMessages.ErrorCreatingAddress);
         }
         catch (Exception ex)
         {
@@ -103,7 +104,7 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
         catch (DbUpdateException ex)
         {
             logger.LogError(ex, "Erro ao atualizar endereço {AddressId} no banco de dados", id);
-            throw new BusinessException("Erro ao atualizar endereço. Tente novamente.");
+            throw new BusinessException(ErrorMessages.ErrorUpdatingAddress);
         }
         catch (Exception ex)
         {
@@ -131,7 +132,7 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
         catch (DbUpdateException ex)
         {
             logger.LogError(ex, "Erro ao remover endereço {AddressId} do banco de dados", id);
-            throw new BusinessException("Erro ao remover endereço. Tente novamente.");
+            throw new BusinessException(ErrorMessages.ErrorRemovingAddress);
         }
         catch (Exception ex)
         {
@@ -181,7 +182,7 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
         catch (DbUpdateException ex)
         {
             logger.LogError(ex, "Erro ao definir endereço {AddressId} como padrão no banco de dados", id);
-            throw new BusinessException("Erro ao definir endereço como padrão. Tente novamente.");
+            throw new BusinessException(ErrorMessages.ErrorSettingDefaultAddress);
         }
         catch (Exception ex)
         {
@@ -203,22 +204,22 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
     {
         if (address == null)
         {
-            return Result.Failure("Endereço não pode ser nulo.");
+            return Result.Failure(ErrorMessages.AddressCannotBeNull);
         }
 
         if (string.IsNullOrWhiteSpace(address.Rua))
         {
-            return Result.Failure("O campo Rua do endereço é obrigatório.");
+            return Result.Failure(ErrorMessages.AddressStreetRequiredSimple);
         }
 
         if (string.IsNullOrWhiteSpace(address.Cidade))
         {
-            return Result.Failure("O campo Cidade do endereço é obrigatório.");
+            return Result.Failure(ErrorMessages.AddressCityRequiredSimple);
         }
 
         if (string.IsNullOrWhiteSpace(address.Bairro))
         {
-            return Result.Failure("O campo Bairro do endereço é obrigatório.");
+            return Result.Failure(ErrorMessages.AddressNeighborhoodRequiredSimple);
         }
 
         return Result.Success();

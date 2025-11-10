@@ -9,6 +9,7 @@ using SmokeExpress.Web.Exceptions;
 using SmokeExpress.Web.Extensions;
 using SmokeExpress.Web.Models;
 using SmokeExpress.Web.Services;
+using SmokeExpress.Web.Resources;
 
 namespace SmokeExpress.Web.Routing;
 
@@ -34,20 +35,20 @@ public static class OrderEndpointRouteBuilderExtensions
             {
                 if (req == null || req.Itens == null || req.Itens.Count == 0)
                 {
-                    return Results.BadRequest(new { message = "Carrinho vazio." });
+                    return Results.BadRequest(new { message = ErrorMessages.EmptyCart });
                 }
 
                 // Validar endereço obrigatório
                 if (req.Endereco == null)
                 {
-                    return Results.BadRequest(new { message = "Endereço de entrega é obrigatório." });
+                    return Results.BadRequest(new { message = ErrorMessages.AddressRequired });
                 }
 
                 if (string.IsNullOrWhiteSpace(req.Endereco.Rua) ||
                     string.IsNullOrWhiteSpace(req.Endereco.Cidade) ||
                     string.IsNullOrWhiteSpace(req.Endereco.Bairro))
                 {
-                    return Results.BadRequest(new { message = "Por favor, selecione um endereço de entrega válido antes de finalizar o pedido." });
+                    return Results.BadRequest(new { message = ErrorMessages.InvalidDeliveryAddress });
                 }
 
                 var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -83,7 +84,7 @@ public static class OrderEndpointRouteBuilderExtensions
                 }
                 catch (DbUpdateException)
                 {
-                    return Results.Problem("Erro ao processar pedido. Tente novamente.", statusCode: 500);
+                    return Results.Problem(ErrorMessages.ErrorProcessingOrder, statusCode: 500);
                 }
             })
             .RequireAuthorization()
@@ -109,7 +110,7 @@ public static class OrderEndpointRouteBuilderExtensions
 
                 if (order is null)
                 {
-                    return Results.NotFound(new { message = "Pedido não encontrado." });
+                    return Results.NotFound(new { message = ErrorMessages.OrderNotFound });
                 }
 
                 var dto = order.ToOrderApiDto();

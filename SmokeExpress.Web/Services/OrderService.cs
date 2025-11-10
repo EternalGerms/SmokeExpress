@@ -6,6 +6,7 @@ using SmokeExpress.Web.Data;
 using SmokeExpress.Web.Exceptions;
 using SmokeExpress.Web.Models;
 using SmokeExpress.Web.Helpers;
+using SmokeExpress.Web.Resources;
 
 namespace SmokeExpress.Web.Services;
 
@@ -82,7 +83,7 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
         catch (DbUpdateException ex)
         {
             logger.LogError(ex, "Erro ao salvar pedido no banco de dados. UserId: {UserId}", userId);
-            throw new BusinessException("Erro ao processar pedido. Tente novamente.");
+            throw new BusinessException(ErrorMessages.ErrorProcessingOrder);
         }
         catch (Exception ex)
         {
@@ -152,7 +153,7 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
         catch (DbUpdateException ex)
         {
             logger.LogError(ex, "Erro ao atualizar status do pedido {OrderId} no banco de dados", id);
-            throw new BusinessException("Erro ao atualizar status do pedido. Tente novamente.");
+            throw new BusinessException(ErrorMessages.ErrorUpdatingOrderStatus);
         }
         catch (Exception ex)
         {
@@ -171,20 +172,20 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
         // Validar userId
         if (string.IsNullOrWhiteSpace(userId))
         {
-            return Result.Failure("UserId inválido.");
+            return Result.Failure(ErrorMessages.InvalidUserId);
         }
 
         // Validar carrinho
         var itensLista = cartItems?.ToList() ?? [];
         if (itensLista.Count == 0)
         {
-            return Result.Failure("Carrinho vazio.");
+            return Result.Failure(ErrorMessages.EmptyCart);
         }
 
         // Validar quantidades
         if (itensLista.Any(i => i.Quantidade <= 0))
         {
-            return Result.Failure("Quantidade inválida em um ou mais itens.");
+            return Result.Failure(ErrorMessages.InvalidQuantity);
         }
 
         // Validar produtos existentes
@@ -195,7 +196,7 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
 
         if (products.Count != productIds.Count)
         {
-            return Result.Failure("Um ou mais produtos não foram encontrados.");
+            return Result.Failure(ErrorMessages.ProductsNotFound);
         }
 
         var productById = products.ToDictionary(p => p.Id);
@@ -206,29 +207,29 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
             var product = productById[item.ProductId];
             if (item.Quantidade > product.Estoque)
             {
-                return Result.Failure($"Quantidade acima do estoque para '{product.Nome}'. Disponível: {product.Estoque}.");
+                return Result.Failure(string.Format(ErrorMessages.InsufficientStock, product.Nome, product.Estoque));
             }
         }
 
         // Validar endereço
         if (endereco == null)
         {
-            return Result.Failure("Endereço de entrega é obrigatório.");
+            return Result.Failure(ErrorMessages.AddressRequired);
         }
 
         if (string.IsNullOrWhiteSpace(endereco.Rua))
         {
-            return Result.Failure("O campo Rua do endereço de entrega é obrigatório.");
+            return Result.Failure(ErrorMessages.AddressStreetRequired);
         }
 
         if (string.IsNullOrWhiteSpace(endereco.Cidade))
         {
-            return Result.Failure("O campo Cidade do endereço de entrega é obrigatório.");
+            return Result.Failure(ErrorMessages.AddressCityRequired);
         }
 
         if (string.IsNullOrWhiteSpace(endereco.Bairro))
         {
-            return Result.Failure("O campo Bairro do endereço de entrega é obrigatório.");
+            return Result.Failure(ErrorMessages.AddressNeighborhoodRequired);
         }
 
         return Result.Success();

@@ -5,6 +5,7 @@ using SmokeExpress.Web.Common;
 using SmokeExpress.Web.Data;
 using SmokeExpress.Web.Exceptions;
 using SmokeExpress.Web.Models;
+using SmokeExpress.Web.Resources;
 
 namespace SmokeExpress.Web.Services;
 
@@ -53,7 +54,7 @@ public class CategoryService(ApplicationDbContext context, ILogger<CategoryServi
         catch (DbUpdateException ex)
         {
             logger.LogError(ex, "Erro ao salvar categoria no banco de dados");
-            throw new BusinessException("Erro ao criar categoria. Tente novamente.");
+            throw new BusinessException(ErrorMessages.ErrorCreatingCategory);
         }
         catch (Exception ex)
         {
@@ -92,7 +93,7 @@ public class CategoryService(ApplicationDbContext context, ILogger<CategoryServi
         catch (DbUpdateException ex)
         {
             logger.LogError(ex, "Erro ao atualizar categoria {CategoryId} no banco de dados", category.Id);
-            throw new BusinessException("Erro ao atualizar categoria. Tente novamente.");
+            throw new BusinessException(ErrorMessages.ErrorUpdatingCategory);
         }
         catch (Exception ex)
         {
@@ -133,7 +134,7 @@ public class CategoryService(ApplicationDbContext context, ILogger<CategoryServi
         catch (DbUpdateException ex)
         {
             logger.LogError(ex, "Erro ao remover categoria {CategoryId} do banco de dados", id);
-            throw new BusinessException("Erro ao remover categoria. Tente novamente.");
+            throw new BusinessException(ErrorMessages.ErrorRemovingCategory);
         }
         catch (Exception ex)
         {
@@ -146,12 +147,12 @@ public class CategoryService(ApplicationDbContext context, ILogger<CategoryServi
     {
         if (category == null)
         {
-            return Result.Failure("Categoria não pode ser nula.");
+            return Result.Failure(ErrorMessages.CategoryCannotBeNull);
         }
 
         if (string.IsNullOrWhiteSpace(category.Nome))
         {
-            return Result.Failure("O nome da categoria é obrigatório.");
+            return Result.Failure(ErrorMessages.CategoryNameRequired);
         }
 
         return Result.Success();
@@ -165,12 +166,12 @@ public class CategoryService(ApplicationDbContext context, ILogger<CategoryServi
 
         if (existente == null)
         {
-            return Result.Failure($"Categoria com ID {id} não encontrada.");
+            return Result.Failure(string.Format(ErrorMessages.CategoryWithIdNotFound, id));
         }
 
         if (existente.Produtos.Any())
         {
-            return Result.Failure($"Não é possível excluir a categoria '{existente.Nome}' pois ela possui produtos associados.");
+            return Result.Failure(string.Format(ErrorMessages.CannotDeleteCategoryWithProducts, existente.Nome));
         }
 
         return Result.Success();
