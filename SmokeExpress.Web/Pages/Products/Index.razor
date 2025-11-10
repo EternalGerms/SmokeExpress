@@ -1,6 +1,7 @@
 @page "/produtos"
 @using Microsoft.EntityFrameworkCore
 @using MudBlazor
+@using SmokeExpress.Web.Constants
 @using SmokeExpress.Web.Exceptions
 @using SmokeExpress.Web.Models
 @using SmokeExpress.Web.Services
@@ -332,7 +333,7 @@
     private IReadOnlyList<Category> _categorias = Array.Empty<Category>();
     private bool _carregando = true;
     private string? _mensagemErro;
-    private const int _pageSize = 12;
+    private const int _pageSize = ApplicationConstants.DefaultPageSize;
     private Dictionary<int, decimal?> _mediasAvaliacoes = new();
 
     private int PageNumber => PageQuery ?? 1;
@@ -396,7 +397,7 @@
         {
             _mensagemErro = ex.Message;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _mensagemErro = "Erro inesperado ao carregar categorias. Tente novamente.";
         }
@@ -426,15 +427,15 @@
                 await CarregarMediasAvaliacoesAsync();
             }
         }
-        catch (BusinessException ex)
-        {
-            _mensagemErro = ex.Message;
-        }
         catch (NotFoundException ex)
         {
             _mensagemErro = ex.Message;
         }
-        catch (Exception ex)
+        catch (BusinessException ex)
+        {
+            _mensagemErro = ex.Message;
+        }
+        catch (Exception)
         {
             _mensagemErro = "Erro inesperado ao carregar os produtos. Tente novamente.";
         }
@@ -529,8 +530,8 @@
         }
 
         var textoPlano = descricao.Replace("<", " ").Replace(">", " ");
-        return textoPlano.Length > 150
-            ? textoPlano[..150] + "..."
+        return textoPlano.Length > ApplicationConstants.ProductSummaryLength
+            ? textoPlano[..ApplicationConstants.ProductSummaryLength] + "..."
             : textoPlano;
     }
 }

@@ -1,6 +1,8 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using System.ComponentModel.DataAnnotations
+@using SmokeExpress.Web.Constants
 @using SmokeExpress.Web.Exceptions
+@using ValidationException = SmokeExpress.Web.Exceptions.ValidationException
 @inject ILogger<CategoryForm> Logger
 
 @* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
@@ -74,13 +76,13 @@
 
             await OnSave.InvokeAsync(categoria);
         }
-        catch (BusinessException ex)
-        {
-            Logger.LogError(ex, "Erro ao salvar categoria: {Message}", ex.Message);
-        }
         catch (ValidationException ex)
         {
             Logger.LogError(ex, "Erro de validação ao salvar categoria: {Message}", ex.Message);
+        }
+        catch (BusinessException ex)
+        {
+            Logger.LogError(ex, "Erro ao salvar categoria: {Message}", ex.Message);
         }
         catch (Exception ex)
         {
@@ -95,10 +97,10 @@
     private class CategoryFormModel
     {
         [Required(ErrorMessage = "O nome é obrigatório")]
-        [StringLength(120, ErrorMessage = "O nome deve ter no máximo 120 caracteres")]
+        [StringLength(ApplicationConstants.MaxCategoryNameLength, ErrorMessage = "O nome deve ter no máximo 120 caracteres")]
         public string Nome { get; set; } = string.Empty;
 
-        [StringLength(500, ErrorMessage = "A descrição deve ter no máximo 500 caracteres")]
+        [StringLength(ApplicationConstants.MaxCategoryDescriptionLength, ErrorMessage = "A descrição deve ter no máximo 500 caracteres")]
         public string? Descricao { get; set; }
     }
 }

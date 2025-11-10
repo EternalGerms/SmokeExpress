@@ -1,6 +1,7 @@
 @page "/admin/estatisticas"
 @attribute [Authorize(Roles = "Admin")]
 @using MudBlazor
+@using SmokeExpress.Web.Constants
 @using SmokeExpress.Web.Exceptions
 @using SmokeExpress.Web.Models
 @using SmokeExpress.Web.Models.Dashboard
@@ -51,7 +52,7 @@
                                variant="Variant.Outlined"
                                T="int">
                         <MudSelectItem Value="5">Top 5</MudSelectItem>
-                        <MudSelectItem Value="10">Top 10</MudSelectItem>
+                        <MudSelectItem Value="@ApplicationConstants.DefaultTopItems">Top 10</MudSelectItem>
                         <MudSelectItem Value="20">Top 20</MudSelectItem>
                     </MudSelect>
                 </MudItem>
@@ -422,7 +423,7 @@
     private PeriodFilter _periodoFiltro = PeriodFilter.EsteMes;
     private DateTime? _dataInicio;
     private DateTime? _dataFim;
-    private int _topItems = 10;
+    private int _topItems = ApplicationConstants.DefaultTopItems;
 
     private DashboardSummaryDto _resumo = new();
     private IReadOnlyList<SalesByPeriodDto> _vendasPorPeriodo = Array.Empty<SalesByPeriodDto>();

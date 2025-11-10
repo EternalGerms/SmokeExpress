@@ -1,5 +1,6 @@
 @page "/admin/produtos"
 @attribute [Authorize(Roles = "Admin")]
+@using SmokeExpress.Web.Constants
 @inject IProductService ProductService
 @inject NavigationManager Navigation
 @inject IImageUploadService ImageUploadService
@@ -153,7 +154,7 @@ else if (_resultado != null)
     private PagedResult<Product>? _resultado;
     private bool _carregando = true;
     private string? _mensagemErro;
-    private const int _pageSize = 10;
+    private const int _pageSize = ApplicationConstants.AdminPageSize;
 
     // Exclusão
     private Product? _produtoParaExcluir;

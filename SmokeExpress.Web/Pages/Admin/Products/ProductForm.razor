@@ -1,7 +1,9 @@
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.Forms
 @using System.ComponentModel.DataAnnotations
+@using SmokeExpress.Web.Constants
 @using SmokeExpress.Web.Exceptions
+@using ValidationException = SmokeExpress.Web.Exceptions.ValidationException
 @inject ApplicationDbContext DbContext
 @inject IImageUploadService ImageUploadService
 @inject ILogger<ProductForm> Logger
@@ -161,8 +163,7 @@
         }
 
         // Validar tamanho (5MB)
-        const long maxSize = 5 * 1024 * 1024;
-        if (e.File.Size > maxSize)
+        if (e.File.Size > ApplicationConstants.MaxImageSizeBytes)
         {
             _erroUpload = "Arquivo muito grande. Tamanho máximo: 5MB";
             return;
@@ -180,7 +181,7 @@
 
         // Criar preview
         var buffer = new byte[e.File.Size];
-        await e.File.OpenReadStream(maxSize).ReadAsync(buffer);
+        await e.File.OpenReadStream(ApplicationConstants.MaxImageSizeBytes).ReadAsync(buffer);
         var base64 = Convert.ToBase64String(buffer);
         _imagemPreview = $"data:{e.File.ContentType};base64,{base64}";
     }
@@ -211,7 +212,7 @@
                 }
 
                 // Fazer upload da nova imagem
-                using var stream = _arquivoSelecionado.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+                using var stream = _arquivoSelecionado.OpenReadStream(maxAllowedSize: ApplicationConstants.MaxImageSizeBytes);
                 var imagePath = await ImageUploadService.UploadProductImageAsync(
                     stream,
                     _arquivoSelecionado.Name,
@@ -231,9 +232,9 @@
 
             await OnSave.InvokeAsync(produto);
         }
-        catch (BusinessException ex)
+        catch (NotFoundException ex)
         {
-            Logger.LogError(ex, "Erro ao salvar produto: {Message}", ex.Message);
+            Logger.LogError(ex, "Recurso não encontrado ao salvar produto: {Message}", ex.Message);
             _erroUpload = ex.Message;
         }
         catch (ValidationException ex)
@@ -241,9 +242,9 @@
             Logger.LogError(ex, "Erro de validação ao salvar produto: {Message}", ex.Message);
             _erroUpload = ex.Message;
         }
-        catch (NotFoundException ex)
+        catch (BusinessException ex)
         {
-            Logger.LogError(ex, "Recurso não encontrado ao salvar produto: {Message}", ex.Message);
+            Logger.LogError(ex, "Erro ao salvar produto: {Message}", ex.Message);
             _erroUpload = ex.Message;
         }
         catch (Exception ex)
@@ -260,10 +261,10 @@
     private class ProductFormModel
     {
         [Required(ErrorMessage = "O nome é obrigatório")]
-        [StringLength(150, ErrorMessage = "O nome deve ter no máximo 150 caracteres")]
+        [StringLength(ApplicationConstants.MaxProductNameLength, ErrorMessage = "O nome deve ter no máximo 150 caracteres")]
         public string Nome { get; set; } = string.Empty;
 
-        [StringLength(2000, ErrorMessage = "A descrição deve ter no máximo 2000 caracteres")]
+        [StringLength(ApplicationConstants.MaxProductDescriptionLength, ErrorMessage = "A descrição deve ter no máximo 2000 caracteres")]
         public string? Descricao { get; set; }
 
         [Required(ErrorMessage = "O preço é obrigatório")]

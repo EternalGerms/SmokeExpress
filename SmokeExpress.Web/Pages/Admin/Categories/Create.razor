@@ -28,15 +28,15 @@
             await CategoryService.CriarAsync(categoria);
             Navigation.NavigateTo("/admin/categorias?success=created");
         }
-        catch (BusinessException ex)
-        {
-            Logger.LogError(ex, "Erro ao criar categoria: {Message}", ex.Message);
-            _mensagemErro = ex.Message;
-            StateHasChanged();
-        }
         catch (ValidationException ex)
         {
             Logger.LogError(ex, "Erro de validação ao criar categoria: {Message}", ex.Message);
+            _mensagemErro = ex.Message;
+            StateHasChanged();
+        }
+        catch (BusinessException ex)
+        {
+            Logger.LogError(ex, "Erro ao criar categoria: {Message}", ex.Message);
             _mensagemErro = ex.Message;
             StateHasChanged();
         }

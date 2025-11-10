@@ -4,7 +4,9 @@
 @using System.Linq
 @using Microsoft.EntityFrameworkCore
 @using MudBlazor
+@using SmokeExpress.Web.Constants
 @using SmokeExpress.Web.Exceptions
+@using ValidationException = SmokeExpress.Web.Exceptions.ValidationException
 @using SmokeExpress.Web.Validation
 @using SmokeExpress.Web.Shared.FormControls
 @inject UserManager<ApplicationUser> UserManager
@@ -230,14 +232,14 @@
 
             _mensagemErro = string.Join(" ", resultado.Errors.Select(e => e.Description));
         }
-        catch (BusinessException ex)
-        {
-            Logger.LogError(ex, "Erro ao registrar usuário {Email}: {Message}", _model.Email, ex.Message);
-            _mensagemErro = ex.Message;
-        }
         catch (ValidationException ex)
         {
             Logger.LogError(ex, "Erro de validação ao registrar usuário {Email}: {Message}", _model.Email, ex.Message);
+            _mensagemErro = ex.Message;
+        }
+        catch (BusinessException ex)
+        {
+            Logger.LogError(ex, "Erro ao registrar usuário {Email}: {Message}", _model.Email, ex.Message);
             _mensagemErro = ex.Message;
         }
         catch (Exception ex)
@@ -270,7 +272,7 @@
         public DateTime? DataNascimento { get; set; }
 
         [Required(ErrorMessage = "Informe uma senha válida.")]
-        [StringLength(100, MinimumLength = 8, ErrorMessage = "A senha deve possuir ao menos 8 caracteres.")]
+        [StringLength(100, MinimumLength = ApplicationConstants.MinPasswordLength, ErrorMessage = "A senha deve possuir ao menos 8 caracteres.")]
         [DataType(DataType.Password)]
         public string Senha { get; set; } = string.Empty;
 

@@ -52,17 +52,17 @@ public static class OrderEndpointRouteBuilderExtensions
                     var orderId = await orderService.CriarPedidoAsync(userId, req.Itens, req.Endereco, req.Frete, ct);
                     return Results.Ok(new { orderId });
                 }
-                catch (BusinessException ex)
+                catch (NotFoundException ex)
                 {
-                    return Results.BadRequest(new { message = ex.Message });
+                    return Results.NotFound(new { message = ex.Message });
                 }
                 catch (ValidationException ex)
                 {
                     return Results.BadRequest(new { message = ex.Message });
                 }
-                catch (NotFoundException ex)
+                catch (BusinessException ex)
                 {
-                    return Results.NotFound(new { message = ex.Message });
+                    return Results.BadRequest(new { message = ex.Message });
                 }
                 catch (ArgumentNullException ex)
                 {
@@ -74,7 +74,7 @@ public static class OrderEndpointRouteBuilderExtensions
                 }
                 catch (DbUpdateException)
                 {
-                    return Results.StatusCode(500, new { message = "Erro ao processar pedido. Tente novamente." });
+                    return Results.Problem("Erro ao processar pedido. Tente novamente.", statusCode: 500);
                 }
             })
             .RequireAuthorization()

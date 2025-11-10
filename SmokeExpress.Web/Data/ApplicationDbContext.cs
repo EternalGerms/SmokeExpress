@@ -1,6 +1,7 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using SmokeExpress.Web.Constants;
 using SmokeExpress.Web.Models;
 
 namespace SmokeExpress.Web.Data;
@@ -96,11 +97,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<Category>(entity =>
         {
             entity.Property(c => c.Nome)
-                .HasMaxLength(120)
+                .HasMaxLength(ApplicationConstants.MaxCategoryNameLength)
                 .IsRequired();
 
             entity.Property(c => c.Descricao)
-                .HasMaxLength(500);
+                .HasMaxLength(ApplicationConstants.MaxCategoryDescriptionLength);
 
             entity.HasMany(c => c.Produtos)
                 .WithOne(p => p.Categoria)
@@ -111,11 +112,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<Product>(entity =>
         {
             entity.Property(p => p.Nome)
-                .HasMaxLength(150)
+                .HasMaxLength(ApplicationConstants.MaxProductNameLength)
                 .IsRequired();
 
             entity.Property(p => p.Descricao)
-                .HasMaxLength(2000);
+                .HasMaxLength(ApplicationConstants.MaxProductDescriptionLength);
 
             entity.Property(p => p.Preco)
                 .HasColumnType("decimal(18,2)");

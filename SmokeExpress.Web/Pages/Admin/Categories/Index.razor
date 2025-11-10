@@ -138,7 +138,7 @@ else
         {
             _mensagemErro = ex.Message;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _mensagemErro = "Erro inesperado ao carregar as categorias. Tente novamente.";
         }
@@ -176,7 +176,7 @@ else
             await CarregarCategoriasAsync();
             _categoriaParaExcluir = null;
         }
-        catch (BusinessException ex)
+        catch (NotFoundException ex)
         {
             _erroExclusao = ex.Message;
         }
@@ -184,11 +184,11 @@ else
         {
             _erroExclusao = ex.Message;
         }
-        catch (NotFoundException ex)
+        catch (BusinessException ex)
         {
             _erroExclusao = ex.Message;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _erroExclusao = "Erro inesperado ao excluir categoria. Tente novamente.";
         }

@@ -1,5 +1,6 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
 using Microsoft.EntityFrameworkCore;
+using SmokeExpress.Web.Constants;
 using SmokeExpress.Web.Data;
 using SmokeExpress.Web.Models;
 using SmokeExpress.Web.Models.Dashboard;
@@ -180,7 +181,7 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
         }
     }
 
-    public async Task<IReadOnlyList<ProductSalesDto>> ObterProdutosMaisVendidosAsync(int top = 10, DateTime? dataInicio = null, DateTime? dataFim = null, CancellationToken ct = default)
+    public async Task<IReadOnlyList<ProductSalesDto>> ObterProdutosMaisVendidosAsync(int top = ApplicationConstants.DefaultTopItems, DateTime? dataInicio = null, DateTime? dataFim = null, CancellationToken ct = default)
     {
         var (inicio, fim) = ObterDatasFiltro(dataInicio, dataFim);
 
@@ -210,7 +211,7 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
         return produtosVendidos;
     }
 
-    public async Task<IReadOnlyList<Product>> ObterProdutosMenorEstoqueAsync(int top = 10, CancellationToken ct = default)
+    public async Task<IReadOnlyList<Product>> ObterProdutosMenorEstoqueAsync(int top = ApplicationConstants.DefaultTopItems, CancellationToken ct = default)
     {
         return await dbContext.Products
             .AsNoTracking()
@@ -221,7 +222,7 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
             .ToListAsync(ct);
     }
 
-    public async Task<IReadOnlyList<ProductRatingDto>> ObterProdutosMelhoresAvaliadosAsync(int top = 10, CancellationToken ct = default)
+    public async Task<IReadOnlyList<ProductRatingDto>> ObterProdutosMelhoresAvaliadosAsync(int top = ApplicationConstants.DefaultTopItems, CancellationToken ct = default)
     {
         // Agrupar Reviews primeiro para calcular agregações uma única vez e materializar
         var avaliacoesAgrupadas = await dbContext.Reviews
@@ -270,7 +271,7 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
         return produtosComAvaliacoes;
     }
 
-    public async Task<IReadOnlyList<ProductRatingDto>> ObterProdutosPioresAvaliadosAsync(int top = 10, CancellationToken ct = default)
+    public async Task<IReadOnlyList<ProductRatingDto>> ObterProdutosPioresAvaliadosAsync(int top = ApplicationConstants.DefaultTopItems, CancellationToken ct = default)
     {
         // Agrupar Reviews primeiro para calcular agregações uma única vez e materializar
         var avaliacoesAgrupadas = await dbContext.Reviews
@@ -354,7 +355,7 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
         return pedidosPorStatus;
     }
 
-    public async Task<DashboardAnalyticsDto> ObterAnalyticsCompletoAsync(PeriodFilter periodo, int topProdutos = 10, DateTime? dataInicio = null, DateTime? dataFim = null, CancellationToken ct = default)
+    public async Task<DashboardAnalyticsDto> ObterAnalyticsCompletoAsync(PeriodFilter periodo, int topProdutos = ApplicationConstants.DefaultTopItems, DateTime? dataInicio = null, DateTime? dataFim = null, CancellationToken ct = default)
     {
         var (inicio, fim) = ObterDatasFiltro(dataInicio, dataFim, periodo);
 

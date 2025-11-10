@@ -1,6 +1,7 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using SmokeExpress.Web.Constants;
 using SmokeExpress.Web.Data;
 using SmokeExpress.Web.Exceptions;
 using SmokeExpress.Web.Models;
@@ -27,7 +28,7 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
     {
         // Validar parâmetros
         if (pageNumber < 1) pageNumber = 1;
-        if (pageSize < 1) pageSize = 10;
+        if (pageSize < 1) pageSize = ApplicationConstants.AdminPageSize;
 
         var query = _context.Products
             .Include(p => p.Categoria)
@@ -56,7 +57,7 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
     {
         // Validar parâmetros
         if (pageNumber < 1) pageNumber = 1;
-        if (pageSize < 1) pageSize = 12; // 12 itens padrão para e-commerce (3x4 grid)
+        if (pageSize < 1) pageSize = ApplicationConstants.DefaultPageSize; // 12 itens padrão para e-commerce (3x4 grid)
 
         var query = _context.Products
             .Include(p => p.Categoria)
@@ -102,7 +103,7 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
     {
         // Validar parâmetros
         if (pageNumber < 1) pageNumber = 1;
-        if (pageSize < 1) pageSize = 12; // 12 itens padrão para e-commerce (3x4 grid)
+        if (pageSize < 1) pageSize = ApplicationConstants.DefaultPageSize; // 12 itens padrão para e-commerce (3x4 grid)
 
         var query = _context.Products
             .Include(p => p.Categoria)

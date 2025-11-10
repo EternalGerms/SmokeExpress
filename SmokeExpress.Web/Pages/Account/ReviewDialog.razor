@@ -81,7 +81,7 @@
 
             MudDialog?.Close(DialogResult.Ok(true));
         }
-        catch (BusinessException ex)
+        catch (NotFoundException ex)
         {
             Snackbar.Add(ex.Message, Severity.Error);
         }
@@ -89,11 +89,11 @@
         {
             Snackbar.Add(ex.Message, Severity.Error);
         }
-        catch (NotFoundException ex)
+        catch (BusinessException ex)
         {
             Snackbar.Add(ex.Message, Severity.Error);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             Snackbar.Add("Erro inesperado ao salvar avaliação. Tente novamente.", Severity.Error);
         }

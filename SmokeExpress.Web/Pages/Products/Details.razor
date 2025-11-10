@@ -372,7 +372,7 @@
         {
             _mensagemErro = ex.Message;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _mensagemErro = "Erro inesperado ao carregar o produto. Tente novamente.";
         }
@@ -395,15 +395,15 @@
             _avaliacoesComComentario = resumo.AvaliacoesComComentario.ToList();
             _paginaAtual = 0;
         }
-        catch (BusinessException ex)
-        {
-            Snackbar.Add(ex.Message, Severity.Error);
-        }
         catch (NotFoundException ex)
         {
             Snackbar.Add(ex.Message, Severity.Error);
         }
-        catch (Exception ex)
+        catch (BusinessException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (Exception)
         {
             Snackbar.Add("Erro inesperado ao carregar avaliações. Tente novamente.", Severity.Error);
         }

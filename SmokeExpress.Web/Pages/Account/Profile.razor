@@ -2,7 +2,9 @@
 @attribute [Authorize]
 @using System.ComponentModel.DataAnnotations
 @using MudBlazor
+@using SmokeExpress.Web.Constants
 @using SmokeExpress.Web.Exceptions
+@using ValidationException = SmokeExpress.Web.Exceptions.ValidationException
 @using SmokeExpress.Web.Models
 @using SmokeExpress.Web.Services
 @inject UserManager<ApplicationUser> UserManager
@@ -661,7 +663,7 @@ else
         {
             _erro = ex.Message;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _erro = "Erro inesperado ao carregar dados. Tente novamente.";
         }
@@ -761,12 +763,12 @@ else
             
             Logger.LogInformation("Pedidos processados: {Count}", _pedidos.Count);
         }
-        catch (BusinessException ex)
+        catch (NotFoundException ex)
         {
             Logger.LogError(ex, "Erro ao carregar pedidos: {Message}", ex.Message);
             _erroPedidos = ex.Message;
         }
-        catch (NotFoundException ex)
+        catch (BusinessException ex)
         {
             Logger.LogError(ex, "Erro ao carregar pedidos: {Message}", ex.Message);
             _erroPedidos = ex.Message;
@@ -848,15 +850,15 @@ else
             _editandoEndereco = null;
             await CarregarEnderecosAsync();
         }
-        catch (BusinessException ex)
-        {
-            Snackbar.Add(ex.Message, Severity.Error);
-        }
         catch (ValidationException ex)
         {
             Snackbar.Add(ex.Message, Severity.Error);
         }
-        catch (Exception ex)
+        catch (BusinessException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (Exception)
         {
             Snackbar.Add("Erro inesperado ao salvar endereço. Tente novamente.", Severity.Error);
         }
@@ -898,15 +900,15 @@ else
                 Snackbar.Add("Endereço excluído com sucesso!", Severity.Success);
                 await CarregarEnderecosAsync();
             }
-            catch (BusinessException ex)
-            {
-                Snackbar.Add(ex.Message, Severity.Error);
-            }
             catch (NotFoundException ex)
             {
                 Snackbar.Add(ex.Message, Severity.Error);
             }
-            catch (Exception ex)
+            catch (BusinessException ex)
+            {
+                Snackbar.Add(ex.Message, Severity.Error);
+            }
+            catch (Exception)
             {
                 Snackbar.Add("Erro inesperado ao excluir endereço. Tente novamente.", Severity.Error);
             }
@@ -928,15 +930,15 @@ else
             Snackbar.Add("Endereço definido como padrão!", Severity.Success);
             await CarregarEnderecosAsync();
         }
-        catch (BusinessException ex)
-        {
-            Snackbar.Add(ex.Message, Severity.Error);
-        }
         catch (NotFoundException ex)
         {
             Snackbar.Add(ex.Message, Severity.Error);
         }
-        catch (Exception ex)
+        catch (BusinessException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (Exception)
         {
             Snackbar.Add("Erro inesperado ao definir endereço padrão. Tente novamente.", Severity.Error);
         }
@@ -1031,14 +1033,14 @@ else
                 pedido.ErroDetalhes = "Pedido não encontrado ou não pertence a você.";
             }
         }
-        catch (BusinessException ex)
-        {
-            Logger.LogError(ex, "Erro ao carregar detalhes do pedido {PedidoId}: {Message}", pedido.Id, ex.Message);
-            pedido.ErroDetalhes = ex.Message;
-        }
         catch (NotFoundException ex)
         {
             Logger.LogError(ex, "Pedido {PedidoId} não encontrado", pedido.Id);
+            pedido.ErroDetalhes = ex.Message;
+        }
+        catch (BusinessException ex)
+        {
+            Logger.LogError(ex, "Erro ao carregar detalhes do pedido {PedidoId}: {Message}", pedido.Id, ex.Message);
             pedido.ErroDetalhes = ex.Message;
         }
         catch (Exception ex)
@@ -1179,17 +1181,17 @@ else
             _model.Email = _emailModel.Email;
             Snackbar.Add("E-mail atualizado com sucesso!", Severity.Success);
         }
-        catch (BusinessException ex)
-        {
-            _erro = ex.Message;
-            Snackbar.Add(ex.Message, Severity.Error);
-        }
         catch (ValidationException ex)
         {
             _erro = ex.Message;
             Snackbar.Add(ex.Message, Severity.Error);
         }
-        catch (Exception ex)
+        catch (BusinessException ex)
+        {
+            _erro = ex.Message;
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (Exception)
         {
             _erro = "Erro inesperado ao atualizar e-mail. Tente novamente.";
             Snackbar.Add("Erro inesperado ao atualizar e-mail. Tente novamente.", Severity.Error);
@@ -1236,17 +1238,17 @@ else
             _senha = new();
             Snackbar.Add("Senha alterada com sucesso!", Severity.Success);
         }
-        catch (BusinessException ex)
-        {
-            _erro = ex.Message;
-            Snackbar.Add(ex.Message, Severity.Error);
-        }
         catch (ValidationException ex)
         {
             _erro = ex.Message;
             Snackbar.Add(ex.Message, Severity.Error);
         }
-        catch (Exception ex)
+        catch (BusinessException ex)
+        {
+            _erro = ex.Message;
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (Exception)
         {
             _erro = "Erro inesperado ao alterar senha. Tente novamente.";
             Snackbar.Add("Erro inesperado ao alterar senha. Tente novamente.", Severity.Error);
@@ -1280,7 +1282,7 @@ else
         public string SenhaAtual { get; set; } = string.Empty;
         
         [Required(ErrorMessage = "Nova senha é obrigatória")]
-        [StringLength(100, MinimumLength = 8, ErrorMessage = "A senha deve ter no mínimo 8 caracteres")]
+        [StringLength(100, MinimumLength = ApplicationConstants.MinPasswordLength, ErrorMessage = "A senha deve ter no mínimo 8 caracteres")]
         public string NovaSenha { get; set; } = string.Empty;
         
         [Required(ErrorMessage = "Confirmação de senha é obrigatória")]

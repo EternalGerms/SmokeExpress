@@ -725,7 +725,7 @@ else
             _showPagamento = false;
             Nav.NavigateTo($"/pedido/confirmacao/{orderId}");
         }
-        catch (BusinessException ex)
+        catch (NotFoundException ex)
         {
             _error = ex.Message;
         }
@@ -733,11 +733,11 @@ else
         {
             _error = ex.Message;
         }
-        catch (NotFoundException ex)
+        catch (BusinessException ex)
         {
             _error = ex.Message;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _error = "Erro inesperado ao processar pedido. Tente novamente.";
         }

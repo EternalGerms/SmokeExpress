@@ -1,5 +1,6 @@
 @page "/categorias/{Nome}"
 @using Microsoft.EntityFrameworkCore
+@using SmokeExpress.Web.Constants
 @using SmokeExpress.Web.Exceptions
 @using SmokeExpress.Web.Models
 @inject IProductService ProductService
@@ -134,7 +135,7 @@ else
     private bool _carregandoCategoria = true;
     private bool _carregandoProdutos = true;
     private string? _mensagemErro;
-    private const int _pageSize = 12;
+    private const int _pageSize = ApplicationConstants.DefaultPageSize;
 
     private int PageNumber => PageQuery ?? 1;
 
@@ -173,7 +174,7 @@ else
         {
             _mensagemErro = ex.Message;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _mensagemErro = "Erro inesperado ao carregar a categoria. Tente novamente.";
         }
@@ -203,15 +204,15 @@ else
                 pageNumber,
                 _pageSize);
         }
-        catch (BusinessException ex)
-        {
-            _mensagemErro = ex.Message;
-        }
         catch (NotFoundException ex)
         {
             _mensagemErro = ex.Message;
         }
-        catch (Exception ex)
+        catch (BusinessException ex)
+        {
+            _mensagemErro = ex.Message;
+        }
+        catch (Exception)
         {
             _mensagemErro = "Erro inesperado ao carregar os produtos. Tente novamente.";
         }
@@ -239,8 +240,8 @@ else
         }
 
         var textoPlano = descricao.Replace("<", " ").Replace(">", " ");
-        return textoPlano.Length > 150
-            ? textoPlano[..150] + "..."
+        return textoPlano.Length > ApplicationConstants.ProductSummaryLength
+            ? textoPlano[..ApplicationConstants.ProductSummaryLength] + "..."
             : textoPlano;
     }
 }

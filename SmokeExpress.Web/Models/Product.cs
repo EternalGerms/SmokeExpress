@@ -1,5 +1,6 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
 using System.ComponentModel.DataAnnotations;
+using SmokeExpress.Web.Constants;
 
 namespace SmokeExpress.Web.Models;
 
@@ -12,10 +13,10 @@ public class Product
     public int Id { get; set; }
 
     [Required]
-    [StringLength(150)]
+    [StringLength(ApplicationConstants.MaxProductNameLength)]
     public string Nome { get; set; } = string.Empty;
 
-    [StringLength(2000)]
+    [StringLength(ApplicationConstants.MaxProductDescriptionLength)]
     public string? Descricao { get; set; }
         = "";
 

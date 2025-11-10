@@ -143,9 +143,9 @@ else
             await CategoryService.AtualizarAsync(categoria);
             Navigation.NavigateTo("/admin/categorias?success=updated");
         }
-        catch (BusinessException ex)
+        catch (NotFoundException ex)
         {
-            Logger.LogError(ex, "Erro ao atualizar categoria {Id}: {Message}", Id, ex.Message);
+            Logger.LogError(ex, "Categoria {Id} não encontrada para atualização", Id);
             _mensagemErro = ex.Message;
             StateHasChanged();
         }
@@ -155,9 +155,9 @@ else
             _mensagemErro = ex.Message;
             StateHasChanged();
         }
-        catch (NotFoundException ex)
+        catch (BusinessException ex)
         {
-            Logger.LogError(ex, "Categoria {Id} não encontrada para atualização", Id);
+            Logger.LogError(ex, "Erro ao atualizar categoria {Id}: {Message}", Id, ex.Message);
             _mensagemErro = ex.Message;
             StateHasChanged();
         }
@@ -196,9 +196,9 @@ else
             await CategoryService.RemoverAsync(_categoria.Id);
             Navigation.NavigateTo("/admin/categorias?success=deleted");
         }
-        catch (BusinessException ex)
+        catch (NotFoundException ex)
         {
-            Logger.LogError(ex, "Erro ao excluir categoria {Id}: {Message}", Id, ex.Message);
+            Logger.LogError(ex, "Categoria {Id} não encontrada para exclusão", Id);
             _erroExclusao = ex.Message;
         }
         catch (ValidationException ex)
@@ -206,9 +206,9 @@ else
             Logger.LogError(ex, "Erro de validação ao excluir categoria {Id}: {Message}", Id, ex.Message);
             _erroExclusao = ex.Message;
         }
-        catch (NotFoundException ex)
+        catch (BusinessException ex)
         {
-            Logger.LogError(ex, "Categoria {Id} não encontrada para exclusão", Id);
+            Logger.LogError(ex, "Erro ao excluir categoria {Id}: {Message}", Id, ex.Message);
             _erroExclusao = ex.Message;
         }
         catch (Exception ex)

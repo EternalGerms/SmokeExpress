@@ -1,5 +1,6 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
 using System.Globalization;
+using SmokeExpress.Web.Constants;
 
 namespace SmokeExpress.Web.Services;
 
@@ -9,7 +10,6 @@ namespace SmokeExpress.Web.Services;
 public class ImageUploadService : IImageUploadService
 {
     private const string ProductsImageDirectory = "wwwroot/images/products";
-    private const long MaxFileSize = 5 * 1024 * 1024; // 5MB
     private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
 
     private readonly IWebHostEnvironment _environment;
@@ -34,9 +34,9 @@ public class ImageUploadService : IImageUploadService
         try
         {
             // Validar tamanho do arquivo
-            if (fileSize > MaxFileSize)
+            if (fileSize > ApplicationConstants.MaxImageSizeBytes)
             {
-                _logger.LogWarning("Tentativa de upload de arquivo muito grande: {Size} bytes (máximo: {MaxSize} bytes)", fileSize, MaxFileSize);
+                _logger.LogWarning("Tentativa de upload de arquivo muito grande: {Size} bytes (máximo: {MaxSize} bytes)", fileSize, ApplicationConstants.MaxImageSizeBytes);
                 return null;
             }
 

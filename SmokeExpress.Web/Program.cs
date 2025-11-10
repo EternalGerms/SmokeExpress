@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
+using SmokeExpress.Web.Constants;
 using SmokeExpress.Web.Data;
 using SmokeExpress.Web.Models;
 using SmokeExpress.Web.Security;
@@ -33,7 +34,7 @@ builder.Services
         options.Password.RequireLowercase = true;
         options.Password.RequireUppercase = false;
         options.Password.RequireNonAlphanumeric = false;
-        options.Password.RequiredLength = 8;
+        options.Password.RequiredLength = ApplicationConstants.MinPasswordLength;
     })
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();

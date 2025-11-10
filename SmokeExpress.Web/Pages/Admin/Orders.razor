@@ -165,15 +165,15 @@ else
                 Status = o.Status
             }).ToList();
         }
-        catch (BusinessException ex)
-        {
-            _erro = ex.Message;
-        }
         catch (NotFoundException ex)
         {
             _erro = ex.Message;
         }
-        catch (Exception ex)
+        catch (BusinessException ex)
+        {
+            _erro = ex.Message;
+        }
+        catch (Exception)
         {
             _erro = "Erro inesperado ao carregar pedidos. Tente novamente.";
         }
@@ -203,7 +203,7 @@ else
                 _erro = "Não foi possível atualizar o status.";
             }
         }
-        catch (BusinessException ex)
+        catch (NotFoundException ex)
         {
             _erro = ex.Message;
         }
@@ -211,11 +211,11 @@ else
         {
             _erro = ex.Message;
         }
-        catch (NotFoundException ex)
+        catch (BusinessException ex)
         {
             _erro = ex.Message;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _erro = "Erro inesperado ao atualizar status. Tente novamente.";
         }
