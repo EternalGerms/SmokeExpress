@@ -6,6 +6,7 @@
 @using SmokeExpress.Web.Models
 @using SmokeExpress.Web.Models.Dashboard
 @using SmokeExpress.Web.Services
+@using SmokeExpress.Web.Helpers
 @inject IAnalyticsService AnalyticsService
 @inject NavigationManager Navigation
 
@@ -97,7 +98,7 @@
                     <MudCardContent>
                         <MudStack Spacing="2">
                             <MudText Typo="Typo.body2" Color="Color.Secondary">Receita Total</MudText>
-                            <MudText Typo="Typo.h5" Color="Color.Success">@_resumo.ReceitaTotal.ToString("C")</MudText>
+                            <MudText Typo="Typo.h5" Color="Color.Success">@FormatHelper.FormatCurrency(_resumo.ReceitaTotal)</MudText>
                             <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Color="Color.Success" Size="Size.Medium" />
                         </MudStack>
                     </MudCardContent>
@@ -119,7 +120,7 @@
                     <MudCardContent>
                         <MudStack Spacing="2">
                             <MudText Typo="Typo.body2" Color="Color.Secondary">Média por Pedido</MudText>
-                            <MudText Typo="Typo.h5" Color="Color.Info">@_resumo.MediaValorPedido.ToString("C")</MudText>
+                            <MudText Typo="Typo.h5" Color="Color.Info">@FormatHelper.FormatCurrency(_resumo.MediaValorPedido)</MudText>
                             <MudIcon Icon="@Icons.Material.Filled.Calculate" Color="Color.Info" Size="Size.Medium" />
                         </MudStack>
                     </MudCardContent>
@@ -153,7 +154,7 @@
                                 <MudStack Spacing="1">
                                     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                                         <MudText Typo="Typo.body1" Class="font-weight-bold">@venda.Periodo</MudText>
-                                        <MudText Typo="Typo.body1" Color="Color.Success">@venda.Receita.ToString("C")</MudText>
+                                        <MudText Typo="Typo.body1" Color="Color.Success">@FormatHelper.FormatCurrency(venda.Receita)</MudText>
                                     </MudStack>
                                     <MudProgressLinear Color="Color.Success" Value="@((double)porcentagem)" variant="Variant.Filled" Class="mb-2" />
                                     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
@@ -185,7 +186,7 @@
                         </HeaderContent>
                         <RowTemplate>
                             <MudTd DataLabel="Período">@context.Periodo</MudTd>
-                            <MudTd DataLabel="Receita" align="Align.Right">@context.Receita.ToString("C")</MudTd>
+                            <MudTd DataLabel="Receita" align="Align.Right">@FormatHelper.FormatCurrency(context.Receita)</MudTd>
                             <MudTd DataLabel="Pedidos" align="Align.Right">@context.QuantidadePedidos</MudTd>
                             <MudTd DataLabel="Itens Vendidos" align="Align.Right">@context.QuantidadeItensVendidos</MudTd>
                         </RowTemplate>
@@ -220,7 +221,7 @@
                                                 </MudChip>
                                             </td>
                                             <td style="text-align: right;">@status.Quantidade</td>
-                                            <td style="text-align: right;">@status.TotalReceita.ToString("C")</td>
+                                            <td style="text-align: right;">@FormatHelper.FormatCurrency(status.TotalReceita)</td>
                                         </tr>
                                     }
                                 </tbody>
@@ -304,7 +305,7 @@
                                         </MudStack>
                                     </MudTd>
                                     <MudTd DataLabel="Quantidade" align="Align.Right">@context.QuantidadeVendida</MudTd>
-                                    <MudTd DataLabel="Receita" align="Align.Right">@context.Receita.ToString("C")</MudTd>
+                                    <MudTd DataLabel="Receita" align="Align.Right">@FormatHelper.FormatCurrency(context.Receita)</MudTd>
                                 </RowTemplate>
                             </MudTable>
                         }

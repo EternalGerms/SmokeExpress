@@ -3,6 +3,7 @@
 @using MudBlazor
 @using SmokeExpress.Web.Services
 @using SmokeExpress.Web.Models.Dashboard
+@using SmokeExpress.Web.Helpers
 @inject IAnalyticsService AnalyticsService
 
 @* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
@@ -116,7 +117,7 @@
                                 Color="Color.Success" 
                                 Size="Size.Large"
                                 Variant="Variant.Filled">
-                            Receita Total: @_resumo.ReceitaTotal.ToString("C")
+                            Receita Total: @FormatHelper.FormatCurrency(_resumo.ReceitaTotal)
                         </MudChip>
                     </MudItem>
                     <MudItem xs="12" sm="6" md="3">

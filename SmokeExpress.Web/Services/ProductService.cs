@@ -6,6 +6,7 @@ using SmokeExpress.Web.Constants;
 using SmokeExpress.Web.Data;
 using SmokeExpress.Web.Exceptions;
 using SmokeExpress.Web.Models;
+using SmokeExpress.Web.Helpers;
 
 namespace SmokeExpress.Web.Services;
 
@@ -291,8 +292,8 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
             throw;
         }
 
-        logger.LogInformation("Produto criado. ProductId: {ProductId}, CategoriaId: {CategoriaId}, Nome: {Nome}",
-            product.Id, product.CategoriaId, product.Nome);
+        logger.LogInformation("Produto criado. ProductId: {ProductId}, CategoriaId: {CategoriaId}, Nome: {Nome}, Preco: {Preco}",
+            product.Id, product.CategoriaId, product.Nome, FormatHelper.FormatCurrency(product.Preco));
         return product;
     }
 

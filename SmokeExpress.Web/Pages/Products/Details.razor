@@ -2,6 +2,7 @@
 @using MudBlazor
 @using SmokeExpress.Web.Exceptions
 @using SmokeExpress.Web.Models
+@using SmokeExpress.Web.Helpers
 @inject IProductService ProductService
 @inject IReviewService ReviewService
 @inject NavigationManager Navigation
@@ -81,7 +82,7 @@
                     <!-- Preço e Estoque -->
                     <MudStack Spacing="2">
                         <MudText Typo="Typo.h4" Color="Color.Primary" Class="font-weight-bold">
-                            @_produto.Preco.ToString("C")
+                            @FormatHelper.FormatCurrency(_produto.Preco)
                         </MudText>
                         @if (_produto.Estoque > 0)
                         {
@@ -211,7 +212,7 @@
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                 <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Small" Color="Color.Secondary" />
                                 <MudText Typo="Typo.body2">
-                                    <strong>Preço:</strong> @_produto.Preco.ToString("C")
+                                    <strong>Preço:</strong> @FormatHelper.FormatCurrency(_produto.Preco)
                                 </MudText>
                             </MudStack>
                         </MudStack>

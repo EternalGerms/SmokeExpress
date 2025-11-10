@@ -3,6 +3,7 @@
 @using MudBlazor
 @using SmokeExpress.Web.Exceptions
 @using SmokeExpress.Web.Models.ViewModels
+@using SmokeExpress.Web.Helpers
 @using SmokeExpress.Web.Extensions
 @inject IOrderService OrderService
 @inject AuthenticationStateProvider AuthStateProvider
@@ -110,11 +111,11 @@ else
                                                             </MudChip>
                                                         </MudTd>
                                                         <MudTd DataLabel="Preço Unit." align="Align.Right">
-                                                            @context.PrecoUnitario.ToString("C")
+                                                            @FormatHelper.FormatCurrency(context.PrecoUnitario)
                                                         </MudTd>
                                                         <MudTd DataLabel="Subtotal" align="Align.Right">
                                                             <MudText Typo="Typo.body2" Class="font-weight-bold">
-                                                                @context.Subtotal.ToString("C")
+                                                                @FormatHelper.FormatCurrency(context.Subtotal)
                                                             </MudText>
                                                         </MudTd>
                                                     </RowTemplate>
@@ -122,20 +123,20 @@ else
                                                 <MudDivider Class="my-3" />
                                                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mt-3">
                                                     <MudText Typo="Typo.body1">Subtotal:</MudText>
-                                                    <MudText Typo="Typo.body1">@pedido.Detalhes.Subtotal.ToString("C")</MudText>
+                                                    <MudText Typo="Typo.body1">@FormatHelper.FormatCurrency(pedido.Detalhes.Subtotal)</MudText>
                                                 </MudStack>
                                                 @if (pedido.Detalhes.Frete > 0)
                                                 {
                                                     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                                                         <MudText Typo="Typo.body1">Frete:</MudText>
-                                                        <MudText Typo="Typo.body1">@pedido.Detalhes.Frete.ToString("C")</MudText>
+                                                        <MudText Typo="Typo.body1">@FormatHelper.FormatCurrency(pedido.Detalhes.Frete)</MudText>
                                                     </MudStack>
                                                 }
                                                 <MudDivider Class="my-2" />
                                                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                                                     <MudText Typo="Typo.h6">Total:</MudText>
                                                     <MudText Typo="Typo.h6" Class="font-weight-bold" Color="Color.Primary">
-                                                        @pedido.Detalhes.TotalPedido.ToString("C")
+                                                        @FormatHelper.FormatCurrency(pedido.Detalhes.TotalPedido)
                                                     </MudText>
                                                 </MudStack>
                                             </MudCard>

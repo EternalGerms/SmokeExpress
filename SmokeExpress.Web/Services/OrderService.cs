@@ -5,6 +5,7 @@ using SmokeExpress.Web.Common;
 using SmokeExpress.Web.Data;
 using SmokeExpress.Web.Exceptions;
 using SmokeExpress.Web.Models;
+using SmokeExpress.Web.Helpers;
 
 namespace SmokeExpress.Web.Services;
 
@@ -89,7 +90,7 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
             throw;
         }
 
-        logger.LogInformation("Pedido criado. OrderId: {OrderId}, UserId: {UserId}, ItemCount: {ItemCount}, Total: {Total}", order.Id, userId, itensLista.Count, order.TotalPedido);
+        logger.LogInformation("Pedido criado. OrderId: {OrderId}, UserId: {UserId}, ItemCount: {ItemCount}, Total: {Total}", order.Id, userId, itensLista.Count, FormatHelper.FormatCurrency(order.TotalPedido));
 
         return order.Id;
     }

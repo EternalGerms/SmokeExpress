@@ -1,5 +1,6 @@
 @page "/pedido/confirmacao/{id:int}"
 @inject NavigationManager Nav
+@using SmokeExpress.Web.Helpers
 
 <h3>Pedido confirmado</h3>
 
@@ -19,7 +20,7 @@
                 <dd class="col-sm-8">@_codigoPedido</dd>
 
                 <dt class="col-sm-4">Data</dt>
-                <dd class="col-sm-8">@_dataLocal.ToString("g")</dd>
+                <dd class="col-sm-8">@FormatHelper.FormatDate(_dataLocal)</dd>
             </dl>
         </div>
         <div class="col-md-4 text-end">

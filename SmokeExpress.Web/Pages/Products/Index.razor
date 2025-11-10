@@ -4,6 +4,7 @@
 @using SmokeExpress.Web.Constants
 @using SmokeExpress.Web.Exceptions
 @using SmokeExpress.Web.Models
+@using SmokeExpress.Web.Helpers
 @using SmokeExpress.Web.Services
 @inject IProductService ProductService
 @inject IReviewService ReviewService
@@ -159,13 +160,13 @@
                     @if (_filtros.PrecoMin.HasValue)
                     {
                         <MudChip T="string" Size="Size.Small" Color="Color.Info" onClose="@(() => { _filtros.PrecoMin = null; AplicarFiltros(); })">
-                            Min: @_filtros.PrecoMin.Value.ToString("C")
+                            Min: @FormatHelper.FormatCurrency(_filtros.PrecoMin.Value)
                         </MudChip>
                     }
                     @if (_filtros.PrecoMax.HasValue)
                     {
                         <MudChip T="string" Size="Size.Small" Color="Color.Info" onClose="@(() => { _filtros.PrecoMax = null; AplicarFiltros(); })">
-                            Max: @_filtros.PrecoMax.Value.ToString("C")
+                            Max: @FormatHelper.FormatCurrency(_filtros.PrecoMax.Value)
                         </MudChip>
                     }
                     @if (_apenasEmEstoque == true)
@@ -255,7 +256,7 @@
                                 <MudDivider />
                                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                                     <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-0">
-                                        @produto.Preco.ToString("C")
+                                        @FormatHelper.FormatCurrency(produto.Preco)
                                     </MudText>
                                     @if (produto.Estoque > 0)
                                     {

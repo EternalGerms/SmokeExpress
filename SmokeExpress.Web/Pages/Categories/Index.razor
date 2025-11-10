@@ -3,6 +3,7 @@
 @using SmokeExpress.Web.Constants
 @using SmokeExpress.Web.Exceptions
 @using SmokeExpress.Web.Models
+@using SmokeExpress.Web.Helpers
 @inject IProductService ProductService
 @inject ApplicationDbContext DbContext
 @inject NavigationManager Navigation
@@ -78,7 +79,7 @@ else
                             <p class="text-muted small mb-2">@produto.Categoria?.Nome</p>
                             <p class="card-text flex-grow-1">@ObterResumo(produto.Descricao)</p>
                             <div class="mt-auto">
-                                <p class="h5 text-primary mb-3">@produto.Preco.ToString("C")</p>
+                                <p class="h5 text-primary mb-3">@FormatHelper.FormatCurrency(produto.Preco)</p>
                                 @if (produto.Estoque > 0)
                                 {
                                     <small class="text-success d-block mb-2">Em estoque (@produto.Estoque unidades)</small>

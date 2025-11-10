@@ -2,6 +2,7 @@
 using SmokeExpress.Web.Models;
 using SmokeExpress.Web.Common;
 using SmokeExpress.Web.Models.ViewModels;
+using SmokeExpress.Web.Helpers;
 
 namespace SmokeExpress.Web.Extensions;
 
@@ -18,9 +19,9 @@ public static class OrderExtensions
         var dto = new OrderRowDto
         {
             Id = order.Id,
-            DataLocal = order.DataPedido.ToLocalTime().ToString("g"),
-            DataPedidoLocal = order.DataPedido.ToLocalTime().ToString("g"),
-            TotalTexto = order.TotalPedido.ToString("C"),
+            DataLocal = FormatHelper.FormatDate(order.DataPedido),
+            DataPedidoLocal = FormatHelper.FormatDate(order.DataPedido),
+            TotalTexto = FormatHelper.FormatCurrency(order.TotalPedido),
             Status = order.Status
         };
 
@@ -42,7 +43,7 @@ public static class OrderExtensions
         var dto = new OrderDetailsDto
         {
             Id = order.Id,
-            DataLocal = order.DataPedido.ToLocalTime().ToString("g"),
+            DataLocal = FormatHelper.FormatDate(order.DataPedido),
             Rua = order.Rua,
             Numero = NullHelpers.GetSafeString(order.Numero),
             Bairro = order.Bairro,

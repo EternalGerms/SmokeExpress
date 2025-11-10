@@ -3,6 +3,7 @@
 @using SmokeExpress.Web.Models.ViewModels
 @using SmokeExpress.Web.Extensions
 @using SmokeExpress.Web.Exceptions
+@using SmokeExpress.Web.Helpers
 @using System.Text.Json
 @inject NavigationManager Nav
 @inject IJSRuntime JS
@@ -50,7 +51,7 @@ else
                                     <span>@item.Nome</span>
                                 </div>
                             </td>
-                            <td class="text-end">@item.PrecoUnitario.ToString("C")</td>
+                            <td class="text-end">@FormatHelper.FormatCurrency(item.PrecoUnitario)</td>
                             <td class="text-end" style="width:160px;">
                                 <div class="input-group input-group-sm">
                                     <button class="btn btn-outline-secondary"
@@ -66,7 +67,7 @@ else
                                             @onclick="() => OnQuantityChanged(item.ProductId, item.Quantidade + 1)">+</button>
                                 </div>
                             </td>
-                            <td class="text-end">@item.Subtotal.ToString("C")</td>
+                            <td class="text-end">@FormatHelper.FormatCurrency(item.Subtotal)</td>
                             <td class="text-end" style="width:90px;">
                                 <button type="button" class="btn btn-sm btn-outline-danger" title="Remover"
                                         @onclick="() => RemoverItemAsync(item.ProductId)">
@@ -79,17 +80,17 @@ else
                         <tfoot>
                     <tr>
                                 <th colspan="3" class="text-end">Subtotal</th>
-                                <th class="text-end">@_total.ToString("C")</th>
+                                <th class="text-end">@FormatHelper.FormatCurrency(_total)</th>
                         <th></th>
                     </tr>
                             <tr>
                                 <th colspan="3" class="text-end">Frete</th>
-                                <th class="text-end">@_frete.ToString("C")</th>
+                                <th class="text-end">@FormatHelper.FormatCurrency(_frete)</th>
                                 <th></th>
                             </tr>
                             <tr>
                                 <th colspan="3" class="text-end">Total</th>
-                                <th class="text-end">@((_total + _frete).ToString("C"))</th>
+                                <th class="text-end">@FormatHelper.FormatCurrency(_total + _frete)</th>
                                 <th></th>
                             </tr>
                 </tfoot>
@@ -560,23 +561,10 @@ else
     }
 
     private string FormatEnderecoSelecionado()
-    {
-        var parts = new List<string> { _endereco.Rua };
-        if (!string.IsNullOrWhiteSpace(_endereco.Numero))
-        {
-            parts.Add(_endereco.Numero);
-        }
-        parts.Add(_endereco.Bairro);
-        parts.Add(_endereco.Cidade);
-        if (!string.IsNullOrWhiteSpace(_endereco.Complemento))
-        {
-            parts.Add(_endereco.Complemento);
-        }
-        return string.Join(", ", parts);
-    }
+        => FormatHelper.FormatAddress(_endereco.Rua, _endereco.Numero, _endereco.Bairro, _endereco.Cidade, _endereco.Complemento);
 
     private static string FormatEndereco(AddressDto a)
-        => $"{a.Rua}, {a.Numero} - {a.Bairro}, {a.Cidade} {a.Complemento}";
+        => FormatHelper.FormatAddress(a.Rua, a.Numero, a.Bairro, a.Cidade, a.Complemento);
 
     private async Task DefinirFreteParaEnderecoAsync(int addressId)
     {
