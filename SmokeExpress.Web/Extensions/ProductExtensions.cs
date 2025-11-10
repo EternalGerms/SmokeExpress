@@ -1,5 +1,6 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
 using SmokeExpress.Web.Models;
+using SmokeExpress.Web.Common;
 using SmokeExpress.Web.Models.ViewModels;
 
 namespace SmokeExpress.Web.Extensions;
@@ -36,7 +37,7 @@ public static class ProductExtensions
             Quantidade = quantidade,
             PrecoUnitario = product.Preco,
             Subtotal = subtotal,
-            ImagemUrl = product.ImagemUrl ?? string.Empty
+            ImagemUrl = NullHelpers.GetSafeString(product.ImagemUrl)
         };
     }
 }

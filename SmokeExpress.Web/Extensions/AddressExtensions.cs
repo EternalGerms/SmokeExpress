@@ -1,6 +1,7 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
 using SmokeExpress.Web.Models;
 using SmokeExpress.Web.Models.ViewModels;
+using SmokeExpress.Web.Common;
 
 namespace SmokeExpress.Web.Extensions;
 
@@ -18,10 +19,10 @@ public static class AddressExtensions
         {
             Id = address.Id,
             Rua = address.Rua,
-            Numero = address.Numero,
+            Numero = NullHelpers.GetSafeString(address.Numero),
             Cidade = address.Cidade,
             Bairro = address.Bairro,
-            Complemento = address.Complemento,
+            Complemento = NullHelpers.GetSafeString(address.Complemento),
             IsDefault = address.IsDefault
         };
     }

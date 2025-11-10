@@ -1,5 +1,6 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
 using SmokeExpress.Web.Models;
+using SmokeExpress.Web.Common;
 using SmokeExpress.Web.Models.ViewModels;
 
 namespace SmokeExpress.Web.Extensions;
@@ -25,8 +26,9 @@ public static class OrderExtensions
 
         if (includeClientInfo)
         {
-            dto.ClienteNome = order.Cliente?.NomeCompleto ?? string.Empty;
-            dto.ClienteEmail = order.Cliente?.Email ?? string.Empty;
+            ArgumentNullException.ThrowIfNull(order.Cliente);
+            dto.ClienteNome = NullHelpers.GetSafeString(order.Cliente.NomeCompleto);
+            dto.ClienteEmail = NullHelpers.GetSafeString(order.Cliente.Email);
         }
 
         return dto;
@@ -42,17 +44,18 @@ public static class OrderExtensions
             Id = order.Id,
             DataLocal = order.DataPedido.ToLocalTime().ToString("g"),
             Rua = order.Rua,
-            Numero = order.Numero ?? string.Empty,
+            Numero = NullHelpers.GetSafeString(order.Numero),
             Bairro = order.Bairro,
             Cidade = order.Cidade,
-            Complemento = order.Complemento ?? string.Empty,
+            Complemento = NullHelpers.GetSafeString(order.Complemento),
             TotalPedido = order.TotalPedido
         };
 
         if (includeClientInfo)
         {
-            dto.ClienteNome = order.Cliente?.NomeCompleto ?? string.Empty;
-            dto.ClienteEmail = order.Cliente?.Email ?? string.Empty;
+            ArgumentNullException.ThrowIfNull(order.Cliente);
+            dto.ClienteNome = NullHelpers.GetSafeString(order.Cliente.NomeCompleto);
+            dto.ClienteEmail = NullHelpers.GetSafeString(order.Cliente.Email);
         }
 
         // Mapear itens
