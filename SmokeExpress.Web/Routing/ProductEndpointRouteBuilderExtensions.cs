@@ -6,8 +6,16 @@ using SmokeExpress.Web.Extensions;
 
 namespace SmokeExpress.Web.Routing;
 
+/// <summary>
+/// Extensões de roteamento para funcionalidades de consulta de produtos via API.
+/// </summary>
 public static class ProductEndpointRouteBuilderExtensions
 {
+    /// <summary>
+    /// Registra endpoints relacionados à busca simplificada de produtos.
+    /// </summary>
+    /// <param name="endpoints">Instância do construtor de rotas.</param>
+    /// <returns>O próprio <see cref="IEndpointRouteBuilder"/> para encadeamento.</returns>
     public static IEndpointRouteBuilder MapProductEndpoints(this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapPost("/api/products/by-ids", async ([FromBody] int[] ids, ApplicationDbContext db, CancellationToken ct) =>

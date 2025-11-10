@@ -8,15 +8,18 @@ namespace SmokeExpress.Web.Services;
 public interface IAgeVerificationService
 {
     /// <summary>
-    /// Verifica se o usuário já forneceu consentimento sobre maioridade.
+    /// Verifica se o usuário já forneceu consentimento quanto à maioridade.
     /// </summary>
-    /// <returns>True se já consentiu, False caso contrário. Null se não há cookie definido.</returns>
+    /// <returns>
+    /// <c>true</c> quando o consentimento indica que o usuário é maior de idade,
+    /// <c>false</c> quando o consentimento indica o oposto e <c>null</c> quando não existe registro.
+    /// </returns>
     Task<bool?> HasConsentedAsync();
 
     /// <summary>
     /// Registra o consentimento do usuário sobre maioridade.
     /// </summary>
-    /// <param name="isAdult">True se o usuário confirmou ter 18+ anos, False caso contrário.</param>
+    /// <param name="isAdult"><c>true</c> quando o usuário declara ter 18+ anos; caso contrário <c>false</c>.</param>
     Task SetConsentAsync(bool isAdult);
 
     /// <summary>

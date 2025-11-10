@@ -7,8 +7,12 @@ using SmokeExpress.Web.Models.Dashboard;
 
 namespace SmokeExpress.Web.Services;
 
+/// <summary>
+/// Implementação de <see cref="IAnalyticsService"/> que consolida métricas a partir do banco de dados.
+/// </summary>
 public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsService
 {
+    /// <inheritdoc />
     public async Task<DashboardSummaryDto> ObterResumoAsync(DateTime? dataInicio = null, DateTime? dataFim = null, CancellationToken ct = default)
     {
         // datas opcionais, sem guard aqui
@@ -59,6 +63,7 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
         };
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<SalesByPeriodDto>> ObterVendasPorPeriodoAsync(PeriodFilter periodo, DateTime? dataInicio = null, DateTime? dataFim = null, CancellationToken ct = default)
     {
         // período é enum, sem guard
@@ -183,6 +188,7 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
         }
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<ProductSalesDto>> ObterProdutosMaisVendidosAsync(int top = ApplicationConstants.DefaultTopItems, DateTime? dataInicio = null, DateTime? dataFim = null, CancellationToken ct = default)
     {
         if (top <= 0) throw new ArgumentOutOfRangeException(nameof(top));
@@ -214,6 +220,7 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
         return produtosVendidos;
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<Product>> ObterProdutosMenorEstoqueAsync(int top = ApplicationConstants.DefaultTopItems, CancellationToken ct = default)
     {
         if (top <= 0) throw new ArgumentOutOfRangeException(nameof(top));
@@ -226,6 +233,7 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
             .ToListAsync(ct);
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<ProductRatingDto>> ObterProdutosMelhoresAvaliadosAsync(int top = ApplicationConstants.DefaultTopItems, CancellationToken ct = default)
     {
         if (top <= 0) throw new ArgumentOutOfRangeException(nameof(top));
@@ -276,6 +284,7 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
         return produtosComAvaliacoes;
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<ProductRatingDto>> ObterProdutosPioresAvaliadosAsync(int top = ApplicationConstants.DefaultTopItems, CancellationToken ct = default)
     {
         if (top <= 0) throw new ArgumentOutOfRangeException(nameof(top));
@@ -326,6 +335,7 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
         return produtosComAvaliacoes;
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<OrderStatusCountDto>> ObterPedidosPorStatusAsync(DateTime? dataInicio = null, DateTime? dataFim = null, CancellationToken ct = default)
     {
         var (inicio, fim) = ObterDatasFiltro(dataInicio, dataFim);
@@ -361,6 +371,7 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
         return pedidosPorStatus;
     }
 
+    /// <inheritdoc />
     public async Task<DashboardAnalyticsDto> ObterAnalyticsCompletoAsync(PeriodFilter periodo, int topProdutos = ApplicationConstants.DefaultTopItems, DateTime? dataInicio = null, DateTime? dataFim = null, CancellationToken ct = default)
     {
         var (inicio, fim) = ObterDatasFiltro(dataInicio, dataFim, periodo);

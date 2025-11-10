@@ -1,0 +1,1188 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SmokeExpress.Web</name>
+    </assembly>
+    <members>
+        <member name="T:SmokeExpress.Web.Common.Result">
+            <summary>
+            Representa o resultado de uma operação que pode falhar.
+            Usado para separar validações da lógica de negócio.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Common.Result`1">
+            <summary>
+            Representa o resultado de uma operação que pode falhar e retornar um valor.
+            Usado para separar validações da lógica de negócio.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Data.ApplicationDbContext">
+            <summary>
+            Contexto principal do Entity Framework Core, responsável por mapear as entidades de domínio.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Data.ApplicationDbContext.#ctor(Microsoft.EntityFrameworkCore.DbContextOptions{SmokeExpress.Web.Data.ApplicationDbContext})">
+            <summary>
+            Contexto principal do Entity Framework Core, responsável por mapear as entidades de domínio.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Data.Migrations.InitialCreate">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Data.Migrations.InitialCreate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Data.Migrations.InitialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Data.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:SmokeExpress.Web.Data.Migrations.SyncProductReviews">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Data.Migrations.SyncProductReviews.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Data.Migrations.SyncProductReviews.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Data.Migrations.SyncProductReviews.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:SmokeExpress.Web.Data.Migrations.AddAddresses">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Data.Migrations.AddAddresses.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Data.Migrations.AddAddresses.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Data.Migrations.AddAddresses.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:SmokeExpress.Web.Data.Migrations.AddOrderIdToReviews">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Data.Migrations.AddOrderIdToReviews.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Data.Migrations.AddOrderIdToReviews.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Data.Migrations.AddOrderIdToReviews.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:SmokeExpress.Web.Extensions.AddressExtensions">
+            <summary>
+            Extension methods para mapeamento de entidades Address para DTOs.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Extensions.AddressExtensions.ToAddressDto(SmokeExpress.Web.Models.Address)">
+            <summary>
+            Converte um Address para AddressDto.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Extensions.AddressExtensions.ToEntity(SmokeExpress.Web.Models.ViewModels.AddressDto)">
+            <summary>
+            Converte um AddressDto para Address (entidade).
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Extensions.OrderExtensions">
+            <summary>
+            Extension methods para mapeamento de entidades Order e OrderItem para DTOs.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Extensions.OrderExtensions.ToOrderRowDto(SmokeExpress.Web.Models.Order,System.Boolean)">
+            <summary>
+            Converte um Order para OrderRowDto (versão Admin ou Account).
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Extensions.OrderExtensions.ToOrderDetailsDto(SmokeExpress.Web.Models.Order,System.Boolean)">
+            <summary>
+            Converte um Order para OrderDetailsDto (versão Admin ou Account).
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Extensions.OrderExtensions.ToOrderApiDto(SmokeExpress.Web.Models.Order)">
+            <summary>
+            Converte um Order para DTO anônimo para API.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Extensions.OrderExtensions.ToOrderItemRowDto(SmokeExpress.Web.Models.OrderItem)">
+            <summary>
+            Converte um OrderItem para OrderItemRowDto (Admin).
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Extensions.OrderExtensions.ToOrderItemDetailDto(SmokeExpress.Web.Models.OrderItem)">
+            <summary>
+            Converte um OrderItem para OrderItemDetailDto (Account).
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Extensions.ProductExtensions">
+            <summary>
+            Extension methods para mapeamento de entidades Product para DTOs.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Extensions.ProductExtensions.ToProductLiteDto(SmokeExpress.Web.Models.Product)">
+            <summary>
+            Converte um Product para ProductLiteDto.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Extensions.ProductExtensions.ToCartItemViewModel(SmokeExpress.Web.Models.Product,System.Int32)">
+            <summary>
+            Converte um Product e quantidade para CartItemViewModel.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.ApplicationUser">
+            <summary>
+            Representa o usuário autenticado do sistema, estendendo o IdentityUser para aceitar os campos personalizados exigidos.
+            </summary>
+        </member>
+        <member name="P:SmokeExpress.Web.Models.ApplicationUser.DocumentoFiscal">
+            <summary>
+            CPF (11 dígitos) ou CNPJ (14 dígitos) sem máscara.
+            </summary>
+        </member>
+        <member name="P:SmokeExpress.Web.Models.ApplicationUser.TipoCliente">
+            <summary>
+            Define se o cliente é pessoa física (PF) ou jurídica (PJ).
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.Category">
+            <summary>
+            Categoria dos produtos, usada para organizar a vitrine e estratégias de conteúdo.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.Dashboard.DashboardAnalyticsDto">
+            <summary>
+            DTO consolidado com todas as estatísticas relacionadas a pedidos e vendas.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.Dashboard.DashboardSummaryDto">
+            <summary>
+            DTO com resumo geral do dashboard.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.Dashboard.OrderStatusCountDto">
+            <summary>
+            DTO para representar contagem de pedidos por status.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.Dashboard.PeriodFilter">
+            <summary>
+            Enum para filtros de período pré-definidos.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.Dashboard.ProductRatingDto">
+            <summary>
+            DTO para representar avaliações de um produto.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.Dashboard.ProductSalesDto">
+            <summary>
+            DTO para representar vendas de um produto.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.Dashboard.SalesByPeriodDto">
+            <summary>
+            DTO para representar vendas agrupadas por período.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.Order">
+            <summary>
+            Pedido realizado pelos clientes na plataforma Smoke Express.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.OrderItem">
+            <summary>
+            Itens individuais que compõem o pedido do cliente.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.OrderStatus">
+            <summary>
+            Representa os possíveis status de um pedido na plataforma Smoke Express.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Models.OrderStatus.Processando">
+            <summary>
+            Pedido recebido e sendo processado.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Models.OrderStatus.Confirmado">
+            <summary>
+            Pedido confirmado e aguardando preparação.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Models.OrderStatus.EmPreparacao">
+            <summary>
+            Pedido em preparação para envio.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Models.OrderStatus.Enviado">
+            <summary>
+            Pedido enviado ao cliente.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Models.OrderStatus.Entregue">
+            <summary>
+            Pedido entregue ao cliente.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Models.OrderStatus.Cancelado">
+            <summary>
+            Pedido cancelado.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.PagedResult`1">
+            <summary>
+            Representa um resultado paginado de uma consulta, contendo os itens da página atual e informações de paginação.
+            </summary>
+            <typeparam name="T">Tipo dos itens paginados.</typeparam>
+        </member>
+        <member name="P:SmokeExpress.Web.Models.PagedResult`1.Items">
+            <summary>
+            Itens da página atual.
+            </summary>
+        </member>
+        <member name="P:SmokeExpress.Web.Models.PagedResult`1.TotalCount">
+            <summary>
+            Número total de itens em todas as páginas.
+            </summary>
+        </member>
+        <member name="P:SmokeExpress.Web.Models.PagedResult`1.PageNumber">
+            <summary>
+            Número da página atual (baseado em 1).
+            </summary>
+        </member>
+        <member name="P:SmokeExpress.Web.Models.PagedResult`1.PageSize">
+            <summary>
+            Tamanho da página (quantidade de itens por página).
+            </summary>
+        </member>
+        <member name="P:SmokeExpress.Web.Models.PagedResult`1.TotalPages">
+            <summary>
+            Número total de páginas.
+            </summary>
+        </member>
+        <member name="P:SmokeExpress.Web.Models.PagedResult`1.HasPreviousPage">
+            <summary>
+            Indica se existe uma página anterior.
+            </summary>
+        </member>
+        <member name="P:SmokeExpress.Web.Models.PagedResult`1.HasNextPage">
+            <summary>
+            Indica se existe uma página seguinte.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.Product">
+            <summary>
+            Modelo de domínio para os produtos ofertados na Smoke Express.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.ProductReview">
+            <summary>
+            Avaliação de produto realizada por um usuário.
+            </summary>
+        </member>
+        <member name="P:SmokeExpress.Web.Models.ProductReview.OrderId">
+            <summary>
+            ID do pedido associado a esta avaliação. Permite múltiplas avaliações do mesmo produto em pedidos diferentes.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.ProductSearchFilters">
+            <summary>
+            DTO para filtros de busca avançada de produtos.
+            </summary>
+        </member>
+        <member name="P:SmokeExpress.Web.Models.ProductSearchFilters.TermoBusca">
+            <summary>
+            Termo de busca para filtrar por nome ou descrição.
+            </summary>
+        </member>
+        <member name="P:SmokeExpress.Web.Models.ProductSearchFilters.CategoriaId">
+            <summary>
+            ID da categoria para filtrar produtos.
+            </summary>
+        </member>
+        <member name="P:SmokeExpress.Web.Models.ProductSearchFilters.PrecoMin">
+            <summary>
+            Preço mínimo para filtrar produtos.
+            </summary>
+        </member>
+        <member name="P:SmokeExpress.Web.Models.ProductSearchFilters.PrecoMax">
+            <summary>
+            Preço máximo para filtrar produtos.
+            </summary>
+        </member>
+        <member name="P:SmokeExpress.Web.Models.ProductSearchFilters.ApenasEmEstoque">
+            <summary>
+            Se true, retorna apenas produtos com estoque disponível (Estoque > 0).
+            </summary>
+        </member>
+        <member name="P:SmokeExpress.Web.Models.ProductSearchFilters.Ordenacao">
+            <summary>
+            Tipo de ordenação a ser aplicada nos resultados.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.ProductSortOrder">
+            <summary>
+            Enum que define as opções de ordenação para busca de produtos.
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Models.ProductSortOrder.Nome">
+            <summary>
+            Ordenação por nome (A-Z).
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Models.ProductSortOrder.PrecoAsc">
+            <summary>
+            Ordenação por preço crescente (menor para maior).
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Models.ProductSortOrder.PrecoDesc">
+            <summary>
+            Ordenação por preço decrescente (maior para menor).
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Models.ProductSortOrder.Relevancia">
+            <summary>
+            Ordenação por relevância (produtos que mais correspondem ao termo de busca).
+            </summary>
+        </member>
+        <member name="F:SmokeExpress.Web.Models.ProductSortOrder.MelhoresAvaliados">
+            <summary>
+            Ordenação por melhor avaliação (maior média de avaliações primeiro).
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.Referral">
+            <summary>
+            Registro do programa "Indique um Amigo", essencial para o marketing de retenção orgânico.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.ViewModels.AddressDto">
+            <summary>
+            DTO para transferência de dados de endereço.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.ViewModels.OrderRowDto">
+            <summary>
+            DTO para exibição de uma linha de pedido em listagens.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.ViewModels.OrderDetailsDto">
+            <summary>
+            DTO para exibição de detalhes completos de um pedido.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.ViewModels.OrderItemRowDto">
+            <summary>
+            DTO para exibição de um item de pedido na versão Admin.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.ViewModels.OrderItemDetailDto">
+            <summary>
+            DTO para exibição de um item de pedido na versão Account.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Models.ViewModels.ProductLiteDto">
+            <summary>
+            DTO simplificado de produto para APIs e operações leves.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Routing.AccountEndpointRouteBuilderExtensions">
+            <summary>
+            Extensões responsáveis por organizar os endpoints de autenticação utilizados pelos componentes Blazor.
+            Mantém o <c>Program.cs</c> mais limpo e facilita a evolução desses fluxos.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Routing.AccountEndpointRouteBuilderExtensions.MapAccountEndpoints(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)">
+            <summary>
+            Registra os endpoints auxiliares utilizados pelas páginas de conta (login e logout).
+            </summary>
+            <param name="endpoints">Instância do construtor de rotas.</param>
+            <returns>O próprio <see cref="T:Microsoft.AspNetCore.Routing.IEndpointRouteBuilder"/> para encadeamento.</returns>
+        </member>
+        <member name="T:SmokeExpress.Web.Routing.AddressEndpointRouteBuilderExtensions">
+            <summary>
+            Extensões de roteamento para operações de endereços na API autenticada.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Routing.AddressEndpointRouteBuilderExtensions.MapAddressEndpoints(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)">
+            <summary>
+            Registra endpoints REST para CRUD de endereços do usuário autenticado.
+            </summary>
+            <param name="endpoints">Instância do construtor de rotas.</param>
+            <returns>O próprio <see cref="T:Microsoft.AspNetCore.Routing.IEndpointRouteBuilder"/> para encadeamento.</returns>
+        </member>
+        <member name="T:SmokeExpress.Web.Routing.OrderEndpointRouteBuilderExtensions">
+            <summary>
+            Extensões de roteamento para expor endpoints REST de pedidos.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Routing.OrderEndpointRouteBuilderExtensions.MapOrderEndpoints(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)">
+            <summary>
+            Registra os endpoints responsáveis por checkout e consulta de pedidos na API pública.
+            </summary>
+            <param name="endpoints">Instância do construtor de rotas.</param>
+            <returns>O mesmo <see cref="T:Microsoft.AspNetCore.Routing.IEndpointRouteBuilder"/> permitindo encadeamento.</returns>
+        </member>
+        <member name="T:SmokeExpress.Web.Routing.ProductEndpointRouteBuilderExtensions">
+            <summary>
+            Extensões de roteamento para funcionalidades de consulta de produtos via API.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Routing.ProductEndpointRouteBuilderExtensions.MapProductEndpoints(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)">
+            <summary>
+            Registra endpoints relacionados à busca simplificada de produtos.
+            </summary>
+            <param name="endpoints">Instância do construtor de rotas.</param>
+            <returns>O próprio <see cref="T:Microsoft.AspNetCore.Routing.IEndpointRouteBuilder"/> para encadeamento.</returns>
+        </member>
+        <member name="T:SmokeExpress.Web.Security.BcryptPasswordHasher">
+            <summary>
+            Implementação personalizada do IPasswordHasher para utilizar BCrypt conforme requisito de segurança.
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Services.AddressService">
+            <summary>
+            Implementação de <see cref="T:SmokeExpress.Web.Services.IAddressService"/> baseada em Entity Framework Core.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.AddressService.#ctor(SmokeExpress.Web.Data.ApplicationDbContext,Microsoft.Extensions.Logging.ILogger{SmokeExpress.Web.Services.AddressService})">
+            <summary>
+            Implementação de <see cref="T:SmokeExpress.Web.Services.IAddressService"/> baseada em Entity Framework Core.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.AddressService.ListAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.AddressService.CreateAsync(System.String,SmokeExpress.Web.Models.Address,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.AddressService.UpdateAsync(System.String,System.Int32,SmokeExpress.Web.Models.Address,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.AddressService.DeleteAsync(System.String,System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.AddressService.MakeDefaultAsync(System.String,System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SmokeExpress.Web.Services.AgeVerificationService">
+            <summary>
+            Implementação do serviço de verificação de idade.
+            Gerencia cookies seguros para armazenar consentimento de maioridade.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.AgeVerificationService.HasConsentedAsync">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.AgeVerificationService.SetConsentAsync(System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.AgeVerificationService.ClearConsentAsync">
+            <inheritdoc />
+        </member>
+        <member name="T:SmokeExpress.Web.Services.AnalyticsService">
+            <summary>
+            Implementação de <see cref="T:SmokeExpress.Web.Services.IAnalyticsService"/> que consolida métricas a partir do banco de dados.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.AnalyticsService.#ctor(SmokeExpress.Web.Data.ApplicationDbContext)">
+            <summary>
+            Implementação de <see cref="T:SmokeExpress.Web.Services.IAnalyticsService"/> que consolida métricas a partir do banco de dados.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.AnalyticsService.ObterResumoAsync(System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.AnalyticsService.ObterVendasPorPeriodoAsync(SmokeExpress.Web.Models.Dashboard.PeriodFilter,System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.AnalyticsService.ObterProdutosMaisVendidosAsync(System.Int32,System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.AnalyticsService.ObterProdutosMenorEstoqueAsync(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.AnalyticsService.ObterProdutosMelhoresAvaliadosAsync(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.AnalyticsService.ObterProdutosPioresAvaliadosAsync(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.AnalyticsService.ObterPedidosPorStatusAsync(System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.AnalyticsService.ObterAnalyticsCompletoAsync(SmokeExpress.Web.Models.Dashboard.PeriodFilter,System.Int32,System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SmokeExpress.Web.Services.CategoryService">
+            <summary>
+            Implementação padrão do serviço de categorias para as operações administrativas.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.CategoryService.#ctor(SmokeExpress.Web.Data.ApplicationDbContext,Microsoft.Extensions.Logging.ILogger{SmokeExpress.Web.Services.CategoryService})">
+            <summary>
+            Implementação padrão do serviço de categorias para as operações administrativas.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.CategoryService.ListarAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.CategoryService.ObterPorIdAsync(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.CategoryService.CriarAsync(SmokeExpress.Web.Models.Category,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.CategoryService.AtualizarAsync(SmokeExpress.Web.Models.Category,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.CategoryService.RemoverAsync(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SmokeExpress.Web.Services.IAddressService">
+            <summary>
+            Define operações para gerenciamento de endereços de entrega dos usuários.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IAddressService.ListAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Lista todos os endereços cadastrados por um usuário, priorizando o endereço padrão.
+            </summary>
+            <param name="userId">Identificador do usuário autenticado.</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns>Lista somente com os endereços do usuário.</returns>
+            <exception cref="T:System.ArgumentException">Lançada quando <paramref name="userId"/> é vazio.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IAddressService.CreateAsync(System.String,SmokeExpress.Web.Models.Address,System.Threading.CancellationToken)">
+            <summary>
+            Cadastra um novo endereço para o usuário informado.
+            </summary>
+            <param name="userId">Identificador do usuário autenticado.</param>
+            <param name="address">Entidade contendo os dados do endereço.</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns>Endereço persistido com seus identificadores.</returns>
+            <exception cref="T:System.ArgumentException">Lançada quando <paramref name="userId"/> é vazio.</exception>
+            <exception cref="T:System.ArgumentNullException">Lançada quando <paramref name="address"/> é nulo.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.ValidationException">Lançada quando algum campo obrigatório está ausente.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.BusinessException">Lançada quando ocorre erro ao salvar o endereço.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IAddressService.UpdateAsync(System.String,System.Int32,SmokeExpress.Web.Models.Address,System.Threading.CancellationToken)">
+            <summary>
+            Atualiza um endereço existente pertencente ao usuário.
+            </summary>
+            <param name="userId">Identificador do usuário autenticado.</param>
+            <param name="id">Identificador do endereço.</param>
+            <param name="address">Novos dados do endereço.</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns>Endereço atualizado ou <c>null</c> quando não encontrado.</returns>
+            <exception cref="T:System.ArgumentException">Lançada quando <paramref name="userId"/> é vazio.</exception>
+            <exception cref="T:System.ArgumentNullException">Lançada quando <paramref name="address"/> é nulo.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.ValidationException">Lançada quando os dados informados são inválidos.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.BusinessException">Lançada quando ocorre erro ao salvar a alteração.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IAddressService.DeleteAsync(System.String,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Remove um endereço do usuário.
+            </summary>
+            <param name="userId">Identificador do usuário autenticado.</param>
+            <param name="id">Identificador do endereço.</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns><c>true</c> quando o endereço foi removido; caso contrário, <c>false</c>.</returns>
+            <exception cref="T:System.ArgumentException">Lançada quando <paramref name="userId"/> é vazio.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.BusinessException">Lançada quando ocorre erro ao persistir a remoção.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IAddressService.MakeDefaultAsync(System.String,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Define um endereço do usuário como padrão para entregas futuras.
+            </summary>
+            <param name="userId">Identificador do usuário autenticado.</param>
+            <param name="id">Identificador do endereço.</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns><c>true</c> quando o endereço foi promovido para padrão.</returns>
+            <exception cref="T:System.ArgumentException">Lançada quando <paramref name="userId"/> é vazio.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.BusinessException">Lançada quando ocorre erro ao salvar a alteração.</exception>
+        </member>
+        <member name="T:SmokeExpress.Web.Services.IAgeVerificationService">
+            <summary>
+            Serviço responsável por gerenciar o consentimento de verificação de idade (18+).
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IAgeVerificationService.HasConsentedAsync">
+            <summary>
+            Verifica se o usuário já forneceu consentimento quanto à maioridade.
+            </summary>
+            <returns>
+            <c>true</c> quando o consentimento indica que o usuário é maior de idade,
+            <c>false</c> quando o consentimento indica o oposto e <c>null</c> quando não existe registro.
+            </returns>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IAgeVerificationService.SetConsentAsync(System.Boolean)">
+            <summary>
+            Registra o consentimento do usuário sobre maioridade.
+            </summary>
+            <param name="isAdult"><c>true</c> quando o usuário declara ter 18+ anos; caso contrário <c>false</c>.</param>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IAgeVerificationService.ClearConsentAsync">
+            <summary>
+            Remove o consentimento armazenado (limpa o cookie).
+            </summary>
+        </member>
+        <member name="T:SmokeExpress.Web.Services.IAnalyticsService">
+            <summary>
+            Define operações de análise e consolidação de métricas de vendas.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IAnalyticsService.ObterResumoAsync(System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.Threading.CancellationToken)">
+            <summary>
+            Obtém indicadores agregados (receita, pedidos e clientes ativos) para o período informado.
+            </summary>
+            <param name="dataInicio">Data inicial do filtro (inclusiva). Quando nula, é calculada automaticamente.</param>
+            <param name="dataFim">Data final do filtro (inclusiva). Quando nula, é calculada automaticamente.</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns>Resumo consolidado de pedidos e produtos.</returns>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IAnalyticsService.ObterVendasPorPeriodoAsync(SmokeExpress.Web.Models.Dashboard.PeriodFilter,System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.Threading.CancellationToken)">
+            <summary>
+            Retorna a evolução de vendas ao longo do período escolhido.
+            </summary>
+            <param name="periodo">Intervalo pré-definido utilizado para agrupar os resultados.</param>
+            <param name="dataInicio">Data inicial personalizada (apenas quando <paramref name="periodo"/> é Personalizado).</param>
+            <param name="dataFim">Data final personalizada (apenas quando <paramref name="periodo"/> é Personalizado).</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns>Lista ordenada com receita, pedidos e itens vendidos por período.</returns>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IAnalyticsService.ObterProdutosMaisVendidosAsync(System.Int32,System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.Threading.CancellationToken)">
+            <summary>
+            Lista os produtos mais vendidos dentro do período informado.
+            </summary>
+            <param name="top">Quantidade máxima de produtos retornados.</param>
+            <param name="dataInicio">Data inicial do filtro (opcional).</param>
+            <param name="dataFim">Data final do filtro (opcional).</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns>Lista com produtos mais vendidos ordenados por quantidade.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Lançada quando <paramref name="top"/> é menor ou igual a zero.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IAnalyticsService.ObterProdutosMenorEstoqueAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Retorna os produtos com menor estoque considerando a quantidade solicitada.
+            </summary>
+            <param name="top">Quantidade máxima de produtos retornados.</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns>Lista de produtos ordenada pelo estoque crescente.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Lançada quando <paramref name="top"/> é menor ou igual a zero.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IAnalyticsService.ObterProdutosMelhoresAvaliadosAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Retorna os produtos com melhor avaliação média.
+            </summary>
+            <param name="top">Quantidade máxima de produtos retornados.</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns>Lista de produtos ordenada pela média de avaliações decrescente.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Lançada quando <paramref name="top"/> é menor ou igual a zero.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IAnalyticsService.ObterProdutosPioresAvaliadosAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Retorna os produtos com pior avaliação média.
+            </summary>
+            <param name="top">Quantidade máxima de produtos retornados.</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns>Lista de produtos ordenada pela média de avaliações crescente.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Lançada quando <paramref name="top"/> é menor ou igual a zero.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IAnalyticsService.ObterPedidosPorStatusAsync(System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.Threading.CancellationToken)">
+            <summary>
+            Agrupa pedidos do período por status e calcula quantidade e receita de cada categoria.
+            </summary>
+            <param name="dataInicio">Data inicial do filtro (opcional).</param>
+            <param name="dataFim">Data final do filtro (opcional).</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns>Lista com contagem de pedidos por status.</returns>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IAnalyticsService.ObterAnalyticsCompletoAsync(SmokeExpress.Web.Models.Dashboard.PeriodFilter,System.Int32,System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.Threading.CancellationToken)">
+            <summary>
+            Obtém o conjunto completo de informações do dashboard para o período solicitado.
+            </summary>
+            <param name="periodo">Intervalo pré-definido utilizado para agrupar os resultados.</param>
+            <param name="topProdutos">Quantidade máxima de produtos retornados nos rankings.</param>
+            <param name="dataInicio">Data inicial personalizada (apenas quando <paramref name="periodo"/> é Personalizado).</param>
+            <param name="dataFim">Data final personalizada (apenas quando <paramref name="periodo"/> é Personalizado).</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns>Estrutura consolidada com resumo, vendas, pedidos e rankings de produtos.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Lançada quando <paramref name="topProdutos"/> é menor ou igual a zero.</exception>
+        </member>
+        <member name="T:SmokeExpress.Web.Services.ICategoryService">
+            <summary>
+            Contrato para lidar com operações de categorias no contexto administrativo.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ICategoryService.ListarAsync(System.Threading.CancellationToken)">
+            <summary>
+            Lista todas as categorias cadastradas com os respectivos produtos.
+            </summary>
+            <param name="cancellationToken">Token opcional para cancelar a operação.</param>
+            <returns>Coleção somente leitura de categorias.</returns>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ICategoryService.ObterPorIdAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Obtém uma categoria específica com seus produtos relacionados.
+            </summary>
+            <param name="id">Identificador da categoria.</param>
+            <param name="cancellationToken">Token opcional para cancelar a operação.</param>
+            <returns>Categoria encontrada ou <c>null</c> quando inexistente.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Lançada quando <paramref name="id"/> é menor ou igual a zero.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ICategoryService.CriarAsync(SmokeExpress.Web.Models.Category,System.Threading.CancellationToken)">
+            <summary>
+            Cria uma nova categoria após validar os campos obrigatórios.
+            </summary>
+            <param name="category">Dados da categoria.</param>
+            <param name="cancellationToken">Token opcional para cancelar a operação.</param>
+            <returns>Categoria persistida.</returns>
+            <exception cref="T:System.ArgumentNullException">Lançada quando <paramref name="category"/> é nula.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.ValidationException">Lançada quando dados obrigatórios estão ausentes.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.BusinessException">Lançada quando ocorre erro ao salvar a categoria.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ICategoryService.AtualizarAsync(SmokeExpress.Web.Models.Category,System.Threading.CancellationToken)">
+            <summary>
+            Atualiza os dados de uma categoria existente.
+            </summary>
+            <param name="category">Dados atualizados da categoria.</param>
+            <param name="cancellationToken">Token opcional para cancelar a operação.</param>
+            <returns>Tarefa representando a operação assíncrona.</returns>
+            <exception cref="T:System.ArgumentNullException">Lançada quando <paramref name="category"/> é nula.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.ValidationException">Lançada quando dados obrigatórios estão ausentes.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.NotFoundException">Lançada quando a categoria não é encontrada.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.BusinessException">Lançada quando ocorre erro ao salvar a alteração.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ICategoryService.RemoverAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Remove uma categoria, respeitando vínculos com produtos.
+            </summary>
+            <param name="id">Identificador da categoria.</param>
+            <param name="cancellationToken">Token opcional para cancelar a operação.</param>
+            <returns>Tarefa representando a operação assíncrona.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Lançada quando <paramref name="id"/> é menor ou igual a zero.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.ValidationException">Lançada quando existem produtos associados impedindo a exclusão.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.NotFoundException">Lançada quando a categoria não existe.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.BusinessException">Lançada quando ocorre erro ao remover a categoria.</exception>
+        </member>
+        <member name="T:SmokeExpress.Web.Services.IImageUploadService">
+            <summary>
+            Serviço responsável pelo upload de imagens de produtos.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IImageUploadService.UploadProductImageAsync(System.IO.Stream,System.String,System.Int64,System.Threading.CancellationToken)">
+            <summary>
+            Faz upload de uma imagem de produto e retorna o caminho relativo para acesso via HTTP.
+            </summary>
+            <param name="fileStream">Fluxo do arquivo de imagem a ser enviado.</param>
+            <param name="fileName">Nome original do arquivo enviado.</param>
+            <param name="fileSize">Tamanho do arquivo em bytes.</param>
+            <param name="cancellationToken">Token opcional para cancelar a operação.</param>
+            <returns>Caminho relativo da imagem (ex: /images/products/guid.jpg) ou <c>null</c> se o upload falhar.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            Lançada quando <paramref name="fileStream"/> ou <paramref name="fileName"/> são nulos.
+            </exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IImageUploadService.DeleteProductImageAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Remove uma imagem de produto do sistema de arquivos.
+            </summary>
+            <param name="imagePath">Caminho relativo da imagem (ex: /images/products/guid.jpg).</param>
+            <param name="cancellationToken">Token opcional para cancelar a operação.</param>
+            <returns><c>true</c> quando a imagem é removida com sucesso; caso contrário, <c>false</c>.</returns>
+        </member>
+        <member name="T:SmokeExpress.Web.Services.ImageUploadService">
+            <summary>
+            Implementação do serviço de upload de imagens de produtos.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ImageUploadService.UploadProductImageAsync(System.IO.Stream,System.String,System.Int64,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ImageUploadService.DeleteProductImageAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SmokeExpress.Web.Services.IOrderService">
+            <summary>
+            Define operações de leitura e escrita relacionadas a pedidos dos clientes.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IOrderService.CriarPedidoAsync(System.String,System.Collections.Generic.IEnumerable{SmokeExpress.Web.Models.CartItemDto},SmokeExpress.Web.Models.EnderecoEntregaDto,System.Decimal,System.Threading.CancellationToken)">
+            <summary>
+            Cria um novo pedido para o usuário informado após validar carrinho, estoque e endereço.
+            </summary>
+            <param name="userId">Identificador do usuário autenticado.</param>
+            <param name="cartItems">Itens presentes no carrinho de compras.</param>
+            <param name="endereco">Endereço de entrega utilizado no pedido.</param>
+            <param name="frete">Valor do frete a ser somado ao total do pedido (padrão: 0).</param>
+            <param name="cancellationToken">Token opcional para cancelar a operação.</param>
+            <returns>ID do pedido criado e persistido.</returns>
+            <exception cref="T:System.ArgumentException">Lançada quando <paramref name="userId"/> é vazio.</exception>
+            <exception cref="T:System.ArgumentNullException">
+            Lançada quando <paramref name="cartItems"/> ou <paramref name="endereco"/> são nulos.
+            </exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.ValidationException">Lançada quando os dados de negócio do pedido não são válidos.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.BusinessException">Lançada quando ocorre erro ao persistir o pedido.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IOrderService.ListarPedidosPorUsuarioAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Lista todos os pedidos associados ao usuário informado.
+            </summary>
+            <param name="userId">Identificador do usuário autenticado.</param>
+            <param name="cancellationToken">Token opcional para cancelar a operação.</param>
+            <returns>Lista apenas com pedidos do usuário ou vazia quando não há registros.</returns>
+            <exception cref="T:System.ArgumentException">Lançada quando <paramref name="userId"/> é vazio.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IOrderService.ListarTodosAsync(System.Threading.CancellationToken)">
+            <summary>
+            Lista todos os pedidos registrados na plataforma, ordenados pela data mais recente.
+            </summary>
+            <param name="cancellationToken">Token opcional para cancelar a operação.</param>
+            <returns>Lista completa de pedidos.</returns>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IOrderService.ObterPorIdAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Obtém um pedido com seus relacionamentos pelo identificador.
+            </summary>
+            <param name="id">Identificador do pedido.</param>
+            <param name="cancellationToken">Token opcional para cancelar a operação.</param>
+            <returns>Instância do pedido encontrada ou <c>null</c> quando não existe.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Lançada quando <paramref name="id"/> é menor ou igual a zero.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IOrderService.AtualizarStatusAsync(System.Int32,SmokeExpress.Web.Models.OrderStatus,System.Threading.CancellationToken)">
+            <summary>
+            Atualiza o status de um pedido existente.
+            </summary>
+            <param name="id">Identificador do pedido.</param>
+            <param name="novoStatus">Novo status que deve ser aplicado.</param>
+            <param name="cancellationToken">Token opcional para cancelar a operação.</param>
+            <returns><c>true</c> quando o status foi atualizado; caso contrário, <c>false</c>.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Lançada quando <paramref name="id"/> é menor ou igual a zero.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.BusinessException">Lançada quando ocorre erro ao salvar a alteração.</exception>
+        </member>
+        <member name="T:SmokeExpress.Web.Services.IProductService">
+            <summary>
+            Contrato para lidar com operações de produtos no contexto administrativo.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IProductService.ListarAsync(System.Threading.CancellationToken)">
+            <summary>
+            Lista todos os produtos cadastrados com suas respectivas categorias.
+            </summary>
+            <param name="cancellationToken">Token opcional para cancelar a operação.</param>
+            <returns>Coleção somente leitura de produtos.</returns>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IProductService.ListarPaginadoAsync(System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Lista produtos de forma paginada para uso administrativo.
+            </summary>
+            <param name="pageNumber">Número da página (inicia em 1).</param>
+            <param name="pageSize">Quantidade de registros por página.</param>
+            <param name="cancellationToken">Token opcional para cancelar a operação.</param>
+            <returns>Resultado paginado com produtos e metadados.</returns>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IProductService.BuscarPaginadoAsync(System.String,System.Nullable{System.Int32},System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Busca produtos paginados com filtros opcionais por termo de busca e categoria.
+            </summary>
+            <param name="termoBusca">Termo para buscar em Nome ou Descrição (opcional).</param>
+            <param name="categoriaId">ID da categoria para filtrar (opcional).</param>
+            <param name="pageNumber">Número da página (inicia em 1).</param>
+            <param name="pageSize">Itens por página.</param>
+            <param name="cancellationToken">Token de cancelamento.</param>
+            <returns>Resultado paginado de produtos.</returns>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IProductService.BuscarPaginadoAsync(SmokeExpress.Web.Models.ProductSearchFilters,System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Busca produtos paginados com filtros avançados (preço, estoque, ordenação).
+            </summary>
+            <param name="filters">Filtros de busca avançada.</param>
+            <param name="pageNumber">Número da página (inicia em 1).</param>
+            <param name="pageSize">Itens por página.</param>
+            <param name="cancellationToken">Token de cancelamento.</param>
+            <returns>Resultado paginado de produtos.</returns>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IProductService.ObterPorIdAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Obtém um produto específico com a respectiva categoria.
+            </summary>
+            <param name="id">Identificador do produto.</param>
+            <param name="cancellationToken">Token opcional para cancelar a operação.</param>
+            <returns>Produto encontrado ou <c>null</c> quando não existe.</returns>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IProductService.CriarAsync(SmokeExpress.Web.Models.Product,System.Threading.CancellationToken)">
+            <summary>
+            Cria um novo produto após validar informações obrigatórias.
+            </summary>
+            <param name="product">Entidade preenchida com os dados do produto.</param>
+            <param name="cancellationToken">Token opcional para cancelar a operação.</param>
+            <returns>Produto persistido.</returns>
+            <exception cref="T:System.ArgumentNullException">Lançada quando <paramref name="product"/> é nulo.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.ValidationException">
+            Lançada quando os dados do produto não atendem às regras de negócio.
+            </exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.BusinessException">Lançada quando ocorre erro ao salvar o produto.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IProductService.AtualizarAsync(SmokeExpress.Web.Models.Product,System.Threading.CancellationToken)">
+            <summary>
+            Atualiza um produto existente.
+            </summary>
+            <param name="product">Entidade com os dados já atualizados.</param>
+            <param name="cancellationToken">Token opcional para cancelar a operação.</param>
+            <returns>Tarefa representando a operação assíncrona.</returns>
+            <exception cref="T:System.ArgumentNullException">Lançada quando <paramref name="product"/> é nulo.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.ValidationException">
+            Lançada quando os dados informados são inválidos.
+            </exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.NotFoundException">
+            Lançada quando o produto informado não existe.
+            </exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.BusinessException">Lançada quando ocorre erro ao salvar a alteração.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IProductService.RemoverAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Remove um produto, respeitando as restrições de pedidos associados.
+            </summary>
+            <param name="id">Identificador do produto.</param>
+            <param name="cancellationToken">Token opcional para cancelar a operação.</param>
+            <returns>Tarefa representando a operação assíncrona.</returns>
+            <exception cref="T:SmokeExpress.Web.Exceptions.ValidationException">
+            Lançada quando o produto possui vínculos que impedem a exclusão.
+            </exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.NotFoundException">Lançada quando o produto não existe.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.BusinessException">Lançada quando ocorre erro ao remover o produto.</exception>
+        </member>
+        <member name="T:SmokeExpress.Web.Services.IReviewService">
+            <summary>
+            Define operações de criação e consulta de avaliações de produtos realizadas pelos usuários.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IReviewService.CriarAvaliacaoAsync(System.String,System.Int32,System.Int32,System.String,System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <summary>
+            Cria uma nova avaliação para o produto informado.
+            </summary>
+            <param name="userId">Identificador do usuário autenticado.</param>
+            <param name="productId">Identificador do produto avaliado.</param>
+            <param name="rating">Nota atribuída ao produto (0 a 5).</param>
+            <param name="comment">Comentário opcional descrevendo a experiência.</param>
+            <param name="orderId">Pedido relacionado à avaliação (opcional).</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns>Avaliação criada e persistida.</returns>
+            <exception cref="T:System.ArgumentException">Lançada quando <paramref name="userId"/> é vazio.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException">Lançada quando <paramref name="productId"/> ou <paramref name="rating"/> são inválidos.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.ValidationException">Lançada quando as regras de negócio impedem a avaliação.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.NotFoundException">Lançada quando o produto ou pedido associado não é encontrado.</exception>
+            <exception cref="T:SmokeExpress.Web.Exceptions.BusinessException">Lançada quando ocorre erro ao salvar a avaliação.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IReviewService.ObterAvaliacoesPorProdutoAsync(System.Int32,System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Obtém todas as avaliações de um produto.
+            </summary>
+            <param name="productId">Identificador do produto.</param>
+            <param name="apenasComComentario">
+            Quando <c>true</c>, retorna apenas avaliações com comentário associado.
+            </param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns>Lista de avaliações ordenadas por data mais recente.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Lançada quando <paramref name="productId"/> é menor ou igual a zero.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IReviewService.ObterMediaAvaliacoesAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Calcula a média de avaliações do produto.
+            </summary>
+            <param name="productId">Identificador do produto.</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns>Média das avaliações ou <c>null</c> quando não há registros.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Lançada quando <paramref name="productId"/> é menor ou igual a zero.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IReviewService.ObterTotalAvaliacoesAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Obtém o total de avaliações do produto.
+            </summary>
+            <param name="productId">Identificador do produto.</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns>Total de avaliações encontradas.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Lançada quando <paramref name="productId"/> é menor ou igual a zero.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IReviewService.ObterResumoAvaliacoesAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Obtém resumo de avaliações do produto, incluindo média e comentários.
+            </summary>
+            <param name="productId">Identificador do produto.</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns>Tupla contendo média, total e avaliações com comentário.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Lançada quando <paramref name="productId"/> é menor ou igual a zero.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IReviewService.ObterMediasAvaliacoesPorProdutosAsync(System.Collections.Generic.IEnumerable{System.Int32},System.Threading.CancellationToken)">
+            <summary>
+            Obtém médias de avaliações para uma coleção de produtos.
+            </summary>
+            <param name="productIds">Conjunto de identificadores de produtos.</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns>Dicionário mapeando o ID do produto para a média calculada.</returns>
+            <exception cref="T:System.ArgumentNullException">Lançada quando <paramref name="productIds"/> é nulo.</exception>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IReviewService.UsuarioJaAvaliouAsync(System.String,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Verifica se o usuário já avaliou o produto em algum momento.
+            </summary>
+            <param name="userId">Identificador do usuário autenticado.</param>
+            <param name="productId">Identificador do produto.</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns><c>true</c> quando o usuário já avaliou o produto.</returns>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IReviewService.UsuarioJaAvaliouNoPedidoAsync(System.String,System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Verifica se o usuário já avaliou o produto no pedido informado.
+            </summary>
+            <param name="userId">Identificador do usuário autenticado.</param>
+            <param name="productId">Identificador do produto.</param>
+            <param name="orderId">Identificador do pedido.</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns><c>true</c> quando já existe avaliação para a combinação usuário/produto/pedido.</returns>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.IReviewService.ObterAvaliacaoPorUsuarioAsync(System.String,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Obtém a avaliação de um produto realizada pelo usuário, quando existente.
+            </summary>
+            <param name="userId">Identificador do usuário autenticado.</param>
+            <param name="productId">Identificador do produto.</param>
+            <param name="ct">Token opcional para cancelar a operação.</param>
+            <returns>Avaliação encontrada ou <c>null</c> quando o usuário ainda não avaliou o produto.</returns>
+        </member>
+        <member name="T:SmokeExpress.Web.Services.OrderService">
+            <summary>
+            Implementação padrão de <see cref="T:SmokeExpress.Web.Services.IOrderService"/> responsável pelo ciclo de vida de pedidos e suas validações.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.OrderService.#ctor(SmokeExpress.Web.Data.ApplicationDbContext,Microsoft.Extensions.Logging.ILogger{SmokeExpress.Web.Services.OrderService})">
+            <summary>
+            Implementação padrão de <see cref="T:SmokeExpress.Web.Services.IOrderService"/> responsável pelo ciclo de vida de pedidos e suas validações.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.OrderService.CriarPedidoAsync(System.String,System.Collections.Generic.IEnumerable{SmokeExpress.Web.Models.CartItemDto},SmokeExpress.Web.Models.EnderecoEntregaDto,System.Decimal,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.OrderService.ListarPedidosPorUsuarioAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.OrderService.ListarTodosAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.OrderService.ObterPorIdAsync(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.OrderService.AtualizarStatusAsync(System.Int32,SmokeExpress.Web.Models.OrderStatus,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SmokeExpress.Web.Services.ProductService">
+            <summary>
+            Implementação padrão do serviço de produtos para as operações administrativas.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ProductService.#ctor(SmokeExpress.Web.Data.ApplicationDbContext,Microsoft.Extensions.Logging.ILogger{SmokeExpress.Web.Services.ProductService})">
+            <summary>
+            Implementação padrão do serviço de produtos para as operações administrativas.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ProductService.ListarAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ProductService.ListarPaginadoAsync(System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ProductService.BuscarPaginadoAsync(System.String,System.Nullable{System.Int32},System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ProductService.BuscarPaginadoAsync(SmokeExpress.Web.Models.ProductSearchFilters,System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ProductService.AplicarOrdenacaoRelevancia(System.Linq.IQueryable{SmokeExpress.Web.Models.Product},System.String)">
+            <summary>
+            Aplica ordenação por relevância baseada na correspondência com o termo de busca.
+            Produtos que mais correspondem ao termo aparecem primeiro.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ProductService.AplicarOrdenacaoPorAvaliacao(System.Linq.IQueryable{SmokeExpress.Web.Models.Product})">
+            <summary>
+            Aplica ordenação por melhor avaliação (maior média de avaliações primeiro).
+            Produtos sem avaliações aparecem por último.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ProductService.ObterPorIdAsync(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ProductService.CriarAsync(SmokeExpress.Web.Models.Product,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ProductService.AtualizarAsync(SmokeExpress.Web.Models.Product,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ProductService.RemoverAsync(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:SmokeExpress.Web.Services.ReviewService">
+            <summary>
+            Implementação de <see cref="T:SmokeExpress.Web.Services.IReviewService"/> que persiste avaliações de produtos no banco de dados.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ReviewService.#ctor(SmokeExpress.Web.Data.ApplicationDbContext,Microsoft.Extensions.Logging.ILogger{SmokeExpress.Web.Services.ReviewService})">
+            <summary>
+            Implementação de <see cref="T:SmokeExpress.Web.Services.IReviewService"/> que persiste avaliações de produtos no banco de dados.
+            </summary>
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ReviewService.CriarAvaliacaoAsync(System.String,System.Int32,System.Int32,System.String,System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ReviewService.ObterAvaliacoesPorProdutoAsync(System.Int32,System.Boolean,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ReviewService.ObterMediaAvaliacoesAsync(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ReviewService.ObterTotalAvaliacoesAsync(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ReviewService.ObterResumoAvaliacoesAsync(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ReviewService.ObterMediasAvaliacoesPorProdutosAsync(System.Collections.Generic.IEnumerable{System.Int32},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ReviewService.UsuarioJaAvaliouAsync(System.String,System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ReviewService.UsuarioJaAvaliouNoPedidoAsync(System.String,System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmokeExpress.Web.Services.ReviewService.ObterAvaliacaoPorUsuarioAsync(System.String,System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="P:SmokeExpress.Web.Shared.Components.RatingDisplay.Rating">
+            <summary>
+            Rating decimal (0-5) que permite exibir meia-estrela. Usado para médias de avaliações.
+            </summary>
+        </member>
+        <member name="P:SmokeExpress.Web.Shared.Components.RatingDisplay.IntegerRating">
+            <summary>
+            Rating inteiro (1-5) que exibe apenas estrelas cheias ou vazias. Usado para avaliações individuais.
+            </summary>
+        </member>
+        <member name="P:SmokeExpress.Web.Shared.Components.RatingDisplay.StarSize">
+            <summary>
+            Tamanho da fonte CSS para as estrelas. Padrão: "1rem"
+            </summary>
+        </member>
+        <member name="P:SmokeExpress.Web.Shared.Components.RatingDisplay.ShowHalfStar">
+            <summary>
+            Permite exibir meia-estrela quando Rating decimal é usado. Padrão: true.
+            Ignorado quando IntegerRating é usado.
+            </summary>
+        </member>
+    </members>
+</doc>

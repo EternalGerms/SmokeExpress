@@ -8,8 +8,12 @@ using SmokeExpress.Web.Models;
 
 namespace SmokeExpress.Web.Services;
 
+/// <summary>
+/// Implementação padrão de <see cref="IOrderService"/> responsável pelo ciclo de vida de pedidos e suas validações.
+/// </summary>
 public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> logger) : IOrderService
 {
+    /// <inheritdoc />
     public async Task<int> CriarPedidoAsync(
         string userId,
         IEnumerable<CartItemDto> cartItems,
@@ -90,6 +94,7 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
         return order.Id;
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<Order>> ListarPedidosPorUsuarioAsync(
         string userId,
         CancellationToken cancellationToken = default)
@@ -105,6 +110,7 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
         return pedidos;
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<Order>> ListarTodosAsync(
         CancellationToken cancellationToken = default)
     {
@@ -115,6 +121,7 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
             .ToListAsync(cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<Order?> ObterPorIdAsync(
         int id,
         CancellationToken cancellationToken = default)
@@ -127,6 +134,7 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
             .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<bool> AtualizarStatusAsync(
         int id,
         OrderStatus novoStatus,

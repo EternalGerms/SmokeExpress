@@ -17,6 +17,7 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
 {
     private readonly ApplicationDbContext _context = context;
 
+    /// <inheritdoc />
     public async Task<IReadOnlyCollection<Product>> ListarAsync(CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Listando produtos.");
@@ -27,6 +28,7 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
             .ToListAsync(cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<PagedResult<Product>> ListarPaginadoAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
         // Validar parâmetros
@@ -56,6 +58,7 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
         };
     }
 
+    /// <inheritdoc />
     public async Task<PagedResult<Product>> BuscarPaginadoAsync(string? termoBusca, int? categoriaId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
         // Validar parâmetros
@@ -96,6 +99,7 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
         };
     }
 
+    /// <inheritdoc />
     public async Task<PagedResult<Product>> BuscarPaginadoAsync(ProductSearchFilters filters, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
         // Validar parâmetros
@@ -250,6 +254,7 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
             .Select(x => x.Produto);
     }
 
+    /// <inheritdoc />
     public async Task<Product?> ObterPorIdAsync(int id, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Obtendo produto. ProductId: {ProductId}", id);
@@ -259,6 +264,7 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<Product> CriarAsync(Product product, CancellationToken cancellationToken = default)
     {
         Guard.AgainstNull(product, nameof(product));
@@ -290,6 +296,7 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
         return product;
     }
 
+    /// <inheritdoc />
     public async Task AtualizarAsync(Product product, CancellationToken cancellationToken = default)
     {
         Guard.AgainstNull(product, nameof(product));
@@ -333,6 +340,7 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
         logger.LogInformation("Produto atualizado. ProductId: {ProductId}, CategoriaId: {CategoriaId}", product.Id, product.CategoriaId);
     }
 
+    /// <inheritdoc />
     public async Task RemoverAsync(int id, CancellationToken cancellationToken = default)
     {
         using var _ = logger.BeginScope(new { ProductId = id });

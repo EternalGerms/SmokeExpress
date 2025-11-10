@@ -12,6 +12,11 @@ namespace SmokeExpress.Web.Routing;
 /// </summary>
 public static class AccountEndpointRouteBuilderExtensions
 {
+    /// <summary>
+    /// Registra os endpoints auxiliares utilizados pelas páginas de conta (login e logout).
+    /// </summary>
+    /// <param name="endpoints">Instância do construtor de rotas.</param>
+    /// <returns>O próprio <see cref="IEndpointRouteBuilder"/> para encadeamento.</returns>
     public static IEndpointRouteBuilder MapAccountEndpoints(this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapPost("/account/login", async ([FromForm] LoginRequest login,

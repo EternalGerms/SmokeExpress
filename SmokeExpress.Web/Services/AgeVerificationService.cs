@@ -17,6 +17,7 @@ public class AgeVerificationService : IAgeVerificationService
         _httpContextAccessor = httpContextAccessor;
     }
 
+    /// <inheritdoc />
     public Task<bool?> HasConsentedAsync()
     {
         var httpContext = _httpContextAccessor.HttpContext;
@@ -36,6 +37,7 @@ public class AgeVerificationService : IAgeVerificationService
         return Task.FromResult<bool?>(null);
     }
 
+    /// <inheritdoc />
     public Task SetConsentAsync(bool isAdult)
     {
         var httpContext = _httpContextAccessor.HttpContext;
@@ -59,6 +61,7 @@ public class AgeVerificationService : IAgeVerificationService
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task ClearConsentAsync()
     {
         var httpContext = _httpContextAccessor.HttpContext;

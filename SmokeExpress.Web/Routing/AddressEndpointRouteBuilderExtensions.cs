@@ -6,8 +6,16 @@ using SmokeExpress.Web.Services;
 
 namespace SmokeExpress.Web.Routing;
 
+/// <summary>
+/// Extensões de roteamento para operações de endereços na API autenticada.
+/// </summary>
 public static class AddressEndpointRouteBuilderExtensions
 {
+    /// <summary>
+    /// Registra endpoints REST para CRUD de endereços do usuário autenticado.
+    /// </summary>
+    /// <param name="endpoints">Instância do construtor de rotas.</param>
+    /// <returns>O próprio <see cref="IEndpointRouteBuilder"/> para encadeamento.</returns>
     public static IEndpointRouteBuilder MapAddressEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/api/addresses").RequireAuthorization();

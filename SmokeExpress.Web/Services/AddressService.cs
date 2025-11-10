@@ -10,8 +10,12 @@ namespace SmokeExpress.Web.Services;
 
 // Convenção de logging: mensagens com propriedades nomeadas {Prop}; usar BeginScope para contexto (ex.: {UserId}, {AddressId}).
 
+/// <summary>
+/// Implementação de <see cref="IAddressService"/> baseada em Entity Framework Core.
+/// </summary>
 public class AddressService(ApplicationDbContext db, ILogger<AddressService> logger) : IAddressService
 {
+    /// <inheritdoc />
     public async Task<IReadOnlyList<Address>> ListAsync(string userId, CancellationToken ct = default)
     {
         Guard.AgainstNullOrWhiteSpace(userId, nameof(userId));
@@ -22,6 +26,7 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
             .ToListAsync(ct);
     }
 
+    /// <inheritdoc />
     public async Task<Address> CreateAsync(string userId, Address address, CancellationToken ct = default)
     {
         Guard.AgainstNullOrWhiteSpace(userId, nameof(userId));
@@ -60,6 +65,7 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
         return address;
     }
 
+    /// <inheritdoc />
     public async Task<Address?> UpdateAsync(string userId, int id, Address address, CancellationToken ct = default)
     {
         Guard.AgainstNullOrWhiteSpace(userId, nameof(userId));
@@ -108,6 +114,7 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
         return existing;
     }
 
+    /// <inheritdoc />
     public async Task<bool> DeleteAsync(string userId, int id, CancellationToken ct = default)
     {
         Guard.AgainstNullOrWhiteSpace(userId, nameof(userId));
@@ -157,6 +164,7 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
         return true;
     }
 
+    /// <inheritdoc />
     public async Task<bool> MakeDefaultAsync(string userId, int id, CancellationToken ct = default)
     {
         Guard.AgainstNullOrWhiteSpace(userId, nameof(userId));

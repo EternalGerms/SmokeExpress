@@ -30,6 +30,7 @@ public class ImageUploadService : IImageUploadService
         }
     }
 
+    /// <inheritdoc />
     public async Task<string?> UploadProductImageAsync(Stream fileStream, string fileName, long fileSize, CancellationToken cancellationToken = default)
     {
         Guard.AgainstNull(fileStream, nameof(fileStream));
@@ -74,6 +75,7 @@ public class ImageUploadService : IImageUploadService
         }
     }
 
+    /// <inheritdoc />
     public Task<bool> DeleteProductImageAsync(string? imagePath, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(imagePath))

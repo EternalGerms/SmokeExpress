@@ -15,6 +15,7 @@ public class CategoryService(ApplicationDbContext context, ILogger<CategoryServi
 {
     private readonly ApplicationDbContext _context = context;
 
+    /// <inheritdoc />
     public async Task<IReadOnlyCollection<Category>> ListarAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Categories
@@ -24,6 +25,7 @@ public class CategoryService(ApplicationDbContext context, ILogger<CategoryServi
             .ToListAsync(cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<Category?> ObterPorIdAsync(int id, CancellationToken cancellationToken = default)
     {
         if (id <= 0) throw new ArgumentOutOfRangeException(nameof(id));
@@ -33,6 +35,7 @@ public class CategoryService(ApplicationDbContext context, ILogger<CategoryServi
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<Category> CriarAsync(Category category, CancellationToken cancellationToken = default)
     {
         Guard.AgainstNull(category, nameof(category));
@@ -61,6 +64,7 @@ public class CategoryService(ApplicationDbContext context, ILogger<CategoryServi
         return category;
     }
 
+    /// <inheritdoc />
     public async Task AtualizarAsync(Category category, CancellationToken cancellationToken = default)
     {
         Guard.AgainstNull(category, nameof(category));
@@ -97,6 +101,7 @@ public class CategoryService(ApplicationDbContext context, ILogger<CategoryServi
         }
     }
 
+    /// <inheritdoc />
     public async Task RemoverAsync(int id, CancellationToken cancellationToken = default)
     {
         if (id <= 0) throw new ArgumentOutOfRangeException(nameof(id));

@@ -12,8 +12,16 @@ using SmokeExpress.Web.Services;
 
 namespace SmokeExpress.Web.Routing;
 
+/// <summary>
+/// Extensões de roteamento para expor endpoints REST de pedidos.
+/// </summary>
 public static class OrderEndpointRouteBuilderExtensions
 {
+    /// <summary>
+    /// Registra os endpoints responsáveis por checkout e consulta de pedidos na API pública.
+    /// </summary>
+    /// <param name="endpoints">Instância do construtor de rotas.</param>
+    /// <returns>O mesmo <see cref="IEndpointRouteBuilder"/> permitindo encadeamento.</returns>
     public static IEndpointRouteBuilder MapOrderEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/api/orders");

@@ -8,8 +8,12 @@ using SmokeExpress.Web.Models;
 
 namespace SmokeExpress.Web.Services;
 
+/// <summary>
+/// Implementação de <see cref="IReviewService"/> que persiste avaliações de produtos no banco de dados.
+/// </summary>
 public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService> logger) : IReviewService
 {
+    /// <inheritdoc />
     public async Task<ProductReview> CriarAvaliacaoAsync(string userId, int productId, int rating, string? comment, int? orderId = null, CancellationToken ct = default)
     {
         Guard.AgainstNullOrWhiteSpace(userId, nameof(userId));
@@ -60,6 +64,7 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
         return avaliacao;
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<ProductReview>> ObterAvaliacoesPorProdutoAsync(int productId, bool apenasComComentario = false, CancellationToken ct = default)
     {
         if (productId <= 0) throw new ArgumentOutOfRangeException(nameof(productId));
@@ -78,6 +83,7 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
             .ToListAsync(ct);
     }
 
+    /// <inheritdoc />
     public async Task<decimal?> ObterMediaAvaliacoesAsync(int productId, CancellationToken ct = default)
     {
         if (productId <= 0) throw new ArgumentOutOfRangeException(nameof(productId));
@@ -89,6 +95,7 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
         return media;
     }
 
+    /// <inheritdoc />
     public async Task<int> ObterTotalAvaliacoesAsync(int productId, CancellationToken ct = default)
     {
         if (productId <= 0) throw new ArgumentOutOfRangeException(nameof(productId));
@@ -98,6 +105,7 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
             .CountAsync(ct);
     }
 
+    /// <inheritdoc />
     public async Task<(decimal? Media, int Total, IReadOnlyList<ProductReview> AvaliacoesComComentario)> ObterResumoAvaliacoesAsync(int productId, CancellationToken ct = default)
     {
         if (productId <= 0) throw new ArgumentOutOfRangeException(nameof(productId));
@@ -125,6 +133,7 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
         return (media, total, avaliacoesComComentario);
     }
 
+    /// <inheritdoc />
     public async Task<Dictionary<int, decimal?>> ObterMediasAvaliacoesPorProdutosAsync(IEnumerable<int> productIds, CancellationToken ct = default)
     {
         Guard.AgainstNull(productIds, nameof(productIds));
@@ -154,6 +163,7 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
         return resultado;
     }
 
+    /// <inheritdoc />
     public async Task<bool> UsuarioJaAvaliouAsync(string userId, int productId, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(userId))
@@ -166,6 +176,7 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
             .AnyAsync(r => r.ProductId == productId && r.ApplicationUserId == userId, ct);
     }
 
+    /// <inheritdoc />
     public async Task<bool> UsuarioJaAvaliouNoPedidoAsync(string userId, int productId, int orderId, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(userId))
@@ -180,6 +191,7 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
                         && r.OrderId == orderId, ct);
     }
 
+    /// <inheritdoc />
     public async Task<ProductReview?> ObterAvaliacaoPorUsuarioAsync(string userId, int productId, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(userId))
