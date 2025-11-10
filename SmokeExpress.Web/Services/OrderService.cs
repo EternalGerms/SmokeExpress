@@ -17,6 +17,9 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
         decimal frete = 0m,
         CancellationToken cancellationToken = default)
     {
+        Guard.AgainstNullOrWhiteSpace(userId, nameof(userId));
+        Guard.AgainstNull(cartItems, nameof(cartItems));
+        Guard.AgainstNull(endereco, nameof(endereco));
         // Padrão de logging: propriedades nomeadas {Prop} e BeginScope com contexto quando disponível.
         using var _ = logger.BeginScope(new { UserId = userId });
         // Validar entrada
@@ -91,10 +94,7 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
         string userId,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-        {
-            return Array.Empty<Order>();
-        }
+        Guard.AgainstNullOrWhiteSpace(userId, nameof(userId));
 
         var pedidos = await dbContext.Orders
             .Where(o => o.ApplicationUserId == userId)
@@ -118,6 +118,7 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
         int id,
         CancellationToken cancellationToken = default)
     {
+        if (id <= 0) throw new ArgumentOutOfRangeException(nameof(id));
         return await dbContext.Orders
             .Include(o => o.Cliente)
             .Include(o => o.Itens)
@@ -130,6 +131,7 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
         OrderStatus novoStatus,
         CancellationToken cancellationToken = default)
     {
+        if (id <= 0) throw new ArgumentOutOfRangeException(nameof(id));
         var order = await dbContext.Orders.FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
         if (order is null) return false;
         order.Status = novoStatus;

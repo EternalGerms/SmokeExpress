@@ -261,14 +261,13 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
 
     public async Task<Product> CriarAsync(Product product, CancellationToken cancellationToken = default)
     {
-        using var _ = logger.BeginScope(new { ProductId = product?.Id, CategoriaId = product?.CategoriaId });
+        Guard.AgainstNull(product, nameof(product));
+        using var _ = logger.BeginScope(new { ProductId = product.Id, CategoriaId = product.CategoriaId });
         var validacao = await ValidarProdutoAsync(product, cancellationToken);
         if (!validacao.IsSuccess)
         {
             throw new ValidationException(validacao.ErrorMessage!);
         }
-
-        ArgumentNullException.ThrowIfNull(product);
 
         _context.Products.Add(product);
         try
@@ -293,8 +292,8 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
 
     public async Task AtualizarAsync(Product product, CancellationToken cancellationToken = default)
     {
-        using var _ = logger.BeginScope(new { ProductId = product?.Id, CategoriaId = product?.CategoriaId });
-        ArgumentNullException.ThrowIfNull(product);
+        Guard.AgainstNull(product, nameof(product));
+        using var _ = logger.BeginScope(new { ProductId = product.Id, CategoriaId = product.CategoriaId });
         var validacao = await ValidarProdutoAsync(product, cancellationToken);
         if (!validacao.IsSuccess)
         {

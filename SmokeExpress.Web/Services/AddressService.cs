@@ -14,6 +14,7 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
 {
     public async Task<IReadOnlyList<Address>> ListAsync(string userId, CancellationToken ct = default)
     {
+        Guard.AgainstNullOrWhiteSpace(userId, nameof(userId));
         return await db.Addresses.AsNoTracking()
             .Where(a => a.ApplicationUserId == userId)
             .OrderByDescending(a => a.IsDefault)
@@ -23,6 +24,8 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
 
     public async Task<Address> CreateAsync(string userId, Address address, CancellationToken ct = default)
     {
+        Guard.AgainstNullOrWhiteSpace(userId, nameof(userId));
+        Guard.AgainstNull(address, nameof(address));
         using var _ = logger.BeginScope(new { UserId = userId });
         var validacao = ValidarEndereco(address);
         if (!validacao.IsSuccess)
@@ -59,6 +62,8 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
 
     public async Task<Address?> UpdateAsync(string userId, int id, Address address, CancellationToken ct = default)
     {
+        Guard.AgainstNullOrWhiteSpace(userId, nameof(userId));
+        Guard.AgainstNull(address, nameof(address));
         using var _ = logger.BeginScope(new { UserId = userId, AddressId = id });
         var validacao = ValidarEndereco(address);
         if (!validacao.IsSuccess)
@@ -105,6 +110,7 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
 
     public async Task<bool> DeleteAsync(string userId, int id, CancellationToken ct = default)
     {
+        Guard.AgainstNullOrWhiteSpace(userId, nameof(userId));
         using var _ = logger.BeginScope(new { UserId = userId, AddressId = id });
         var existing = await db.Addresses.FirstOrDefaultAsync(a => a.Id == id && a.ApplicationUserId == userId, ct);
         if (existing is null) return false;
@@ -153,6 +159,7 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
 
     public async Task<bool> MakeDefaultAsync(string userId, int id, CancellationToken ct = default)
     {
+        Guard.AgainstNullOrWhiteSpace(userId, nameof(userId));
         using var _ = logger.BeginScope(new { UserId = userId, AddressId = id });
         var existing = await db.Addresses.FirstOrDefaultAsync(a => a.Id == id && a.ApplicationUserId == userId, ct);
         if (existing is null) return false;

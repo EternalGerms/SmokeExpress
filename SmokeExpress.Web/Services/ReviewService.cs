@@ -12,6 +12,9 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
 {
     public async Task<ProductReview> CriarAvaliacaoAsync(string userId, int productId, int rating, string? comment, int? orderId = null, CancellationToken ct = default)
     {
+        Guard.AgainstNullOrWhiteSpace(userId, nameof(userId));
+        if (productId <= 0) throw new ArgumentOutOfRangeException(nameof(productId));
+        if (rating < 0 || rating > 5) throw new ArgumentOutOfRangeException(nameof(rating));
         var validacao = await ValidarAvaliacaoAsync(userId, productId, rating, orderId, ct);
         if (!validacao.IsSuccess)
         {
@@ -59,6 +62,7 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
 
     public async Task<IReadOnlyList<ProductReview>> ObterAvaliacoesPorProdutoAsync(int productId, bool apenasComComentario = false, CancellationToken ct = default)
     {
+        if (productId <= 0) throw new ArgumentOutOfRangeException(nameof(productId));
         var query = dbContext.Reviews
             .AsNoTracking()
             .Include(r => r.ApplicationUser)
@@ -76,6 +80,7 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
 
     public async Task<decimal?> ObterMediaAvaliacoesAsync(int productId, CancellationToken ct = default)
     {
+        if (productId <= 0) throw new ArgumentOutOfRangeException(nameof(productId));
         var media = await dbContext.Reviews
             .AsNoTracking()
             .Where(r => r.ProductId == productId)
@@ -86,6 +91,7 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
 
     public async Task<int> ObterTotalAvaliacoesAsync(int productId, CancellationToken ct = default)
     {
+        if (productId <= 0) throw new ArgumentOutOfRangeException(nameof(productId));
         return await dbContext.Reviews
             .AsNoTracking()
             .Where(r => r.ProductId == productId)
@@ -94,6 +100,7 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
 
     public async Task<(decimal? Media, int Total, IReadOnlyList<ProductReview> AvaliacoesComComentario)> ObterResumoAvaliacoesAsync(int productId, CancellationToken ct = default)
     {
+        if (productId <= 0) throw new ArgumentOutOfRangeException(nameof(productId));
         // Buscar todas as avaliações do produto uma única vez
         var todasAvaliacoes = await dbContext.Reviews
             .AsNoTracking()
@@ -120,6 +127,7 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
 
     public async Task<Dictionary<int, decimal?>> ObterMediasAvaliacoesPorProdutosAsync(IEnumerable<int> productIds, CancellationToken ct = default)
     {
+        Guard.AgainstNull(productIds, nameof(productIds));
         var idsList = productIds.ToList();
         if (idsList.Count == 0)
         {

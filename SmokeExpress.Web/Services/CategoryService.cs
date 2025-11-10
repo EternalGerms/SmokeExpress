@@ -26,6 +26,7 @@ public class CategoryService(ApplicationDbContext context, ILogger<CategoryServi
 
     public async Task<Category?> ObterPorIdAsync(int id, CancellationToken cancellationToken = default)
     {
+        if (id <= 0) throw new ArgumentOutOfRangeException(nameof(id));
         return await _context.Categories
             .Include(c => c.Produtos)
             .AsNoTracking()
@@ -34,6 +35,7 @@ public class CategoryService(ApplicationDbContext context, ILogger<CategoryServi
 
     public async Task<Category> CriarAsync(Category category, CancellationToken cancellationToken = default)
     {
+        Guard.AgainstNull(category, nameof(category));
         var validacao = ValidarCategoria(category);
         if (!validacao.IsSuccess)
         {
@@ -61,6 +63,7 @@ public class CategoryService(ApplicationDbContext context, ILogger<CategoryServi
 
     public async Task AtualizarAsync(Category category, CancellationToken cancellationToken = default)
     {
+        Guard.AgainstNull(category, nameof(category));
         var validacao = ValidarCategoria(category);
         if (!validacao.IsSuccess)
         {
@@ -96,6 +99,7 @@ public class CategoryService(ApplicationDbContext context, ILogger<CategoryServi
 
     public async Task RemoverAsync(int id, CancellationToken cancellationToken = default)
     {
+        if (id <= 0) throw new ArgumentOutOfRangeException(nameof(id));
         var validacao = await ValidarRemocaoAsync(id, cancellationToken);
         if (!validacao.IsSuccess)
         {

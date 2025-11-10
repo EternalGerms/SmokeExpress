@@ -11,6 +11,7 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
 {
     public async Task<DashboardSummaryDto> ObterResumoAsync(DateTime? dataInicio = null, DateTime? dataFim = null, CancellationToken ct = default)
     {
+        // datas opcionais, sem guard aqui
         var (inicio, fim) = ObterDatasFiltro(dataInicio, dataFim);
 
         var queryPedidos = dbContext.Orders.AsNoTracking();
@@ -60,6 +61,7 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
 
     public async Task<IReadOnlyList<SalesByPeriodDto>> ObterVendasPorPeriodoAsync(PeriodFilter periodo, DateTime? dataInicio = null, DateTime? dataFim = null, CancellationToken ct = default)
     {
+        // período é enum, sem guard
         var (inicio, fim) = ObterDatasFiltro(dataInicio, dataFim, periodo);
 
         if (!inicio.HasValue || !fim.HasValue)
@@ -183,6 +185,7 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
 
     public async Task<IReadOnlyList<ProductSalesDto>> ObterProdutosMaisVendidosAsync(int top = ApplicationConstants.DefaultTopItems, DateTime? dataInicio = null, DateTime? dataFim = null, CancellationToken ct = default)
     {
+        if (top <= 0) throw new ArgumentOutOfRangeException(nameof(top));
         var (inicio, fim) = ObterDatasFiltro(dataInicio, dataFim);
 
         if (!inicio.HasValue || !fim.HasValue)
@@ -213,6 +216,7 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
 
     public async Task<IReadOnlyList<Product>> ObterProdutosMenorEstoqueAsync(int top = ApplicationConstants.DefaultTopItems, CancellationToken ct = default)
     {
+        if (top <= 0) throw new ArgumentOutOfRangeException(nameof(top));
         return await dbContext.Products
             .AsNoTracking()
             .Include(p => p.Categoria)
@@ -224,6 +228,7 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
 
     public async Task<IReadOnlyList<ProductRatingDto>> ObterProdutosMelhoresAvaliadosAsync(int top = ApplicationConstants.DefaultTopItems, CancellationToken ct = default)
     {
+        if (top <= 0) throw new ArgumentOutOfRangeException(nameof(top));
         // Agrupar Reviews primeiro para calcular agregações uma única vez e materializar
         var avaliacoesAgrupadas = await dbContext.Reviews
             .AsNoTracking()
@@ -273,6 +278,7 @@ public class AnalyticsService(ApplicationDbContext dbContext) : IAnalyticsServic
 
     public async Task<IReadOnlyList<ProductRatingDto>> ObterProdutosPioresAvaliadosAsync(int top = ApplicationConstants.DefaultTopItems, CancellationToken ct = default)
     {
+        if (top <= 0) throw new ArgumentOutOfRangeException(nameof(top));
         // Agrupar Reviews primeiro para calcular agregações uma única vez e materializar
         var avaliacoesAgrupadas = await dbContext.Reviews
             .AsNoTracking()

@@ -1,6 +1,7 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
 using System.Globalization;
 using SmokeExpress.Web.Constants;
+using SmokeExpress.Web.Common;
 
 namespace SmokeExpress.Web.Services;
 
@@ -31,6 +32,8 @@ public class ImageUploadService : IImageUploadService
 
     public async Task<string?> UploadProductImageAsync(Stream fileStream, string fileName, long fileSize, CancellationToken cancellationToken = default)
     {
+        Guard.AgainstNull(fileStream, nameof(fileStream));
+        Guard.AgainstNullOrWhiteSpace(fileName, nameof(fileName));
         try
         {
             // Validar tamanho do arquivo
