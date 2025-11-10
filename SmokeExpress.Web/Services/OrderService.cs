@@ -17,6 +17,8 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
         decimal frete = 0m,
         CancellationToken cancellationToken = default)
     {
+        // Padrão de logging: propriedades nomeadas {Prop} e BeginScope com contexto quando disponível.
+        using var _ = logger.BeginScope(new { UserId = userId });
         // Validar entrada
         var validacao = await ValidarPedidoAsync(userId, cartItems, endereco, cancellationToken);
         if (!validacao.IsSuccess)
@@ -71,16 +73,16 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
         }
         catch (DbUpdateException ex)
         {
-            logger.LogError(ex, "Erro ao salvar pedido no banco de dados");
+            logger.LogError(ex, "Erro ao salvar pedido no banco de dados. UserId: {UserId}", userId);
             throw new BusinessException("Erro ao processar pedido. Tente novamente.");
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Erro inesperado ao criar pedido");
+            logger.LogError(ex, "Erro inesperado ao criar pedido. UserId: {UserId}", userId);
             throw;
         }
 
-        logger.LogInformation("Pedido {OrderId} criado para usuário {UserId} com {Itens} itens.", order.Id, userId, itensLista.Count);
+        logger.LogInformation("Pedido criado. OrderId: {OrderId}, UserId: {UserId}, ItemCount: {ItemCount}, Total: {Total}", order.Id, userId, itensLista.Count, order.TotalPedido);
 
         return order.Id;
     }

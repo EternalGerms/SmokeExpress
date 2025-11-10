@@ -25,7 +25,16 @@
 
         try
         {
+            if (categoria is null)
+            {
+                _mensagemErro = "Categoria inválida.";
+                StateHasChanged();
+                return;
+            }
+
+            Logger.LogInformation("Criando categoria. Nome: {Nome}", categoria.Nome);
             await CategoryService.CriarAsync(categoria);
+            Logger.LogInformation("Categoria criada com sucesso. CategoryId: {CategoryId}, Nome: {Nome}", categoria.Id, categoria.Nome);
             Navigation.NavigateTo("/admin/categorias?success=created");
         }
         catch (ValidationException ex)

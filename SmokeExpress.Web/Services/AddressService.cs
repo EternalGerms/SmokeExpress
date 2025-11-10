@@ -8,6 +8,8 @@ using SmokeExpress.Web.Models;
 
 namespace SmokeExpress.Web.Services;
 
+// Convenção de logging: mensagens com propriedades nomeadas {Prop}; usar BeginScope para contexto (ex.: {UserId}, {AddressId}).
+
 public class AddressService(ApplicationDbContext db, ILogger<AddressService> logger) : IAddressService
 {
     public async Task<IReadOnlyList<Address>> ListAsync(string userId, CancellationToken ct = default)
@@ -21,6 +23,7 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
 
     public async Task<Address> CreateAsync(string userId, Address address, CancellationToken ct = default)
     {
+        using var _ = logger.BeginScope(new { UserId = userId });
         var validacao = ValidarEndereco(address);
         if (!validacao.IsSuccess)
         {
@@ -42,19 +45,21 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
         }
         catch (DbUpdateException ex)
         {
-            logger.LogError(ex, "Erro ao salvar endereço no banco de dados");
+            logger.LogError(ex, "Erro ao salvar endereço no banco de dados. UserId: {UserId}", userId);
             throw new BusinessException("Erro ao criar endereço. Tente novamente.");
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Erro inesperado ao criar endereço");
+            logger.LogError(ex, "Erro inesperado ao criar endereço. UserId: {UserId}", userId);
             throw;
         }
+        logger.LogInformation("Endereço salvo. AddressId: {AddressId}, UserId: {UserId}, IsDefault: {IsDefault}", address.Id, userId, address.IsDefault);
         return address;
     }
 
     public async Task<Address?> UpdateAsync(string userId, int id, Address address, CancellationToken ct = default)
     {
+        using var _ = logger.BeginScope(new { UserId = userId, AddressId = id });
         var validacao = ValidarEndereco(address);
         if (!validacao.IsSuccess)
         {
@@ -94,11 +99,13 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
             logger.LogError(ex, "Erro inesperado ao atualizar endereço {AddressId}", id);
             throw;
         }
+        logger.LogInformation("Endereço atualizado. AddressId: {AddressId}, UserId: {UserId}, IsDefault: {IsDefault}", id, userId, existing.IsDefault);
         return existing;
     }
 
     public async Task<bool> DeleteAsync(string userId, int id, CancellationToken ct = default)
     {
+        using var _ = logger.BeginScope(new { UserId = userId, AddressId = id });
         var existing = await db.Addresses.FirstOrDefaultAsync(a => a.Id == id && a.ApplicationUserId == userId, ct);
         if (existing is null) return false;
 
@@ -118,6 +125,7 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
             logger.LogError(ex, "Erro inesperado ao remover endereço {AddressId}", id);
             throw;
         }
+        logger.LogInformation("Endereço removido. AddressId: {AddressId}, UserId: {UserId}", id, userId);
 
         if (wasDefault)
         {
@@ -133,9 +141,10 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
                 }
                 catch (DbUpdateException ex)
                 {
-                    logger.LogError(ex, "Erro ao atualizar endereço padrão após remoção");
+                    logger.LogError(ex, "Erro ao atualizar endereço padrão após remoção. UserId: {UserId}", userId);
                     // Não relançar exceção aqui, pois a remoção já foi bem-sucedida
                 }
+                logger.LogInformation("Endereço definido como padrão após remoção. AddressId: {AddressId}, UserId: {UserId}", first.Id, userId);
             }
         }
 
@@ -144,6 +153,7 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
 
     public async Task<bool> MakeDefaultAsync(string userId, int id, CancellationToken ct = default)
     {
+        using var _ = logger.BeginScope(new { UserId = userId, AddressId = id });
         var existing = await db.Addresses.FirstOrDefaultAsync(a => a.Id == id && a.ApplicationUserId == userId, ct);
         if (existing is null) return false;
 
@@ -163,6 +173,7 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
             logger.LogError(ex, "Erro inesperado ao definir endereço {AddressId} como padrão", id);
             throw;
         }
+        logger.LogInformation("Endereço definido como padrão. AddressId: {AddressId}, UserId: {UserId}", id, userId);
         return true;
     }
 

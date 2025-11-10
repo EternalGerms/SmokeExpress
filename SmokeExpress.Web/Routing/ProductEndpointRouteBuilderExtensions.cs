@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SmokeExpress.Web.Data;
+using SmokeExpress.Web.Extensions;
 
 namespace SmokeExpress.Web.Routing;
 
@@ -12,10 +13,10 @@ public static class ProductEndpointRouteBuilderExtensions
         endpoints.MapPost("/api/products/by-ids", async ([FromBody] int[] ids, ApplicationDbContext db, CancellationToken ct) =>
         {
             ids ??= Array.Empty<int>();
-            var list = await db.Products
+            var products = await db.Products
                 .Where(p => ids.Contains(p.Id))
-                .Select(p => new { p.Id, p.Nome, p.Preco, p.ImagemUrl })
                 .ToListAsync(ct);
+            var list = products.Select(p => p.ToProductLiteDto()).ToList();
             return Results.Ok(list);
         });
 

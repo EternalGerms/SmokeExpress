@@ -6,6 +6,8 @@
 @using SmokeExpress.Web.Exceptions
 @using ValidationException = SmokeExpress.Web.Exceptions.ValidationException
 @using SmokeExpress.Web.Models
+@using SmokeExpress.Web.Models.ViewModels
+@using SmokeExpress.Web.Extensions
 @using SmokeExpress.Web.Services
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthStateProvider
@@ -613,7 +615,7 @@ else
     // Pedidos
     private bool _loadingPedidos = false;
     private string? _erroPedidos;
-    private IReadOnlyList<OrderRow> _pedidos = Array.Empty<OrderRow>();
+    private IReadOnlyList<OrderRowDto> _pedidos = Array.Empty<OrderRowDto>();
 
     private PerfilModel _model = new();
     private AlterarSenhaModel _senha = new();
@@ -623,10 +625,12 @@ else
     {
         try
         {
+            Logger.LogInformation("Inicializando página de perfil");
             var state = await AuthStateProvider.GetAuthenticationStateAsync();
             var user = await UserManager.GetUserAsync(state.User);
             if (user is null)
             {
+                Logger.LogWarning("Usuário não autenticado ao abrir perfil");
                 Nav.NavigateTo($"/account/login?returnUrl={Uri.EscapeDataString(Nav.Uri)}", forceLoad: true);
                 return;
             }
@@ -661,10 +665,12 @@ else
         }
         catch (BusinessException ex)
         {
+            Logger.LogError(ex, "Erro de negócio ao inicializar perfil: {Message}", ex.Message);
             _erro = ex.Message;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Erro inesperado ao inicializar perfil");
             _erro = "Erro inesperado ao carregar dados. Tente novamente.";
         }
         finally
@@ -691,16 +697,7 @@ else
             var list = await AddressService.ListAsync(userId);
             Logger.LogInformation("AddressService.ListAsync retornou {Count} endereços", list?.Count ?? 0);
             
-            _enderecos = (list ?? Array.Empty<Address>()).Select(a => new AddressDto
-            {
-                Id = a.Id,
-                Rua = a.Rua,
-                Numero = a.Numero,
-                Cidade = a.Cidade,
-                Bairro = a.Bairro,
-                Complemento = a.Complemento,
-                IsDefault = a.IsDefault
-            }).ToList();
+            _enderecos = (list ?? Array.Empty<Address>()).Select(a => a.ToAddressDto()).ToList();
             
             Logger.LogInformation("Endereços processados: {Count}", _enderecos.Count);
         }
@@ -752,13 +749,11 @@ else
             var list = await OrderService.ListarPedidosPorUsuarioAsync(userId);
             Logger.LogInformation("OrderService.ListarPedidosPorUsuarioAsync retornou {Count} pedidos", list?.Count ?? 0);
 
-            _pedidos = (list ?? new List<Order>()).Select(o => new OrderRow
+            _pedidos = (list ?? new List<Order>()).Select(o =>
             {
-                Id = o.Id,
-                DataPedidoLocal = o.DataPedido.ToLocalTime().ToString("g"),
-                StatusTexto = FormatStatus(o.Status),
-                TotalTexto = o.TotalPedido.ToString("C"),
-                Status = o.Status
+                var dto = o.ToOrderRowDto();
+                dto.StatusTexto = FormatStatus(o.Status);
+                return dto;
             }).ToList();
             
             Logger.LogInformation("Pedidos processados: {Count}", _pedidos.Count);
@@ -800,8 +795,8 @@ else
             Id = a.Id,
             Rua = a.Rua,
             Numero = a.Numero,
-            Bairro = a.Bairro,
             Cidade = a.Cidade,
+            Bairro = a.Bairro,
             Complemento = a.Complemento,
             IsDefault = a.IsDefault
         };
@@ -950,7 +945,7 @@ else
         _showEnderecoDialog = false;
     }
 
-    private async Task TogglePedido(OrderRow pedido)
+    private async Task TogglePedido(OrderRowDto pedido)
     {
         pedido.IsExpanded = !pedido.IsExpanded;
         
@@ -968,7 +963,7 @@ else
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task CarregarDetalhesAsync(OrderRow pedido)
+    private async Task CarregarDetalhesAsync(OrderRowDto pedido)
     {
         pedido.ErroDetalhes = null;
         Logger.LogInformation("CarregarDetalhesAsync iniciado para pedido {PedidoId}", pedido.Id);
@@ -994,27 +989,7 @@ else
             if (order is not null && order.ApplicationUserId == userId)
             {
                 Logger.LogInformation("Processando detalhes do pedido {PedidoId}. Itens: {ItemCount}", pedido.Id, order.Itens?.Count ?? 0);
-                pedido.Detalhes = new OrderDetails
-                {
-                    DataLocal = order.DataPedido.ToLocalTime().ToString("g"),
-                    Rua = order.Rua,
-                    Numero = order.Numero ?? string.Empty,
-                    Bairro = order.Bairro,
-                    Cidade = order.Cidade,
-                    Complemento = order.Complemento ?? string.Empty,
-                    TotalPedido = order.TotalPedido,
-                    Itens = (order.Itens ?? Enumerable.Empty<OrderItem>()).Select(i => new OrderItemDetail
-                    {
-                        Nome = i.Product?.Nome ?? $"Produto {i.ProductId}",
-                        Quantidade = i.Quantidade,
-                        PrecoUnitario = i.PrecoUnitario,
-                        Subtotal = i.PrecoUnitario * i.Quantidade,
-                        ImagemUrl = i.Product?.ImagemUrl,
-                        ProductId = i.ProductId
-                    }).ToList()
-                };
-                pedido.Detalhes.Subtotal = pedido.Detalhes.Itens.Sum(i => i.Subtotal);
-                pedido.Detalhes.Frete = pedido.Detalhes.TotalPedido - pedido.Detalhes.Subtotal;
+                pedido.Detalhes = order.ToOrderDetailsDto();
                 
                 // Verificar quais produtos já foram avaliados neste pedido específico
                 if (pedido.Status == OrderStatus.Entregue)
@@ -1296,57 +1271,6 @@ else
         public string Email { get; set; } = string.Empty;
     }
 
-    private sealed class AddressDto
-    {
-        public int Id { get; set; }
-        [Required(ErrorMessage = "Rua é obrigatória")]
-        public string Rua { get; set; } = string.Empty;
-        public string? Numero { get; set; }
-        [Required(ErrorMessage = "Bairro é obrigatório")]
-        public string Bairro { get; set; } = string.Empty;
-        [Required(ErrorMessage = "Cidade é obrigatória")]
-        public string Cidade { get; set; } = string.Empty;
-        public string? Complemento { get; set; }
-        public bool IsDefault { get; set; }
-    }
-
-    private sealed class OrderRow
-    {
-        public int Id { get; set; }
-        public string DataPedidoLocal { get; set; } = string.Empty;
-        public string StatusTexto { get; set; } = string.Empty;
-        public string TotalTexto { get; set; } = string.Empty;
-        public OrderStatus Status { get; set; }
-        public bool IsExpanded { get; set; }
-        public bool CarregandoDetalhes { get; set; }
-        public OrderDetails? Detalhes { get; set; }
-        public string? ErroDetalhes { get; set; }
-    }
-
-    private sealed class OrderDetails
-    {
-        public string DataLocal { get; set; } = string.Empty;
-        public string Rua { get; set; } = string.Empty;
-        public string Numero { get; set; } = string.Empty;
-        public string Bairro { get; set; } = string.Empty;
-        public string Cidade { get; set; } = string.Empty;
-        public string Complemento { get; set; } = string.Empty;
-        public decimal TotalPedido { get; set; }
-        public decimal Subtotal { get; set; }
-        public decimal Frete { get; set; }
-        public List<OrderItemDetail> Itens { get; set; } = new();
-    }
-
-    private sealed class OrderItemDetail
-    {
-        public string Nome { get; set; } = string.Empty;
-        public int Quantidade { get; set; }
-        public decimal PrecoUnitario { get; set; }
-        public decimal Subtotal { get; set; }
-        public string? ImagemUrl { get; set; }
-        public int ProductId { get; set; }
-        public bool JaAvaliado { get; set; }
-    }
 
     private string DataNascimentoFormatada => _model.DataNascimento.ToString("dd/MM/yyyy");
 }

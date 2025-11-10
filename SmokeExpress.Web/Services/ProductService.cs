@@ -12,12 +12,14 @@ namespace SmokeExpress.Web.Services;
 /// <summary>
 /// Implementação padrão do serviço de produtos para as operações administrativas.
 /// </summary>
+// Convenção de logging: mensagens com propriedades nomeadas {Prop}; usar BeginScope para contexto (ex.: {ProductId}, {CategoriaId}).
 public class ProductService(ApplicationDbContext context, ILogger<ProductService> logger) : IProductService
 {
     private readonly ApplicationDbContext _context = context;
 
     public async Task<IReadOnlyCollection<Product>> ListarAsync(CancellationToken cancellationToken = default)
     {
+        logger.LogInformation("Listando produtos.");
         return await _context.Products
             .Include(p => p.Categoria)
             .AsNoTracking()
@@ -65,13 +67,7 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
             .AsNoTracking();
 
         // Aplicar filtro de busca por termo (Nome ou Descrição)
-        if (!string.IsNullOrWhiteSpace(termoBusca))
-        {
-            var termo = termoBusca.Trim().ToLower();
-            query = query.Where(p =>
-                p.Nome.ToLower().Contains(termo) ||
-                (p.Descricao != null && p.Descricao.ToLower().Contains(termo)));
-        }
+        query = AplicarFiltroBusca(query, termoBusca);
 
         // Aplicar filtro por categoria
         if (categoriaId.HasValue && categoriaId.Value > 0)
@@ -110,49 +106,7 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
             .Include(p => p.Categoria)
             .AsNoTracking();
 
-        // Aplicar filtro de busca por termo (Nome ou Descrição) - busca por múltiplos termos (AND)
-        if (!string.IsNullOrWhiteSpace(filters.TermoBusca))
-        {
-            var termos = filters.TermoBusca.Trim()
-                .Split(' ', StringSplitOptions.RemoveEmptyEntries)
-                .Select(t => t.ToLower())
-                .ToArray();
-
-            if (termos.Length > 0)
-            {
-                // Busca que exige que TODOS os termos estejam presentes (AND)
-                query = query.Where(p =>
-                    termos.All(termo =>
-                        p.Nome.ToLower().Contains(termo) ||
-                        (p.Descricao != null && p.Descricao.ToLower().Contains(termo))
-                    )
-                );
-            }
-        }
-
-        // Aplicar filtro por categoria
-        if (filters.CategoriaId.HasValue && filters.CategoriaId.Value > 0)
-        {
-            query = query.Where(p => p.CategoriaId == filters.CategoriaId.Value);
-        }
-
-        // Aplicar filtro de preço mínimo
-        if (filters.PrecoMin.HasValue)
-        {
-            query = query.Where(p => p.Preco >= filters.PrecoMin.Value);
-        }
-
-        // Aplicar filtro de preço máximo
-        if (filters.PrecoMax.HasValue)
-        {
-            query = query.Where(p => p.Preco <= filters.PrecoMax.Value);
-        }
-
-        // Aplicar filtro de estoque (apenas produtos com estoque disponível)
-        if (filters.ApenasEmEstoque == true)
-        {
-            query = query.Where(p => p.Estoque > 0);
-        }
+        query = AplicarFiltros(query, filters);
 
         // Aplicar ordenação
         query = filters.Ordenacao switch
@@ -180,6 +134,61 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
             PageNumber = pageNumber,
             PageSize = pageSize
         };
+    }
+
+    private IQueryable<Product> AplicarFiltros(IQueryable<Product> query, ProductSearchFilters filters)
+    {
+        if (!string.IsNullOrWhiteSpace(filters.TermoBusca))
+        {
+            query = AplicarFiltroBusca(query, filters.TermoBusca);
+        }
+
+        if (filters.CategoriaId.HasValue && filters.CategoriaId.Value > 0)
+        {
+            query = query.Where(p => p.CategoriaId == filters.CategoriaId.Value);
+        }
+
+        if (filters.PrecoMin.HasValue)
+        {
+            query = query.Where(p => p.Preco >= filters.PrecoMin.Value);
+        }
+
+        if (filters.PrecoMax.HasValue)
+        {
+            query = query.Where(p => p.Preco <= filters.PrecoMax.Value);
+        }
+
+        if (filters.ApenasEmEstoque == true)
+        {
+            query = query.Where(p => p.Estoque > 0);
+        }
+
+        return query;
+    }
+
+    private static IQueryable<Product> AplicarFiltroBusca(IQueryable<Product> query, string? termoBusca)
+    {
+        if (string.IsNullOrWhiteSpace(termoBusca))
+        {
+            return query;
+        }
+
+        var termos = termoBusca.Trim()
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Select(t => t.ToLower())
+            .ToArray();
+
+        if (termos.Length == 0)
+        {
+            return query;
+        }
+
+        return query.Where(p =>
+            termos.All(termo =>
+                p.Nome.ToLower().Contains(termo) ||
+                (p.Descricao != null && p.Descricao.ToLower().Contains(termo))
+            )
+        );
     }
 
     /// <summary>
@@ -243,6 +252,7 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
 
     public async Task<Product?> ObterPorIdAsync(int id, CancellationToken cancellationToken = default)
     {
+        logger.LogInformation("Obtendo produto. ProductId: {ProductId}", id);
         return await _context.Products
             .Include(p => p.Categoria)
             .AsNoTracking()
@@ -251,11 +261,14 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
 
     public async Task<Product> CriarAsync(Product product, CancellationToken cancellationToken = default)
     {
+        using var _ = logger.BeginScope(new { ProductId = product?.Id, CategoriaId = product?.CategoriaId });
         var validacao = await ValidarProdutoAsync(product, cancellationToken);
         if (!validacao.IsSuccess)
         {
             throw new ValidationException(validacao.ErrorMessage!);
         }
+
+        ArgumentNullException.ThrowIfNull(product);
 
         _context.Products.Add(product);
         try
@@ -273,11 +286,15 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
             throw;
         }
 
+        logger.LogInformation("Produto criado. ProductId: {ProductId}, CategoriaId: {CategoriaId}, Nome: {Nome}",
+            product.Id, product.CategoriaId, product.Nome);
         return product;
     }
 
     public async Task AtualizarAsync(Product product, CancellationToken cancellationToken = default)
     {
+        using var _ = logger.BeginScope(new { ProductId = product?.Id, CategoriaId = product?.CategoriaId });
+        ArgumentNullException.ThrowIfNull(product);
         var validacao = await ValidarProdutoAsync(product, cancellationToken);
         if (!validacao.IsSuccess)
         {
@@ -313,10 +330,13 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
             logger.LogError(ex, "Erro inesperado ao atualizar produto {ProductId}", product.Id);
             throw;
         }
+
+        logger.LogInformation("Produto atualizado. ProductId: {ProductId}, CategoriaId: {CategoriaId}", product.Id, product.CategoriaId);
     }
 
     public async Task RemoverAsync(int id, CancellationToken cancellationToken = default)
     {
+        using var _ = logger.BeginScope(new { ProductId = id });
         var validacao = await ValidarRemocaoAsync(id, cancellationToken);
         if (!validacao.IsSuccess)
         {
@@ -352,6 +372,8 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
             logger.LogError(ex, "Erro inesperado ao remover produto {ProductId}", id);
             throw;
         }
+
+        logger.LogInformation("Produto removido. ProductId: {ProductId}", id);
     }
 
     private async Task<Result> ValidarProdutoAsync(Product? product, CancellationToken cancellationToken)

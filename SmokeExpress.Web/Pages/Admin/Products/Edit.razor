@@ -105,6 +105,10 @@ else
         try
         {
             _produto = await ProductService.ObterPorIdAsync(Id);
+            if (_produto is not null)
+            {
+                Logger.LogInformation("Produto carregado. ProductId: {ProductId}, Nome: {Nome}", _produto.Id, _produto.Nome);
+            }
         }
         catch (Exception ex)
         {
@@ -124,6 +128,7 @@ else
         try
         {
             await ProductService.AtualizarAsync(produto);
+            Logger.LogInformation("Produto atualizado. ProductId: {ProductId}, Nome: {Nome}", produto.Id, produto.Nome);
             Navigation.NavigateTo("/admin/produtos?success=updated");
         }
         catch (Exception ex)
@@ -178,6 +183,7 @@ else
             await ProductService.RemoverAsync(_produto.Id);
 
             // Redirecionar para listagem
+            Logger.LogInformation("Produto removido. ProductId: {ProductId}", _produto.Id);
             Navigation.NavigateTo("/admin/produtos?success=deleted");
         }
         catch (Exception ex)

@@ -112,6 +112,10 @@ else
         try
         {
             _categoria = await CategoryService.ObterPorIdAsync(Id);
+            if (_categoria is not null)
+            {
+                Logger.LogInformation("Categoria carregada. CategoryId: {CategoryId}, Nome: {Nome}", _categoria.Id, _categoria.Nome);
+            }
         }
         catch (NotFoundException ex)
         {
@@ -141,6 +145,7 @@ else
         try
         {
             await CategoryService.AtualizarAsync(categoria);
+            Logger.LogInformation("Categoria atualizada. CategoryId: {CategoryId}, Nome: {Nome}", categoria.Id, categoria.Nome);
             Navigation.NavigateTo("/admin/categorias?success=updated");
         }
         catch (NotFoundException ex)
@@ -194,6 +199,7 @@ else
         try
         {
             await CategoryService.RemoverAsync(_categoria.Id);
+            Logger.LogInformation("Categoria removida. CategoryId: {CategoryId}", _categoria.Id);
             Navigation.NavigateTo("/admin/categorias?success=deleted");
         }
         catch (NotFoundException ex)

@@ -1,5 +1,7 @@
 @page "/account/addresses"
 @attribute [Authorize]
+@using SmokeExpress.Web.Models.ViewModels
+@using SmokeExpress.Web.Extensions
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager Nav
 @inject IAddressService AddressService
@@ -119,16 +121,7 @@ else
         }
 
         var list = await AddressService.ListAsync(userId);
-        _enderecos = list.Select(a => new AddressDto
-        {
-            Id = a.Id,
-            Rua = a.Rua,
-            Numero = a.Numero,
-            Cidade = a.Cidade,
-            Bairro = a.Bairro,
-            Complemento = a.Complemento,
-            IsDefault = a.IsDefault
-        }).ToList();
+        _enderecos = list.Select(a => a.ToAddressDto()).ToList();
     }
 
     private void Novo()
@@ -219,16 +212,6 @@ else
     private static string Format(AddressDto a)
         => $"{a.Rua}, {a.Numero} - {a.Bairro}, {a.Cidade} {a.Complemento}";
 
-    private sealed class AddressDto
-    {
-        public int Id { get; set; }
-        public string Rua { get; set; } = string.Empty;
-        public string? Numero { get; set; }
-        public string Cidade { get; set; } = string.Empty;
-        public string Bairro { get; set; } = string.Empty;
-        public string? Complemento { get; set; }
-        public bool IsDefault { get; set; }
-    }
 
     private string NumeroBinding
     {

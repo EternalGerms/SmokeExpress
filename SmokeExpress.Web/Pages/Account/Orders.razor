@@ -2,6 +2,8 @@
 @attribute [Authorize]
 @using MudBlazor
 @using SmokeExpress.Web.Exceptions
+@using SmokeExpress.Web.Models.ViewModels
+@using SmokeExpress.Web.Extensions
 @inject IOrderService OrderService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Nav
@@ -208,7 +210,7 @@ else
 @code {
     private bool _loading = true;
     private string? _erro;
-    private IReadOnlyList<OrderRow> _pedidos = Array.Empty<OrderRow>();
+    private IReadOnlyList<OrderRowDto> _pedidos = Array.Empty<OrderRowDto>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -223,27 +225,31 @@ else
             }
 
             var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            Logger.LogInformation("Listando pedidos. UserId: {UserId}", userId);
             var list = await OrderService.ListarPedidosPorUsuarioAsync(userId!);
 
-            _pedidos = list.Select(o => new OrderRow
+            _pedidos = list.Select(o =>
             {
-                Id = o.Id,
-                DataPedidoLocal = o.DataPedido.ToLocalTime().ToString("g"),
-                StatusTexto = FormatStatus(o.Status),
-                TotalTexto = o.TotalPedido.ToString("C"),
-                Status = o.Status
+                var dto = o.ToOrderRowDto();
+                dto.StatusTexto = FormatStatus(o.Status);
+                return dto;
             }).ToList();
+
+            Logger.LogInformation("Pedidos carregados. UserId: {UserId}, Count: {Count}", userId, _pedidos.Count);
         }
         catch (NotFoundException ex)
         {
+            Logger.LogError(ex, "Falha ao listar pedidos. NotFound. UserId: {UserId}", (await AuthStateProvider.GetAuthenticationStateAsync()).User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "NULL");
             _erro = ex.Message;
         }
         catch (BusinessException ex)
         {
+            Logger.LogError(ex, "Falha ao listar pedidos. BusinessException. UserId: {UserId}", (await AuthStateProvider.GetAuthenticationStateAsync()).User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "NULL");
             _erro = ex.Message;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Erro inesperado ao listar pedidos. UserId: {UserId}", (await AuthStateProvider.GetAuthenticationStateAsync()).User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "NULL");
             _erro = "Erro inesperado ao carregar pedidos. Tente novamente.";
         }
         finally
@@ -252,7 +258,7 @@ else
         }
     }
 
-    private async Task TogglePedido(OrderRow pedido)
+    private async Task TogglePedido(OrderRowDto pedido)
     {
         Logger.LogInformation("TogglePedido: Pedido #{PedidoId}, Current IsExpanded: {CurrentExpanded}", 
             pedido.Id, pedido.IsExpanded);
@@ -290,7 +296,7 @@ else
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task CarregarDetalhesAsync(OrderRow pedido)
+    private async Task CarregarDetalhesAsync(OrderRowDto pedido)
     {
         Logger.LogInformation("CarregarDetalhesAsync iniciado para pedido #{PedidoId}", pedido.Id);
         pedido.ErroDetalhes = null;
@@ -332,29 +338,10 @@ else
                     Logger.LogInformation("Pedido #{PedidoId} pertence ao usuário. Itens: {ItemCount}", 
                         pedido.Id, order.Itens?.Count ?? 0);
 
-                    pedido.Detalhes = new OrderDetails
-                    {
-                        DataLocal = order.DataPedido.ToLocalTime().ToString("g"),
-                        Rua = order.Rua,
-                        Numero = order.Numero ?? string.Empty,
-                        Bairro = order.Bairro,
-                        Cidade = order.Cidade,
-                        Complemento = order.Complemento ?? string.Empty,
-                        TotalPedido = order.TotalPedido,
-                        Itens = (order.Itens ?? Enumerable.Empty<OrderItem>()).Select(i => new OrderItemDetail
-                        {
-                            Nome = i.Product?.Nome ?? $"Produto {i.ProductId}",
-                            Quantidade = i.Quantidade,
-                            PrecoUnitario = i.PrecoUnitario,
-                            Subtotal = i.PrecoUnitario * i.Quantidade,
-                            ImagemUrl = i.Product?.ImagemUrl
-                        }).ToList()
-                    };
+                    pedido.Detalhes = order.ToOrderDetailsDto();
                     
                     Logger.LogInformation("RENDERIZANDO DETALHES para pedido #{PedidoId}. Itens: {ItemCount}", 
                         pedido.Id, pedido.Detalhes.Itens?.Count ?? 0);
-                    pedido.Detalhes.Subtotal = pedido.Detalhes.Itens?.Sum(i => i.Subtotal) ?? 0m;
-                    pedido.Detalhes.Frete = pedido.Detalhes.TotalPedido - pedido.Detalhes.Subtotal;
 
                     Logger.LogInformation("Detalhes do pedido #{PedidoId} carregados com sucesso. Itens: {ItemCount}, Total: {Total}, DetalhesNotNull: {DetalhesNotNull}",
                         pedido.Id, pedido.Detalhes?.Itens?.Count ?? 0, pedido.Detalhes?.TotalPedido ?? 0, pedido.Detalhes is not null);
@@ -435,41 +422,6 @@ else
         _ => Icons.Material.Filled.Info
     };
 
-    private sealed class OrderRow
-    {
-        public int Id { get; set; }
-        public string DataPedidoLocal { get; set; } = string.Empty;
-        public string StatusTexto { get; set; } = string.Empty;
-        public string TotalTexto { get; set; } = string.Empty;
-        public OrderStatus Status { get; set; }
-        public bool IsExpanded { get; set; }
-        public bool CarregandoDetalhes { get; set; }
-        public OrderDetails? Detalhes { get; set; }
-        public string? ErroDetalhes { get; set; }
-    }
-
-    private sealed class OrderDetails
-    {
-        public string DataLocal { get; set; } = string.Empty;
-        public string Rua { get; set; } = string.Empty;
-        public string Numero { get; set; } = string.Empty;
-        public string Bairro { get; set; } = string.Empty;
-        public string Cidade { get; set; } = string.Empty;
-        public string Complemento { get; set; } = string.Empty;
-        public decimal TotalPedido { get; set; }
-        public decimal Subtotal { get; set; }
-        public decimal Frete { get; set; }
-        public List<OrderItemDetail> Itens { get; set; } = new();
-    }
-
-    private sealed class OrderItemDetail
-    {
-        public string Nome { get; set; } = string.Empty;
-        public int Quantidade { get; set; }
-        public decimal PrecoUnitario { get; set; }
-        public decimal Subtotal { get; set; }
-        public string? ImagemUrl { get; set; }
-    }
 
     public ValueTask DisposeAsync()
     {

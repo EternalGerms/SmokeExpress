@@ -24,7 +24,16 @@
 
         try
         {
+            if (produto is null)
+            {
+                _mensagemErro = "Produto inválido.";
+                StateHasChanged();
+                return;
+            }
+
+            Logger.LogInformation("Criando produto. Nome: {Nome}, CategoriaId: {CategoriaId}", produto.Nome, produto.CategoriaId);
             await ProductService.CriarAsync(produto);
+            Logger.LogInformation("Produto criado com sucesso. ProductId: {ProductId}, Nome: {Nome}", produto.Id, produto.Nome);
             Navigation.NavigateTo("/admin/produtos?success=created");
         }
         catch (Exception ex)
