@@ -1,6 +1,7 @@
 @page "/admin/estatisticas"
 @attribute [Authorize(Roles = "Admin")]
 @using MudBlazor
+@using SmokeExpress.Web.Exceptions
 @using SmokeExpress.Web.Models
 @using SmokeExpress.Web.Models.Dashboard
 @using SmokeExpress.Web.Services
@@ -511,11 +512,17 @@
                 _tipoMensagem = TipoMensagem.DadosVazios;
             }
         }
+        catch (BusinessException ex)
+        {
+            _mensagem = ex.Message;
+            _tipoMensagem = TipoMensagem.Critico;
+            logger?.LogError(ex, "Erro ao carregar estatísticas do dashboard: {Message}", ex.Message);
+        }
         catch (Exception ex)
         {
-            _mensagem = $"Erro ao carregar estatísticas: {ex.Message}";
+            _mensagem = "Erro inesperado ao carregar estatísticas. Tente novamente.";
             _tipoMensagem = TipoMensagem.Critico;
-            logger?.LogError(ex, "Erro ao carregar estatísticas do dashboard");
+            logger?.LogError(ex, "Erro inesperado ao carregar estatísticas do dashboard");
         }
         finally
         {

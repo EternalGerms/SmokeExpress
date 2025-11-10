@@ -2,10 +2,12 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using SmokeExpress.Web.Data;
+using SmokeExpress.Web.Exceptions;
 using SmokeExpress.Web.Models;
 using SmokeExpress.Web.Services;
-using SmokeExpress.Web.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace SmokeExpress.Web.Routing;
 
@@ -50,17 +52,29 @@ public static class OrderEndpointRouteBuilderExtensions
                     var orderId = await orderService.CriarPedidoAsync(userId, req.Itens, req.Endereco, req.Frete, ct);
                     return Results.Ok(new { orderId });
                 }
+                catch (BusinessException ex)
+                {
+                    return Results.BadRequest(new { message = ex.Message });
+                }
+                catch (ValidationException ex)
+                {
+                    return Results.BadRequest(new { message = ex.Message });
+                }
+                catch (NotFoundException ex)
+                {
+                    return Results.NotFound(new { message = ex.Message });
+                }
                 catch (ArgumentNullException ex)
                 {
                     return Results.BadRequest(new { message = ex.Message });
                 }
-                catch (KeyNotFoundException ex)
-                {
-                    return Results.NotFound(new { message = ex.Message });
-                }
-                catch (InvalidOperationException ex)
+                catch (ArgumentException ex)
                 {
                     return Results.BadRequest(new { message = ex.Message });
+                }
+                catch (DbUpdateException)
+                {
+                    return Results.StatusCode(500, new { message = "Erro ao processar pedido. Tente novamente." });
                 }
             })
             .RequireAuthorization()

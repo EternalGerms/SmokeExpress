@@ -1,4 +1,5 @@
 @using MudBlazor
+@using SmokeExpress.Web.Exceptions
 @using SmokeExpress.Web.Models
 @using SmokeExpress.Web.Services
 @inject IReviewService ReviewService
@@ -80,9 +81,21 @@
 
             MudDialog?.Close(DialogResult.Ok(true));
         }
+        catch (BusinessException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (ValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (NotFoundException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
         catch (Exception ex)
         {
-            Snackbar.Add($"Erro ao salvar avaliação: {ex.Message}", Severity.Error);
+            Snackbar.Add("Erro inesperado ao salvar avaliação. Tente novamente.", Severity.Error);
         }
     }
 

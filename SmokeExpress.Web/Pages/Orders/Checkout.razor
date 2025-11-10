@@ -1,5 +1,6 @@
 @page "/checkout"
 @using SmokeExpress.Web.Models
+@using SmokeExpress.Web.Exceptions
 @using System.Text.Json
 @inject NavigationManager Nav
 @inject IJSRuntime JS
@@ -724,9 +725,21 @@ else
             _showPagamento = false;
             Nav.NavigateTo($"/pedido/confirmacao/{orderId}");
         }
-        catch (Exception ex)
+        catch (BusinessException ex)
         {
             _error = ex.Message;
+        }
+        catch (ValidationException ex)
+        {
+            _error = ex.Message;
+        }
+        catch (NotFoundException ex)
+        {
+            _error = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _error = "Erro inesperado ao processar pedido. Tente novamente.";
         }
         finally
         {

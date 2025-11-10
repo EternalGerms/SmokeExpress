@@ -2,6 +2,7 @@
 @attribute [Authorize]
 @using System.ComponentModel.DataAnnotations
 @using MudBlazor
+@using SmokeExpress.Web.Exceptions
 @using SmokeExpress.Web.Models
 @using SmokeExpress.Web.Services
 @inject UserManager<ApplicationUser> UserManager
@@ -656,9 +657,13 @@ else
             await CarregarPedidosAsync();
             Logger.LogInformation("Pedidos carregados com sucesso");
         }
-        catch (Exception ex)
+        catch (BusinessException ex)
         {
             _erro = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _erro = "Erro inesperado ao carregar dados. Tente novamente.";
         }
         finally
         {
@@ -697,10 +702,15 @@ else
             
             Logger.LogInformation("Endereços processados: {Count}", _enderecos.Count);
         }
+        catch (BusinessException ex)
+        {
+            Logger.LogError(ex, "Erro ao carregar endereços: {Message}", ex.Message);
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Erro ao carregar endereços. Mensagem: {Message}, StackTrace: {StackTrace}", ex.Message, ex.StackTrace);
-            Snackbar.Add($"Erro ao carregar endereços: {ex.Message}", Severity.Error);
+            Logger.LogError(ex, "Erro inesperado ao carregar endereços");
+            Snackbar.Add("Erro inesperado ao carregar endereços. Tente novamente.", Severity.Error);
         }
         finally
         {
@@ -751,10 +761,20 @@ else
             
             Logger.LogInformation("Pedidos processados: {Count}", _pedidos.Count);
         }
+        catch (BusinessException ex)
+        {
+            Logger.LogError(ex, "Erro ao carregar pedidos: {Message}", ex.Message);
+            _erroPedidos = ex.Message;
+        }
+        catch (NotFoundException ex)
+        {
+            Logger.LogError(ex, "Erro ao carregar pedidos: {Message}", ex.Message);
+            _erroPedidos = ex.Message;
+        }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Erro ao carregar pedidos. Mensagem: {Message}, StackTrace: {StackTrace}", ex.Message, ex.StackTrace);
-            _erroPedidos = ex.Message;
+            Logger.LogError(ex, "Erro inesperado ao carregar pedidos");
+            _erroPedidos = "Erro inesperado ao carregar pedidos. Tente novamente.";
         }
         finally
         {
@@ -828,9 +848,17 @@ else
             _editandoEndereco = null;
             await CarregarEnderecosAsync();
         }
+        catch (BusinessException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (ValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
         catch (Exception ex)
         {
-            Snackbar.Add($"Erro ao salvar endereço: {ex.Message}", Severity.Error);
+            Snackbar.Add("Erro inesperado ao salvar endereço. Tente novamente.", Severity.Error);
         }
         finally
         {
@@ -870,9 +898,17 @@ else
                 Snackbar.Add("Endereço excluído com sucesso!", Severity.Success);
                 await CarregarEnderecosAsync();
             }
+            catch (BusinessException ex)
+            {
+                Snackbar.Add(ex.Message, Severity.Error);
+            }
+            catch (NotFoundException ex)
+            {
+                Snackbar.Add(ex.Message, Severity.Error);
+            }
             catch (Exception ex)
             {
-                Snackbar.Add($"Erro ao excluir endereço: {ex.Message}", Severity.Error);
+                Snackbar.Add("Erro inesperado ao excluir endereço. Tente novamente.", Severity.Error);
             }
         }
     }
@@ -892,9 +928,17 @@ else
             Snackbar.Add("Endereço definido como padrão!", Severity.Success);
             await CarregarEnderecosAsync();
         }
+        catch (BusinessException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (NotFoundException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
         catch (Exception ex)
         {
-            Snackbar.Add($"Erro ao definir endereço padrão: {ex.Message}", Severity.Error);
+            Snackbar.Add("Erro inesperado ao definir endereço padrão. Tente novamente.", Severity.Error);
         }
     }
 
@@ -987,10 +1031,20 @@ else
                 pedido.ErroDetalhes = "Pedido não encontrado ou não pertence a você.";
             }
         }
+        catch (BusinessException ex)
+        {
+            Logger.LogError(ex, "Erro ao carregar detalhes do pedido {PedidoId}: {Message}", pedido.Id, ex.Message);
+            pedido.ErroDetalhes = ex.Message;
+        }
+        catch (NotFoundException ex)
+        {
+            Logger.LogError(ex, "Pedido {PedidoId} não encontrado", pedido.Id);
+            pedido.ErroDetalhes = ex.Message;
+        }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Erro ao carregar detalhes do pedido {PedidoId}. Mensagem: {Message}, StackTrace: {StackTrace}", pedido.Id, ex.Message, ex.StackTrace);
-            pedido.ErroDetalhes = $"Erro ao carregar detalhes: {ex.Message}";
+            Logger.LogError(ex, "Erro inesperado ao carregar detalhes do pedido {PedidoId}", pedido.Id);
+            pedido.ErroDetalhes = "Erro inesperado ao carregar detalhes. Tente novamente.";
         }
         finally
         {
@@ -1125,10 +1179,20 @@ else
             _model.Email = _emailModel.Email;
             Snackbar.Add("E-mail atualizado com sucesso!", Severity.Success);
         }
-        catch (Exception ex)
+        catch (BusinessException ex)
         {
             _erro = ex.Message;
-            Snackbar.Add($"Erro ao atualizar e-mail: {ex.Message}", Severity.Error);
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (ValidationException ex)
+        {
+            _erro = ex.Message;
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            _erro = "Erro inesperado ao atualizar e-mail. Tente novamente.";
+            Snackbar.Add("Erro inesperado ao atualizar e-mail. Tente novamente.", Severity.Error);
         }
         finally
         {
@@ -1172,10 +1236,20 @@ else
             _senha = new();
             Snackbar.Add("Senha alterada com sucesso!", Severity.Success);
         }
-        catch (Exception ex)
+        catch (BusinessException ex)
         {
             _erro = ex.Message;
-            Snackbar.Add($"Erro ao alterar senha: {ex.Message}", Severity.Error);
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (ValidationException ex)
+        {
+            _erro = ex.Message;
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            _erro = "Erro inesperado ao alterar senha. Tente novamente.";
+            Snackbar.Add("Erro inesperado ao alterar senha. Tente novamente.", Severity.Error);
         }
         finally
         {

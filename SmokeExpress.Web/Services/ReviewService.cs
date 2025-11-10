@@ -1,6 +1,8 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using SmokeExpress.Web.Data;
+using SmokeExpress.Web.Exceptions;
 using SmokeExpress.Web.Models;
 
 namespace SmokeExpress.Web.Services;
@@ -11,19 +13,19 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
     {
         if (string.IsNullOrWhiteSpace(userId))
         {
-            throw new ArgumentException("UserId não pode ser vazio.", nameof(userId));
+            throw new ValidationException("UserId não pode ser vazio.");
         }
 
         if (rating < 0 || rating > 5)
         {
-            throw new ArgumentException("Rating deve estar entre 0 e 5.", nameof(rating));
+            throw new ValidationException("Rating deve estar entre 0 e 5.");
         }
 
         // Verificar se o produto existe
         var produtoExiste = await dbContext.Products.AnyAsync(p => p.Id == productId, ct);
         if (!produtoExiste)
         {
-            throw new KeyNotFoundException($"Produto com ID {productId} não encontrado.");
+            throw new NotFoundException("Produto", productId);
         }
 
         // Se OrderId foi fornecido, verificar se o pedido existe
@@ -32,7 +34,7 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
             var pedidoExiste = await dbContext.Orders.AnyAsync(o => o.Id == orderId.Value && o.ApplicationUserId == userId, ct);
             if (!pedidoExiste)
             {
-                throw new KeyNotFoundException($"Pedido com ID {orderId.Value} não encontrado ou não pertence ao usuário.");
+                throw new NotFoundException($"Pedido com ID {orderId.Value} não encontrado ou não pertence ao usuário.");
             }
         }
 
@@ -48,7 +50,20 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
         };
 
         dbContext.Reviews.Add(avaliacao);
-        await dbContext.SaveChangesAsync(ct);
+        try
+        {
+            await dbContext.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex)
+        {
+            logger.LogError(ex, "Erro ao salvar avaliação no banco de dados");
+            throw new BusinessException("Erro ao criar avaliação. Tente novamente.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro inesperado ao criar avaliação");
+            throw;
+        }
         
         logger.LogInformation("Nova avaliação criada para produto {ProductId} pelo usuário {UserId} no pedido {OrderId} com rating {Rating}", productId, userId, orderId, rating);
         return avaliacao;

@@ -1,11 +1,13 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using SmokeExpress.Web.Data;
+using SmokeExpress.Web.Exceptions;
 using SmokeExpress.Web.Models;
 
 namespace SmokeExpress.Web.Services;
 
-public class AddressService(ApplicationDbContext db) : IAddressService
+public class AddressService(ApplicationDbContext db, ILogger<AddressService> logger) : IAddressService
 {
     public async Task<IReadOnlyList<Address>> ListAsync(string userId, CancellationToken ct = default)
     {
@@ -27,7 +29,20 @@ public class AddressService(ApplicationDbContext db) : IAddressService
         }
 
         db.Addresses.Add(address);
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex)
+        {
+            logger.LogError(ex, "Erro ao salvar endereço no banco de dados");
+            throw new BusinessException("Erro ao criar endereço. Tente novamente.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro inesperado ao criar endereço");
+            throw;
+        }
         return address;
     }
 
@@ -52,7 +67,20 @@ public class AddressService(ApplicationDbContext db) : IAddressService
             existing.IsDefault = false;
         }
 
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex)
+        {
+            logger.LogError(ex, "Erro ao atualizar endereço {AddressId} no banco de dados", id);
+            throw new BusinessException("Erro ao atualizar endereço. Tente novamente.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro inesperado ao atualizar endereço {AddressId}", id);
+            throw;
+        }
         return existing;
     }
 
@@ -63,7 +91,20 @@ public class AddressService(ApplicationDbContext db) : IAddressService
 
         var wasDefault = existing.IsDefault;
         db.Addresses.Remove(existing);
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex)
+        {
+            logger.LogError(ex, "Erro ao remover endereço {AddressId} do banco de dados", id);
+            throw new BusinessException("Erro ao remover endereço. Tente novamente.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro inesperado ao remover endereço {AddressId}", id);
+            throw;
+        }
 
         if (wasDefault)
         {
@@ -73,7 +114,15 @@ public class AddressService(ApplicationDbContext db) : IAddressService
             if (first != null)
             {
                 first.IsDefault = true;
-                await db.SaveChangesAsync(ct);
+                try
+                {
+                    await db.SaveChangesAsync(ct);
+                }
+                catch (DbUpdateException ex)
+                {
+                    logger.LogError(ex, "Erro ao atualizar endereço padrão após remoção");
+                    // Não relançar exceção aqui, pois a remoção já foi bem-sucedida
+                }
             }
         }
 
@@ -87,7 +136,20 @@ public class AddressService(ApplicationDbContext db) : IAddressService
 
         await UnsetDefault(userId, ct);
         existing.IsDefault = true;
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex)
+        {
+            logger.LogError(ex, "Erro ao definir endereço {AddressId} como padrão no banco de dados", id);
+            throw new BusinessException("Erro ao definir endereço como padrão. Tente novamente.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro inesperado ao definir endereço {AddressId} como padrão", id);
+            throw;
+        }
         return true;
     }
 

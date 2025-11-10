@@ -1,6 +1,8 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using SmokeExpress.Web.Data;
+using SmokeExpress.Web.Exceptions;
 using SmokeExpress.Web.Models;
 
 namespace SmokeExpress.Web.Services;
@@ -22,12 +24,12 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
         var itensLista = cartItems?.ToList() ?? [];
         if (itensLista.Count == 0)
         {
-            throw new InvalidOperationException("Carrinho vazio.");
+            throw new ValidationException("Carrinho vazio.");
         }
 
         if (itensLista.Any(i => i.Quantidade <= 0))
         {
-            throw new InvalidOperationException("Quantidade inválida em um ou mais itens.");
+            throw new ValidationException("Quantidade inválida em um ou mais itens.");
         }
 
         var productIds = itensLista.Select(i => i.ProductId).Distinct().ToList();
@@ -37,7 +39,7 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
 
         if (products.Count != productIds.Count)
         {
-            throw new KeyNotFoundException("Um ou mais produtos não foram encontrados.");
+            throw new NotFoundException("Um ou mais produtos não foram encontrados.");
         }
 
         var productById = products.ToDictionary(p => p.Id);
@@ -48,7 +50,7 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
             var product = productById[item.ProductId];
             if (item.Quantidade > product.Estoque)
             {
-                throw new InvalidOperationException($"Quantidade acima do estoque para '{product.Nome}'. Disponível: {product.Estoque}.");
+                throw new ValidationException($"Quantidade acima do estoque para '{product.Nome}'. Disponível: {product.Estoque}.");
             }
         }
 
@@ -60,17 +62,17 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
 
         if (string.IsNullOrWhiteSpace(endereco.Rua))
         {
-            throw new InvalidOperationException("O campo Rua do endereço de entrega é obrigatório.");
+            throw new ValidationException("O campo Rua do endereço de entrega é obrigatório.");
         }
 
         if (string.IsNullOrWhiteSpace(endereco.Cidade))
         {
-            throw new InvalidOperationException("O campo Cidade do endereço de entrega é obrigatório.");
+            throw new ValidationException("O campo Cidade do endereço de entrega é obrigatório.");
         }
 
         if (string.IsNullOrWhiteSpace(endereco.Bairro))
         {
-            throw new InvalidOperationException("O campo Bairro do endereço de entrega é obrigatório.");
+            throw new ValidationException("O campo Bairro do endereço de entrega é obrigatório.");
         }
 
         var order = new Order
@@ -106,7 +108,20 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
         order.TotalPedido = total + Math.Max(0m, frete);
 
         dbContext.Orders.Add(order);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex)
+        {
+            logger.LogError(ex, "Erro ao salvar pedido no banco de dados");
+            throw new BusinessException("Erro ao processar pedido. Tente novamente.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro inesperado ao criar pedido");
+            throw;
+        }
 
         logger.LogInformation("Pedido {OrderId} criado para usuário {UserId} com {Itens} itens.", order.Id, userId, itensLista.Count);
 
@@ -159,7 +174,20 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
         var order = await dbContext.Orders.FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
         if (order is null) return false;
         order.Status = novoStatus;
-        await dbContext.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex)
+        {
+            logger.LogError(ex, "Erro ao atualizar status do pedido {OrderId} no banco de dados", id);
+            throw new BusinessException("Erro ao atualizar status do pedido. Tente novamente.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro inesperado ao atualizar status do pedido {OrderId}", id);
+            throw;
+        }
         return true;
     }
 }

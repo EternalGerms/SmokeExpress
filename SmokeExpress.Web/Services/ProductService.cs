@@ -1,6 +1,8 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using SmokeExpress.Web.Data;
+using SmokeExpress.Web.Exceptions;
 using SmokeExpress.Web.Models;
 
 namespace SmokeExpress.Web.Services;
@@ -8,7 +10,7 @@ namespace SmokeExpress.Web.Services;
 /// <summary>
 /// Implementação padrão do serviço de produtos para as operações administrativas.
 /// </summary>
-public class ProductService(ApplicationDbContext context) : IProductService
+public class ProductService(ApplicationDbContext context, ILogger<ProductService> logger) : IProductService
 {
     private readonly ApplicationDbContext _context = context;
 
@@ -250,7 +252,20 @@ public class ProductService(ApplicationDbContext context) : IProductService
         ArgumentNullException.ThrowIfNull(product);
 
         _context.Products.Add(product);
-        await _context.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex)
+        {
+            logger.LogError(ex, "Erro ao salvar produto no banco de dados");
+            throw new BusinessException("Erro ao criar produto. Tente novamente.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro inesperado ao criar produto");
+            throw;
+        }
 
         return product;
     }
@@ -261,7 +276,7 @@ public class ProductService(ApplicationDbContext context) : IProductService
 
         var existente = await _context.Products
             .FirstOrDefaultAsync(p => p.Id == product.Id, cancellationToken)
-            ?? throw new KeyNotFoundException($"Produto com Id {product.Id} não encontrado.");
+            ?? throw new NotFoundException("Produto", product.Id);
 
         existente.Nome = product.Nome;
         existente.Descricao = product.Descricao;
@@ -270,7 +285,20 @@ public class ProductService(ApplicationDbContext context) : IProductService
         existente.ImagemUrl = product.ImagemUrl;
         existente.CategoriaId = product.CategoriaId;
 
-        await _context.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex)
+        {
+            logger.LogError(ex, "Erro ao atualizar produto {ProductId} no banco de dados", product.Id);
+            throw new BusinessException("Erro ao atualizar produto. Tente novamente.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro inesperado ao atualizar produto {ProductId}", product.Id);
+            throw;
+        }
     }
 
     public async Task RemoverAsync(int id, CancellationToken cancellationToken = default)
@@ -278,16 +306,29 @@ public class ProductService(ApplicationDbContext context) : IProductService
         var existente = await _context.Products
             .Include(p => p.ItensPedido)
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken)
-            ?? throw new KeyNotFoundException($"Produto com Id {id} não encontrado.");
+            ?? throw new NotFoundException("Produto", id);
 
         // Verificar se o produto tem pedidos associados
         if (existente.ItensPedido.Any())
         {
-            throw new InvalidOperationException($"Não é possível excluir o produto '{existente.Nome}' pois ele possui pedidos associados.");
+            throw new ValidationException($"Não é possível excluir o produto '{existente.Nome}' pois ele possui pedidos associados.");
         }
 
         _context.Products.Remove(existente);
-        await _context.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex)
+        {
+            logger.LogError(ex, "Erro ao remover produto {ProductId} do banco de dados", id);
+            throw new BusinessException("Erro ao remover produto. Tente novamente.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro inesperado ao remover produto {ProductId}", id);
+            throw;
+        }
     }
 }
 

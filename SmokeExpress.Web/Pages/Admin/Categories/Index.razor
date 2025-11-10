@@ -1,5 +1,6 @@
 @page "/admin/categorias"
 @attribute [Authorize(Roles = "Admin")]
+@using SmokeExpress.Web.Exceptions
 @inject ICategoryService CategoryService
 @inject NavigationManager Navigation
 
@@ -133,9 +134,13 @@ else
             var categorias = await CategoryService.ListarAsync();
             _categorias = categorias.ToList();
         }
+        catch (BusinessException ex)
+        {
+            _mensagemErro = ex.Message;
+        }
         catch (Exception ex)
         {
-            _mensagemErro = $"Erro ao carregar as categorias: {ex.Message}";
+            _mensagemErro = "Erro inesperado ao carregar as categorias. Tente novamente.";
         }
         finally
         {
@@ -171,9 +176,21 @@ else
             await CarregarCategoriasAsync();
             _categoriaParaExcluir = null;
         }
-        catch (Exception ex)
+        catch (BusinessException ex)
         {
             _erroExclusao = ex.Message;
+        }
+        catch (ValidationException ex)
+        {
+            _erroExclusao = ex.Message;
+        }
+        catch (NotFoundException ex)
+        {
+            _erroExclusao = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _erroExclusao = "Erro inesperado ao excluir categoria. Tente novamente.";
         }
         finally
         {

@@ -4,6 +4,7 @@
 @using System.Linq
 @using Microsoft.EntityFrameworkCore
 @using MudBlazor
+@using SmokeExpress.Web.Exceptions
 @using SmokeExpress.Web.Validation
 @using SmokeExpress.Web.Shared.FormControls
 @inject UserManager<ApplicationUser> UserManager
@@ -229,9 +230,19 @@
 
             _mensagemErro = string.Join(" ", resultado.Errors.Select(e => e.Description));
         }
+        catch (BusinessException ex)
+        {
+            Logger.LogError(ex, "Erro ao registrar usuário {Email}: {Message}", _model.Email, ex.Message);
+            _mensagemErro = ex.Message;
+        }
+        catch (ValidationException ex)
+        {
+            Logger.LogError(ex, "Erro de validação ao registrar usuário {Email}: {Message}", _model.Email, ex.Message);
+            _mensagemErro = ex.Message;
+        }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Erro ao registrar usuário {Email}", _model.Email);
+            Logger.LogError(ex, "Erro inesperado ao registrar usuário {Email}", _model.Email);
             _mensagemErro = "Não foi possível concluir o cadastro. Tente novamente mais tarde.";
         }
         finally

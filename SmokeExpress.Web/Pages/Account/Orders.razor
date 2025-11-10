@@ -1,6 +1,7 @@
 @page "/account/orders"
 @attribute [Authorize]
 @using MudBlazor
+@using SmokeExpress.Web.Exceptions
 @inject IOrderService OrderService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Nav
@@ -233,9 +234,17 @@ else
                 Status = o.Status
             }).ToList();
         }
-        catch (Exception ex)
+        catch (BusinessException ex)
         {
             _erro = ex.Message;
+        }
+        catch (NotFoundException ex)
+        {
+            _erro = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _erro = "Erro inesperado ao carregar pedidos. Tente novamente.";
         }
         finally
         {
@@ -366,10 +375,20 @@ else
                 pedido.ErroDetalhes = "Pedido não encontrado.";
             }
         }
+        catch (BusinessException ex)
+        {
+            Logger.LogError(ex, "Erro ao carregar detalhes do pedido #{PedidoId}: {Message}", pedido.Id, ex.Message);
+            pedido.ErroDetalhes = ex.Message;
+        }
+        catch (NotFoundException ex)
+        {
+            Logger.LogError(ex, "Pedido #{PedidoId} não encontrado", pedido.Id);
+            pedido.ErroDetalhes = ex.Message;
+        }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Erro ao carregar detalhes do pedido #{PedidoId}", pedido.Id);
-            pedido.ErroDetalhes = $"Erro ao carregar detalhes: {ex.Message}";
+            Logger.LogError(ex, "Erro inesperado ao carregar detalhes do pedido #{PedidoId}", pedido.Id);
+            pedido.ErroDetalhes = "Erro inesperado ao carregar detalhes. Tente novamente.";
         }
         finally
         {

@@ -1,5 +1,6 @@
 @page "/admin/categorias/{Id:int}/editar"
 @attribute [Authorize(Roles = "Admin")]
+@using SmokeExpress.Web.Exceptions
 @inject ICategoryService CategoryService
 @inject NavigationManager Navigation
 @inject ILogger<Edit> Logger
@@ -112,10 +113,20 @@ else
         {
             _categoria = await CategoryService.ObterPorIdAsync(Id);
         }
+        catch (NotFoundException ex)
+        {
+            Logger.LogError(ex, "Categoria {Id} não encontrada", Id);
+            _mensagemErro = ex.Message;
+        }
+        catch (BusinessException ex)
+        {
+            Logger.LogError(ex, "Erro ao carregar categoria {Id}: {Message}", Id, ex.Message);
+            _mensagemErro = ex.Message;
+        }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Erro ao carregar categoria {Id}", Id);
-            _mensagemErro = $"Erro ao carregar a categoria: {ex.Message}";
+            Logger.LogError(ex, "Erro inesperado ao carregar categoria {Id}", Id);
+            _mensagemErro = "Erro inesperado ao carregar a categoria. Tente novamente.";
         }
         finally
         {
@@ -132,10 +143,28 @@ else
             await CategoryService.AtualizarAsync(categoria);
             Navigation.NavigateTo("/admin/categorias?success=updated");
         }
+        catch (BusinessException ex)
+        {
+            Logger.LogError(ex, "Erro ao atualizar categoria {Id}: {Message}", Id, ex.Message);
+            _mensagemErro = ex.Message;
+            StateHasChanged();
+        }
+        catch (ValidationException ex)
+        {
+            Logger.LogError(ex, "Erro de validação ao atualizar categoria {Id}: {Message}", Id, ex.Message);
+            _mensagemErro = ex.Message;
+            StateHasChanged();
+        }
+        catch (NotFoundException ex)
+        {
+            Logger.LogError(ex, "Categoria {Id} não encontrada para atualização", Id);
+            _mensagemErro = ex.Message;
+            StateHasChanged();
+        }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Erro ao atualizar categoria {Id}", Id);
-            _mensagemErro = $"Erro ao atualizar categoria: {ex.Message}";
+            Logger.LogError(ex, "Erro inesperado ao atualizar categoria {Id}", Id);
+            _mensagemErro = "Erro inesperado ao atualizar categoria. Tente novamente.";
             StateHasChanged();
         }
     }
@@ -167,10 +196,25 @@ else
             await CategoryService.RemoverAsync(_categoria.Id);
             Navigation.NavigateTo("/admin/categorias?success=deleted");
         }
+        catch (BusinessException ex)
+        {
+            Logger.LogError(ex, "Erro ao excluir categoria {Id}: {Message}", Id, ex.Message);
+            _erroExclusao = ex.Message;
+        }
+        catch (ValidationException ex)
+        {
+            Logger.LogError(ex, "Erro de validação ao excluir categoria {Id}: {Message}", Id, ex.Message);
+            _erroExclusao = ex.Message;
+        }
+        catch (NotFoundException ex)
+        {
+            Logger.LogError(ex, "Categoria {Id} não encontrada para exclusão", Id);
+            _erroExclusao = ex.Message;
+        }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Erro ao excluir categoria {Id}", Id);
-            _erroExclusao = ex.Message;
+            Logger.LogError(ex, "Erro inesperado ao excluir categoria {Id}", Id);
+            _erroExclusao = "Erro inesperado ao excluir categoria. Tente novamente.";
         }
         finally
         {

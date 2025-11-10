@@ -1,5 +1,6 @@
 @page "/categorias/{Nome}"
 @using Microsoft.EntityFrameworkCore
+@using SmokeExpress.Web.Exceptions
 @using SmokeExpress.Web.Models
 @inject IProductService ProductService
 @inject ApplicationDbContext DbContext
@@ -164,9 +165,17 @@ else
                 await CarregarProdutosAsync();
             }
         }
+        catch (NotFoundException ex)
+        {
+            _mensagemErro = ex.Message;
+        }
+        catch (BusinessException ex)
+        {
+            _mensagemErro = ex.Message;
+        }
         catch (Exception ex)
         {
-            _mensagemErro = $"Erro ao carregar a categoria: {ex.Message}";
+            _mensagemErro = "Erro inesperado ao carregar a categoria. Tente novamente.";
         }
         finally
         {
@@ -194,9 +203,17 @@ else
                 pageNumber,
                 _pageSize);
         }
+        catch (BusinessException ex)
+        {
+            _mensagemErro = ex.Message;
+        }
+        catch (NotFoundException ex)
+        {
+            _mensagemErro = ex.Message;
+        }
         catch (Exception ex)
         {
-            _mensagemErro = $"Erro ao carregar os produtos: {ex.Message}";
+            _mensagemErro = "Erro inesperado ao carregar os produtos. Tente novamente.";
         }
         finally
         {

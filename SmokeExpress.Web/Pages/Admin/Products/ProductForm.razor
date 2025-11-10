@@ -1,6 +1,7 @@
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.Forms
 @using System.ComponentModel.DataAnnotations
+@using SmokeExpress.Web.Exceptions
 @inject ApplicationDbContext DbContext
 @inject IImageUploadService ImageUploadService
 @inject ILogger<ProductForm> Logger
@@ -139,9 +140,13 @@
                 .OrderBy(c => c.Nome)
                 .ToListAsync();
         }
+        catch (BusinessException ex)
+        {
+            Logger.LogError(ex, "Erro ao carregar categorias: {Message}", ex.Message);
+        }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Erro ao carregar categorias");
+            Logger.LogError(ex, "Erro inesperado ao carregar categorias");
         }
     }
 
@@ -226,10 +231,25 @@
 
             await OnSave.InvokeAsync(produto);
         }
+        catch (BusinessException ex)
+        {
+            Logger.LogError(ex, "Erro ao salvar produto: {Message}", ex.Message);
+            _erroUpload = ex.Message;
+        }
+        catch (ValidationException ex)
+        {
+            Logger.LogError(ex, "Erro de validação ao salvar produto: {Message}", ex.Message);
+            _erroUpload = ex.Message;
+        }
+        catch (NotFoundException ex)
+        {
+            Logger.LogError(ex, "Recurso não encontrado ao salvar produto: {Message}", ex.Message);
+            _erroUpload = ex.Message;
+        }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Erro ao salvar produto");
-            _erroUpload = $"Erro ao salvar: {ex.Message}";
+            Logger.LogError(ex, "Erro inesperado ao salvar produto");
+            _erroUpload = "Erro inesperado ao salvar produto. Tente novamente.";
         }
         finally
         {

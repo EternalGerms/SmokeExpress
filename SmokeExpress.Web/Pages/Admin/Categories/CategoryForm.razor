@@ -1,5 +1,6 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using System.ComponentModel.DataAnnotations
+@using SmokeExpress.Web.Exceptions
 @inject ILogger<CategoryForm> Logger
 
 @* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
@@ -73,9 +74,17 @@
 
             await OnSave.InvokeAsync(categoria);
         }
+        catch (BusinessException ex)
+        {
+            Logger.LogError(ex, "Erro ao salvar categoria: {Message}", ex.Message);
+        }
+        catch (ValidationException ex)
+        {
+            Logger.LogError(ex, "Erro de validação ao salvar categoria: {Message}", ex.Message);
+        }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Erro ao salvar categoria");
+            Logger.LogError(ex, "Erro inesperado ao salvar categoria");
         }
         finally
         {

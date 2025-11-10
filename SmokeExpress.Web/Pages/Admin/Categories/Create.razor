@@ -1,5 +1,6 @@
 @page "/admin/categorias/novo"
 @attribute [Authorize(Roles = "Admin")]
+@using SmokeExpress.Web.Exceptions
 @inject ICategoryService CategoryService
 @inject NavigationManager Navigation
 @inject ILogger<Create> Logger
@@ -27,10 +28,22 @@
             await CategoryService.CriarAsync(categoria);
             Navigation.NavigateTo("/admin/categorias?success=created");
         }
+        catch (BusinessException ex)
+        {
+            Logger.LogError(ex, "Erro ao criar categoria: {Message}", ex.Message);
+            _mensagemErro = ex.Message;
+            StateHasChanged();
+        }
+        catch (ValidationException ex)
+        {
+            Logger.LogError(ex, "Erro de validação ao criar categoria: {Message}", ex.Message);
+            _mensagemErro = ex.Message;
+            StateHasChanged();
+        }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Erro ao criar categoria");
-            _mensagemErro = $"Erro ao criar categoria: {ex.Message}";
+            Logger.LogError(ex, "Erro inesperado ao criar categoria");
+            _mensagemErro = "Erro inesperado ao criar categoria. Tente novamente.";
             StateHasChanged();
         }
     }

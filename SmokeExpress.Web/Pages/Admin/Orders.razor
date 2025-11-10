@@ -1,6 +1,7 @@
 @page "/admin/pedidos"
 @attribute [Authorize(Roles = "Admin")]
 @inject IOrderService OrderService
+@using SmokeExpress.Web.Exceptions
 
 <h3>Gestão de Pedidos</h3>
 
@@ -164,9 +165,17 @@ else
                 Status = o.Status
             }).ToList();
         }
-        catch (Exception ex)
+        catch (BusinessException ex)
         {
             _erro = ex.Message;
+        }
+        catch (NotFoundException ex)
+        {
+            _erro = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _erro = "Erro inesperado ao carregar pedidos. Tente novamente.";
         }
         finally
         {
@@ -185,6 +194,7 @@ else
 
     private async Task OnStatusChangedAsync(OrderRow row)
     {
+        _erro = null;
         try
         {
             var ok = await OrderService.AtualizarStatusAsync(row.Id, row.Status);
@@ -193,9 +203,21 @@ else
                 _erro = "Não foi possível atualizar o status.";
             }
         }
-        catch (Exception ex)
+        catch (BusinessException ex)
         {
             _erro = ex.Message;
+        }
+        catch (ValidationException ex)
+        {
+            _erro = ex.Message;
+        }
+        catch (NotFoundException ex)
+        {
+            _erro = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _erro = "Erro inesperado ao atualizar status. Tente novamente.";
         }
     }
 
