@@ -1,6 +1,7 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using SmokeExpress.Web.Common;
 using SmokeExpress.Web.Constants;
 using SmokeExpress.Web.Data;
 using SmokeExpress.Web.Exceptions;
@@ -250,7 +251,11 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
 
     public async Task<Product> CriarAsync(Product product, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(product);
+        var validacao = await ValidarProdutoAsync(product, cancellationToken);
+        if (!validacao.IsSuccess)
+        {
+            throw new ValidationException(validacao.ErrorMessage!);
+        }
 
         _context.Products.Add(product);
         try
@@ -273,11 +278,19 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
 
     public async Task AtualizarAsync(Product product, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(product);
+        var validacao = await ValidarProdutoAsync(product, cancellationToken);
+        if (!validacao.IsSuccess)
+        {
+            throw new ValidationException(validacao.ErrorMessage!);
+        }
 
         var existente = await _context.Products
-            .FirstOrDefaultAsync(p => p.Id == product.Id, cancellationToken)
-            ?? throw new NotFoundException("Produto", product.Id);
+            .FirstOrDefaultAsync(p => p.Id == product.Id, cancellationToken);
+        
+        if (existente == null)
+        {
+            throw new NotFoundException("Produto", product.Id);
+        }
 
         existente.Nome = product.Nome;
         existente.Descricao = product.Descricao;
@@ -304,15 +317,24 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
 
     public async Task RemoverAsync(int id, CancellationToken cancellationToken = default)
     {
+        var validacao = await ValidarRemocaoAsync(id, cancellationToken);
+        if (!validacao.IsSuccess)
+        {
+            if (validacao.ErrorMessage!.Contains("não encontrado"))
+            {
+                throw new NotFoundException("Produto", id);
+            }
+            throw new ValidationException(validacao.ErrorMessage);
+        }
+
         var existente = await _context.Products
             .Include(p => p.ItensPedido)
-            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken)
-            ?? throw new NotFoundException("Produto", id);
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
-        // Verificar se o produto tem pedidos associados
-        if (existente.ItensPedido.Any())
+        if (existente == null)
         {
-            throw new ValidationException($"Não é possível excluir o produto '{existente.Nome}' pois ele possui pedidos associados.");
+            // Não deveria acontecer pois já validamos, mas garantimos segurança
+            throw new NotFoundException("Produto", id);
         }
 
         _context.Products.Remove(existente);
@@ -330,6 +352,62 @@ public class ProductService(ApplicationDbContext context, ILogger<ProductService
             logger.LogError(ex, "Erro inesperado ao remover produto {ProductId}", id);
             throw;
         }
+    }
+
+    private async Task<Result> ValidarProdutoAsync(Product? product, CancellationToken cancellationToken)
+    {
+        if (product == null)
+        {
+            return Result.Failure("Produto não pode ser nulo.");
+        }
+
+        if (string.IsNullOrWhiteSpace(product.Nome))
+        {
+            return Result.Failure("O nome do produto é obrigatório.");
+        }
+
+        if (product.Preco < 0)
+        {
+            return Result.Failure("O preço do produto não pode ser negativo.");
+        }
+
+        if (product.Estoque < 0)
+        {
+            return Result.Failure("O estoque do produto não pode ser negativo.");
+        }
+
+        // Validar se a categoria existe
+        if (product.CategoriaId > 0)
+        {
+            var categoriaExiste = await _context.Categories
+                .AnyAsync(c => c.Id == product.CategoriaId, cancellationToken);
+            
+            if (!categoriaExiste)
+            {
+                return Result.Failure($"Categoria com ID {product.CategoriaId} não encontrada.");
+            }
+        }
+
+        return Result.Success();
+    }
+
+    private async Task<Result> ValidarRemocaoAsync(int id, CancellationToken cancellationToken)
+    {
+        var existente = await _context.Products
+            .Include(p => p.ItensPedido)
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+
+        if (existente == null)
+        {
+            return Result.Failure($"Produto com ID {id} não encontrado.");
+        }
+
+        if (existente.ItensPedido.Any())
+        {
+            return Result.Failure($"Não é possível excluir o produto '{existente.Nome}' pois ele possui pedidos associados.");
+        }
+
+        return Result.Success();
     }
 }
 

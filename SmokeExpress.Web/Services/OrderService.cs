@@ -1,6 +1,7 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using SmokeExpress.Web.Common;
 using SmokeExpress.Web.Data;
 using SmokeExpress.Web.Exceptions;
 using SmokeExpress.Web.Models;
@@ -16,64 +17,20 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
         decimal frete = 0m,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(userId))
+        // Validar entrada
+        var validacao = await ValidarPedidoAsync(userId, cartItems, endereco, cancellationToken);
+        if (!validacao.IsSuccess)
         {
-            throw new ArgumentException("UserId inválido.", nameof(userId));
+            throw new ValidationException(validacao.ErrorMessage!);
         }
 
-        var itensLista = cartItems?.ToList() ?? [];
-        if (itensLista.Count == 0)
-        {
-            throw new ValidationException("Carrinho vazio.");
-        }
-
-        if (itensLista.Any(i => i.Quantidade <= 0))
-        {
-            throw new ValidationException("Quantidade inválida em um ou mais itens.");
-        }
-
+        var itensLista = cartItems!.ToList();
         var productIds = itensLista.Select(i => i.ProductId).Distinct().ToList();
         var products = await dbContext.Products
             .Where(p => productIds.Contains(p.Id))
             .ToListAsync(cancellationToken);
 
-        if (products.Count != productIds.Count)
-        {
-            throw new NotFoundException("Um ou mais produtos não foram encontrados.");
-        }
-
         var productById = products.ToDictionary(p => p.Id);
-
-        // Validação de estoque
-        foreach (var item in itensLista)
-        {
-            var product = productById[item.ProductId];
-            if (item.Quantidade > product.Estoque)
-            {
-                throw new ValidationException($"Quantidade acima do estoque para '{product.Nome}'. Disponível: {product.Estoque}.");
-            }
-        }
-
-        // Validação de endereço obrigatório
-        if (endereco == null)
-        {
-            throw new ArgumentNullException(nameof(endereco), "Endereço de entrega é obrigatório.");
-        }
-
-        if (string.IsNullOrWhiteSpace(endereco.Rua))
-        {
-            throw new ValidationException("O campo Rua do endereço de entrega é obrigatório.");
-        }
-
-        if (string.IsNullOrWhiteSpace(endereco.Cidade))
-        {
-            throw new ValidationException("O campo Cidade do endereço de entrega é obrigatório.");
-        }
-
-        if (string.IsNullOrWhiteSpace(endereco.Bairro))
-        {
-            throw new ValidationException("O campo Bairro do endereço de entrega é obrigatório.");
-        }
 
         var order = new Order
         {
@@ -189,6 +146,78 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
             throw;
         }
         return true;
+    }
+
+    private async Task<Result> ValidarPedidoAsync(
+        string userId,
+        IEnumerable<CartItemDto>? cartItems,
+        EnderecoEntregaDto? endereco,
+        CancellationToken cancellationToken)
+    {
+        // Validar userId
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Result.Failure("UserId inválido.");
+        }
+
+        // Validar carrinho
+        var itensLista = cartItems?.ToList() ?? [];
+        if (itensLista.Count == 0)
+        {
+            return Result.Failure("Carrinho vazio.");
+        }
+
+        // Validar quantidades
+        if (itensLista.Any(i => i.Quantidade <= 0))
+        {
+            return Result.Failure("Quantidade inválida em um ou mais itens.");
+        }
+
+        // Validar produtos existentes
+        var productIds = itensLista.Select(i => i.ProductId).Distinct().ToList();
+        var products = await dbContext.Products
+            .Where(p => productIds.Contains(p.Id))
+            .ToListAsync(cancellationToken);
+
+        if (products.Count != productIds.Count)
+        {
+            return Result.Failure("Um ou mais produtos não foram encontrados.");
+        }
+
+        var productById = products.ToDictionary(p => p.Id);
+
+        // Validar estoque
+        foreach (var item in itensLista)
+        {
+            var product = productById[item.ProductId];
+            if (item.Quantidade > product.Estoque)
+            {
+                return Result.Failure($"Quantidade acima do estoque para '{product.Nome}'. Disponível: {product.Estoque}.");
+            }
+        }
+
+        // Validar endereço
+        if (endereco == null)
+        {
+            return Result.Failure("Endereço de entrega é obrigatório.");
+        }
+
+        if (string.IsNullOrWhiteSpace(endereco.Rua))
+        {
+            return Result.Failure("O campo Rua do endereço de entrega é obrigatório.");
+        }
+
+        if (string.IsNullOrWhiteSpace(endereco.Cidade))
+        {
+            return Result.Failure("O campo Cidade do endereço de entrega é obrigatório.");
+        }
+
+        if (string.IsNullOrWhiteSpace(endereco.Bairro))
+        {
+            return Result.Failure("O campo Bairro do endereço de entrega é obrigatório.");
+        }
+
+        return Result.Success();
     }
 }
 

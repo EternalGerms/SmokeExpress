@@ -1,6 +1,7 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using SmokeExpress.Web.Common;
 using SmokeExpress.Web.Data;
 using SmokeExpress.Web.Exceptions;
 using SmokeExpress.Web.Models;
@@ -11,31 +12,18 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
 {
     public async Task<ProductReview> CriarAvaliacaoAsync(string userId, int productId, int rating, string? comment, int? orderId = null, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(userId))
+        var validacao = await ValidarAvaliacaoAsync(userId, productId, rating, orderId, ct);
+        if (!validacao.IsSuccess)
         {
-            throw new ValidationException("UserId não pode ser vazio.");
-        }
-
-        if (rating < 0 || rating > 5)
-        {
-            throw new ValidationException("Rating deve estar entre 0 e 5.");
-        }
-
-        // Verificar se o produto existe
-        var produtoExiste = await dbContext.Products.AnyAsync(p => p.Id == productId, ct);
-        if (!produtoExiste)
-        {
-            throw new NotFoundException("Produto", productId);
-        }
-
-        // Se OrderId foi fornecido, verificar se o pedido existe
-        if (orderId.HasValue)
-        {
-            var pedidoExiste = await dbContext.Orders.AnyAsync(o => o.Id == orderId.Value && o.ApplicationUserId == userId, ct);
-            if (!pedidoExiste)
+            if (validacao.ErrorMessage!.Contains("não encontrado") || validacao.ErrorMessage.Contains("não encontrada"))
             {
-                throw new NotFoundException($"Pedido com ID {orderId.Value} não encontrado ou não pertence ao usuário.");
+                if (validacao.ErrorMessage.Contains("Produto"))
+                {
+                    throw new NotFoundException("Produto", productId);
+                }
+                throw new NotFoundException(validacao.ErrorMessage);
             }
+            throw new ValidationException(validacao.ErrorMessage);
         }
 
         // Criar nova avaliação (permite múltiplas avaliações do mesmo produto pelo mesmo usuário em pedidos diferentes)
@@ -194,6 +182,38 @@ public class ReviewService(ApplicationDbContext dbContext, ILogger<ReviewService
         return await dbContext.Reviews
             .AsNoTracking()
             .FirstOrDefaultAsync(r => r.ProductId == productId && r.ApplicationUserId == userId, ct);
+    }
+
+    private async Task<Result> ValidarAvaliacaoAsync(string userId, int productId, int rating, int? orderId, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Result.Failure("UserId não pode ser vazio.");
+        }
+
+        if (rating < 0 || rating > 5)
+        {
+            return Result.Failure("Rating deve estar entre 0 e 5.");
+        }
+
+        // Verificar se o produto existe
+        var produtoExiste = await dbContext.Products.AnyAsync(p => p.Id == productId, ct);
+        if (!produtoExiste)
+        {
+            return Result.Failure($"Produto com ID {productId} não encontrado.");
+        }
+
+        // Se OrderId foi fornecido, verificar se o pedido existe
+        if (orderId.HasValue)
+        {
+            var pedidoExiste = await dbContext.Orders.AnyAsync(o => o.Id == orderId.Value && o.ApplicationUserId == userId, ct);
+            if (!pedidoExiste)
+            {
+                return Result.Failure($"Pedido com ID {orderId.Value} não encontrado ou não pertence ao usuário.");
+            }
+        }
+
+        return Result.Success();
     }
 }
 

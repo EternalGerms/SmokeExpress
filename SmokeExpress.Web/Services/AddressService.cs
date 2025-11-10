@@ -1,6 +1,7 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using SmokeExpress.Web.Common;
 using SmokeExpress.Web.Data;
 using SmokeExpress.Web.Exceptions;
 using SmokeExpress.Web.Models;
@@ -20,6 +21,12 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
 
     public async Task<Address> CreateAsync(string userId, Address address, CancellationToken ct = default)
     {
+        var validacao = ValidarEndereco(address);
+        if (!validacao.IsSuccess)
+        {
+            throw new ValidationException(validacao.ErrorMessage!);
+        }
+
         address.Id = 0;
         address.ApplicationUserId = userId;
 
@@ -48,6 +55,12 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
 
     public async Task<Address?> UpdateAsync(string userId, int id, Address address, CancellationToken ct = default)
     {
+        var validacao = ValidarEndereco(address);
+        if (!validacao.IsSuccess)
+        {
+            throw new ValidationException(validacao.ErrorMessage!);
+        }
+
         var existing = await db.Addresses.FirstOrDefaultAsync(a => a.Id == id && a.ApplicationUserId == userId, ct);
         if (existing is null) return null;
 
@@ -158,6 +171,31 @@ public class AddressService(ApplicationDbContext db, ILogger<AddressService> log
         await db.Addresses
             .Where(a => a.ApplicationUserId == userId && a.IsDefault)
             .ExecuteUpdateAsync(s => s.SetProperty(a => a.IsDefault, false), ct);
+    }
+
+    private Result ValidarEndereco(Address? address)
+    {
+        if (address == null)
+        {
+            return Result.Failure("Endereço não pode ser nulo.");
+        }
+
+        if (string.IsNullOrWhiteSpace(address.Rua))
+        {
+            return Result.Failure("O campo Rua do endereço é obrigatório.");
+        }
+
+        if (string.IsNullOrWhiteSpace(address.Cidade))
+        {
+            return Result.Failure("O campo Cidade do endereço é obrigatório.");
+        }
+
+        if (string.IsNullOrWhiteSpace(address.Bairro))
+        {
+            return Result.Failure("O campo Bairro do endereço é obrigatório.");
+        }
+
+        return Result.Success();
     }
 }
 

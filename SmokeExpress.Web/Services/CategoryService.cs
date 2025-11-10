@@ -1,6 +1,7 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using SmokeExpress.Web.Common;
 using SmokeExpress.Web.Data;
 using SmokeExpress.Web.Exceptions;
 using SmokeExpress.Web.Models;
@@ -33,7 +34,11 @@ public class CategoryService(ApplicationDbContext context, ILogger<CategoryServi
 
     public async Task<Category> CriarAsync(Category category, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(category);
+        var validacao = ValidarCategoria(category);
+        if (!validacao.IsSuccess)
+        {
+            throw new ValidationException(validacao.ErrorMessage!);
+        }
 
         _context.Categories.Add(category);
         try
@@ -56,11 +61,19 @@ public class CategoryService(ApplicationDbContext context, ILogger<CategoryServi
 
     public async Task AtualizarAsync(Category category, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(category);
+        var validacao = ValidarCategoria(category);
+        if (!validacao.IsSuccess)
+        {
+            throw new ValidationException(validacao.ErrorMessage!);
+        }
 
         var existente = await _context.Categories
-            .FirstOrDefaultAsync(c => c.Id == category.Id, cancellationToken)
-            ?? throw new NotFoundException("Categoria", category.Id);
+            .FirstOrDefaultAsync(c => c.Id == category.Id, cancellationToken);
+        
+        if (existente == null)
+        {
+            throw new NotFoundException("Categoria", category.Id);
+        }
 
         existente.Nome = category.Nome;
         existente.Descricao = category.Descricao;
@@ -83,15 +96,24 @@ public class CategoryService(ApplicationDbContext context, ILogger<CategoryServi
 
     public async Task RemoverAsync(int id, CancellationToken cancellationToken = default)
     {
+        var validacao = await ValidarRemocaoAsync(id, cancellationToken);
+        if (!validacao.IsSuccess)
+        {
+            if (validacao.ErrorMessage!.Contains("não encontrada"))
+            {
+                throw new NotFoundException("Categoria", id);
+            }
+            throw new ValidationException(validacao.ErrorMessage);
+        }
+
         var existente = await _context.Categories
             .Include(c => c.Produtos)
-            .FirstOrDefaultAsync(c => c.Id == id, cancellationToken)
-            ?? throw new NotFoundException("Categoria", id);
+            .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
 
-        // Verificar se a categoria tem produtos associados
-        if (existente.Produtos.Any())
+        if (existente == null)
         {
-            throw new ValidationException($"Não é possível excluir a categoria '{existente.Nome}' pois ela possui produtos associados.");
+            // Não deveria acontecer pois já validamos, mas garantimos segurança
+            throw new NotFoundException("Categoria", id);
         }
 
         _context.Categories.Remove(existente);
@@ -109,6 +131,40 @@ public class CategoryService(ApplicationDbContext context, ILogger<CategoryServi
             logger.LogError(ex, "Erro inesperado ao remover categoria {CategoryId}", id);
             throw;
         }
+    }
+
+    private Result ValidarCategoria(Category? category)
+    {
+        if (category == null)
+        {
+            return Result.Failure("Categoria não pode ser nula.");
+        }
+
+        if (string.IsNullOrWhiteSpace(category.Nome))
+        {
+            return Result.Failure("O nome da categoria é obrigatório.");
+        }
+
+        return Result.Success();
+    }
+
+    private async Task<Result> ValidarRemocaoAsync(int id, CancellationToken cancellationToken)
+    {
+        var existente = await _context.Categories
+            .Include(c => c.Produtos)
+            .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+
+        if (existente == null)
+        {
+            return Result.Failure($"Categoria com ID {id} não encontrada.");
+        }
+
+        if (existente.Produtos.Any())
+        {
+            return Result.Failure($"Não é possível excluir a categoria '{existente.Nome}' pois ela possui produtos associados.");
+        }
+
+        return Result.Success();
     }
 }
 
