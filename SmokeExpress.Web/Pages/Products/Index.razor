@@ -473,85 +473,42 @@
         }
     }
 
-    private void OnPageChanged(int page)
+    private string ConstruirQueryString(int? page = null)
     {
         var queryParams = new List<string>();
         
         if (!string.IsNullOrWhiteSpace(_filtros.TermoBusca))
-        {
             queryParams.Add($"search={Uri.EscapeDataString(_filtros.TermoBusca)}");
-        }
         
         if (_filtros.CategoriaId.HasValue)
-        {
             queryParams.Add($"categoria={_filtros.CategoriaId.Value}");
-        }
-
-        if (_filtros.PrecoMin.HasValue)
-        {
-            queryParams.Add($"precoMin={_filtros.PrecoMin.Value}");
-        }
-
-        if (_filtros.PrecoMax.HasValue)
-        {
-            queryParams.Add($"precoMax={_filtros.PrecoMax.Value}");
-        }
-
-        if (_apenasEmEstoque)
-        {
-            queryParams.Add($"estoque=true");
-        }
-
-        if (_filtros.Ordenacao != ProductSortOrder.Nome)
-        {
-            queryParams.Add($"ordenacao={(int)_filtros.Ordenacao}");
-        }
         
-        if (page > 0)
-        {
-            queryParams.Add($"page={page + 1}");
-        }
+        if (_filtros.PrecoMin.HasValue)
+            queryParams.Add($"precoMin={_filtros.PrecoMin.Value}");
+        
+        if (_filtros.PrecoMax.HasValue)
+            queryParams.Add($"precoMax={_filtros.PrecoMax.Value}");
+        
+        if (_apenasEmEstoque)
+            queryParams.Add("estoque=true");
+        
+        if (_filtros.Ordenacao != ProductSortOrder.Nome)
+            queryParams.Add($"ordenacao={(int)_filtros.Ordenacao}");
+        
+        if (page.HasValue && page > 0)
+            queryParams.Add($"page={page.Value}");
+        
+        return queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
+    }
 
-        var query = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
-        Navigation.NavigateTo($"/produtos{query}");
+    private void OnPageChanged(int page)
+    {
+        Navigation.NavigateTo($"/produtos{ConstruirQueryString(page + 1)}");
     }
 
     private string ObterUrlComFiltros()
     {
-        var queryParams = new List<string>();
-        
-        if (!string.IsNullOrWhiteSpace(_filtros.TermoBusca))
-        {
-            queryParams.Add($"search={Uri.EscapeDataString(_filtros.TermoBusca)}");
-        }
-        
-        if (_filtros.CategoriaId.HasValue)
-        {
-            queryParams.Add($"categoria={_filtros.CategoriaId.Value}");
-        }
-
-        if (_filtros.PrecoMin.HasValue)
-        {
-            queryParams.Add($"precoMin={_filtros.PrecoMin.Value}");
-        }
-
-        if (_filtros.PrecoMax.HasValue)
-        {
-            queryParams.Add($"precoMax={_filtros.PrecoMax.Value}");
-        }
-
-        if (_apenasEmEstoque)
-        {
-            queryParams.Add($"estoque=true");
-        }
-
-        if (_filtros.Ordenacao != ProductSortOrder.Nome)
-        {
-            queryParams.Add($"ordenacao={(int)_filtros.Ordenacao}");
-        }
-
-        var query = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
-        return $"/produtos{query}";
+        return $"/produtos{ConstruirQueryString()}";
     }
 
     private bool TemFiltrosAtivos()
