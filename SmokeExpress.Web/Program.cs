@@ -29,8 +29,13 @@ var isDevelopment = builder.Environment.IsDevelopment();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("A string de conexão 'DefaultConnection' não foi configurada.");
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<ApplicationDbContext>(
+    options => options.UseSqlServer(connectionString),
+    contextLifetime: ServiceLifetime.Scoped,
+    optionsLifetime: ServiceLifetime.Singleton);
+
+builder.Services.AddDbContextFactory<ApplicationDbContext>(
+    options => options.UseSqlServer(connectionString));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -229,7 +234,7 @@ app.Use(async (context, next) =>
     context.Response.Headers.TryAdd("X-XSS-Protection", "1; mode=block");
     context.Response.Headers.TryAdd("Referrer-Policy", "strict-origin-when-cross-origin");
     context.Response.Headers.TryAdd("Permissions-Policy", "geolocation=(), microphone=(), camera=(), payment=()");
-    context.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https://images.unsplash.com https://placehold.co data:; connect-src 'self' wss:;";
+    context.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https://images.unsplash.com https://placehold.co data:; connect-src 'self' wss: data: blob:";
     await next();
 });
 

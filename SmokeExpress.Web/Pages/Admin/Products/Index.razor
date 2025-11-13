@@ -1,0 +1,276 @@
+@page "/admin/produtos"
+@attribute [Authorize(Roles = "Admin")]
+@using MudBlazor
+@inject IProductService ProductService
+@inject IImageUploadService ImageUploadService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@using SmokeExpress.Web.Pages.Admin.Products
+
+@* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
+
+<MudPaper Class="pa-6">
+    <MudStack Spacing="4">
+        <MudBreadcrumbs Items="@_breadcrumbItems" Class="mb-1" />
+
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+            <MudText Typo="Typo.h5" Class="fw-bold">Administração de Produtos</MudText>
+            <MudStack Row="true" Spacing="1">
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Category"
+                           OnClick="@(() => Navigation.NavigateTo("/admin/categorias"))">
+                    Categorias
+                </MudButton>
+            </MudStack>
+        </MudStack>
+
+        @if (!string.IsNullOrEmpty(_mensagemErro))
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">
+                @_mensagemErro
+            </MudAlert>
+        }
+        else if (_carregando)
+        {
+            <MudStack Spacing="2">
+                <MudSkeleton Height="52px" />
+                <MudSkeleton Height="52px" />
+                <MudSkeleton Height="52px" />
+            </MudStack>
+        }
+        else if (_produtos.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                Nenhum produto cadastrado no momento. Clique em <strong>Novo Produto</strong> para adicionar itens ao catálogo.
+            </MudAlert>
+        }
+        else
+        {
+            <MudPaper Elevation="1">
+                <MudDataGrid Items="_produtos"
+                             Hover="true"
+                             Dense="true"
+                             Filterable="true"
+                             RowClick="@(EventCallback.Factory.Create<DataGridRowClickEventArgs<Product>>(this, OnRowClicked))">
+                    <ToolBarContent>
+                        <MudText Typo="Typo.subtitle2" Class="ml-2">Total: @_produtos.Count</MudText>
+                        <MudSpacer />
+                        <MudButton StartIcon="@Icons.Material.Filled.Add"
+                                   Color="Color.Primary"
+                                   Variant="Variant.Outlined"
+                                   OnClick="@AbrirModalNovoProduto">
+                            Novo Produto
+                        </MudButton>
+                    </ToolBarContent>
+                    <Columns>
+                        <TemplateColumn Title="Imagem" CellClass="text-start">
+                            <CellTemplate>
+                                @if (!string.IsNullOrWhiteSpace(context.Item.ImagemUrl))
+                                {
+                                    <img src="@context.Item.ImagemUrl"
+                                         alt="@context.Item.Nome"
+                                         style="width: 64px; height: 64px; object-fit: cover; border-radius: 0.75rem;" />
+                                }
+                                else
+                                {
+                                    <MudPaper Class="pa-2 d-inline-flex align-center justify-center" Outlined="true" Style="width:64px;height:64px;">
+                                        <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Small" Color="Color.Secondary" Class="mud-opacity-50" />
+                                    </MudPaper>
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="@(p => p.Nome)" Title="Nome" SortBy="@(p => p.Nome)" />
+                        <TemplateColumn Title="Categoria">
+                            <CellTemplate>
+                                <MudChip Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small">
+                                    @context.Item.Categoria?.Nome
+                                </MudChip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Preço" CellClass="text-start">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body2" Color="Color.Primary">
+                                    @context.Item.Preco.ToString("C")
+                                </MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Estoque" CellClass="text-start">
+                            <CellTemplate>
+                                <MudChip Color="@((context.Item.Estoque > 0) ? Color.Success : Color.Error)"
+                                         Variant="Variant.Outlined"
+                                         Size="Size.Small">
+                                    @context.Item.Estoque unidade(s)
+                                </MudChip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Ações" CellClass="text-start">
+                            <CellTemplate>
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                               Color="Color.Primary"
+                                               OnClick="@(async () => await AbrirModalProduto(context.Item))"
+                                               aria-label="Editar produto" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Color="Color.Error"
+                                               OnClick="@(async () => await ConfirmarExclusao(context.Item))"
+                                               aria-label="Excluir produto" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </MudDataGrid>
+            </MudPaper>
+        }
+
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.ArrowBack"
+                   OnClick="@Voltar"
+                   Class="mt-2 align-self-start">
+            Voltar
+        </MudButton>
+    </MudStack>
+</MudPaper>
+
+@code {
+    private readonly List<Product> _produtos = new();
+    private bool _carregando = true;
+    private string? _mensagemErro;
+    private List<BreadcrumbItem> _breadcrumbItems = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _breadcrumbItems = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem("Home", "/", icon: Icons.Material.Filled.Home),
+            new BreadcrumbItem("Admin", "/admin", icon: Icons.Material.Filled.Dashboard),
+            new BreadcrumbItem("Produtos", href: null, icon: Icons.Material.Filled.Store, disabled: true)
+        };
+
+        await CarregarProdutosAsync();
+    }
+
+    private async Task CarregarProdutosAsync()
+    {
+        _carregando = true;
+        _mensagemErro = null;
+
+        try
+        {
+            var produtos = await ProductService.ListarAsync();
+            _produtos.Clear();
+            _produtos.AddRange(produtos);
+        }
+        catch (Exception ex)
+        {
+            _mensagemErro = $"Erro ao carregar os produtos: {ex.Message}";
+        }
+        finally
+        {
+            _carregando = false;
+            StateHasChanged();
+        }
+    }
+
+    private Task AbrirModalNovoProduto()
+        => AbrirModalProduto(null);
+
+    private async Task AbrirModalProduto(Product? produto)
+    {
+        var titulo = produto is null ? "Novo Produto" : "Editar Produto";
+
+        var parameters = new DialogParameters<ProductDialog>
+        {
+            { nameof(ProductDialog.Produto), produto }
+        };
+
+        var options = new DialogOptions
+        {
+            CloseButton = true,
+            BackdropClick = false,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true
+        };
+
+        var dialogReference = await DialogService.ShowAsync<ProductDialog>(titulo, parameters, options);
+        if (dialogReference is null)
+        {
+            return;
+        }
+
+        var resultado = await dialogReference.Result;
+
+        if (!resultado.Canceled && resultado.Data is Product produtoResultado)
+        {
+            await SalvarProdutoAsync(produtoResultado);
+        }
+    }
+
+    private async Task SalvarProdutoAsync(Product produto)
+    {
+        try
+        {
+            if (produto.Id > 0)
+            {
+                await ProductService.AtualizarAsync(produto);
+                Snackbar.Add($"Produto '{produto.Nome}' atualizado com sucesso.", Severity.Success);
+            }
+            else
+            {
+                await ProductService.CriarAsync(produto);
+                Snackbar.Add($"Produto '{produto.Nome}' criado com sucesso.", Severity.Success);
+            }
+
+            await CarregarProdutosAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erro ao salvar produto: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private Task OnRowClicked(DataGridRowClickEventArgs<Product> args)
+        => AbrirModalProduto(args.Item);
+
+    private async Task ConfirmarExclusao(Product produto)
+    {
+        bool? confirmacao = await DialogService.ShowMessageBox(
+            title: "Confirmar exclusão",
+            message: $"Deseja realmente excluir o produto '{produto.Nome}'?",
+            yesText: "Excluir",
+            cancelText: "Cancelar",
+            options: new DialogOptions { CloseButton = true, BackdropClick = false });
+
+        if (confirmacao != true)
+        {
+            return;
+        }
+
+        try
+        {
+            var produtoAtual = await ProductService.ObterPorIdAsync(produto.Id);
+            if (produtoAtual == null)
+            {
+                Snackbar.Add("Produto não encontrado.", Severity.Warning);
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(produtoAtual.ImagemUrl))
+            {
+                await ImageUploadService.DeleteProductImageAsync(produtoAtual.ImagemUrl);
+            }
+
+            await ProductService.RemoverAsync(produto.Id);
+            Snackbar.Add($"Produto '{produto.Nome}' removido com sucesso.", Severity.Success);
+            await CarregarProdutosAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erro ao excluir produto: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void Voltar()
+        => Navigation.NavigateTo("/admin");
+}
+

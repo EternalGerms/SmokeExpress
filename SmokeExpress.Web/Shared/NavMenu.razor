@@ -4,13 +4,10 @@
 @using Microsoft.AspNetCore.Identity
 @using SmokeExpress.Web.Models
 @using System.Collections.Generic
-@using System.Globalization
 @using System.Linq
 @using System.Security.Claims
-@using System.Text
 @using System.Threading
 @using System.Threading.Tasks
-@using MudBlazor
 @using Microsoft.EntityFrameworkCore
 @inject NavigationManager Navigation
 @inject ApplicationDbContext DbContext
@@ -112,42 +109,24 @@
 
             <div id="categoryNav" class="@CategoryNavWrapperClass">
                 <ul class="category-nav">
-                    @foreach (var category in categories)
+                    @if (_categorias.Count == 0)
                     {
-                        var hasSubcategories = category.Subcategories.Count > 0;
-                        var isActive = IsCategoryActive(category.Name);
-
-                        <li class="category-item @(isActive ? "active" : string.Empty)"
-                            @onmouseenter="() => OnCategoryPointerEnter(category.Name)"
-                            @onmouseleave="OnCategoryPointerLeave">
-                            @if (hasSubcategories)
-                            {
-                                <button type="button"
-                                        class="category-button"
-                                        @onclick="() => OnCategoryClick(category.Name)">
-                                    @category.Name
-                                    <span class="caret" aria-hidden="true"></span>
-                                </button>
-
-                                <div class="subcategory-menu @(isActive ? "show" : string.Empty)">
-                                    <NavLink class="subcategory-link subcategory-main-link" href="@GetCategoryUrl(category.Name)" @onclick="CollapseNavMenu">
-                                        Ver todos (@category.Name)
-                                    </NavLink>
-                                    @foreach (var subcategory in category.Subcategories)
-                                    {
-                                        <NavLink class="subcategory-link" href="@GetCategoryUrl(category.Name, subcategory)" @onclick="CollapseNavMenu">
-                                            @subcategory
-                                        </NavLink>
-                                    }
-                                </div>
-                            }
-                            else
-                            {
-                                <NavLink class="category-link" href="@GetCategoryUrl(category.Name)" @onclick="CollapseNavMenu">
-                                    @category.Name
-                                </NavLink>
-                            }
+                        <li class="category-item">
+                            <span class="category-pill disabled">Categorias indisponíveis</span>
                         </li>
+                    }
+                    else
+                    {
+                        foreach (var categoria in _categorias)
+                        {
+                            <li class="category-item">
+                                <button type="button"
+                                        class="category-pill"
+                                        @onclick="() => IrParaCategoria(categoria.Id)">
+                                    @categoria.Nome
+                                </button>
+                            </li>
+                        }
                     }
                 </ul>
             </div>
@@ -161,23 +140,8 @@
     private string? currentUserDisplayName;
     private AuthenticationState? cachedAuthState;
     private CancellationTokenSource? userMenuCloseCts;
-    private string? activeCategory;
     private string headerSearchTerm = string.Empty;
     private IReadOnlyList<Category> _categorias = Array.Empty<Category>();
-    private Dictionary<string, int> _categoriaIdsPorNome = new();
-
-    private readonly List<CategoryMenuItem> categories = new()
-    {
-        new("Bong", new List<string> { "Percolator", "Mini Bong", "Bong de Silicone" }),
-        new("Pipe", new List<string> { "Pipes de Metal", "Pipes de Vidro", "Pipes de Madeira" }),
-        new("Seda", new List<string> { "Seda King Size", "Seda Slim", "Seda Flavor" }),
-        new("Piteira", new List<string> { "Piteira de Vidro", "Piteira de Papel", "Piteira Reutilizável" }),
-        new("Dichavador", new List<string> { "Dichavador de Metal", "Dichavador Acrílico", "Dichavador 4 Partes" }),
-        new("Isqueiro e Cinzeiro", new List<string> { "Isqueiros Recarregáveis", "Isqueiros Jet", "Cinzeiros Portáteis" }),
-        new("Acessórios", new List<string> { "Caixas Herméticas", "Filtros", "Bolsas e Cases" }),
-        new("Caixa", new List<string> { "Club Mensal", "Kits Selecionados", "Presentes" }),
-        new("Marca", new List<string> { "Smoke Express", "Raw", "Lion Rolling Circus" })
-    };
 
     private string CategoryNavWrapperClass => collapseNavMenu ? "category-nav-wrapper collapsed" : "category-nav-wrapper expanded";
 
@@ -189,16 +153,11 @@
             CloseUserMenu();
         }
 
-        if (collapseNavMenu)
-        {
-            activeCategory = null;
-        }
     }
 
     private void CollapseNavMenu()
     {
         collapseNavMenu = true;
-        activeCategory = null;
         CloseUserMenu();
     }
 
@@ -234,31 +193,6 @@
     }
 
 
-    private void OnCategoryPointerEnter(string categoryName)
-    {
-        activeCategory = categoryName;
-    }
-
-    private void OnCategoryPointerLeave()
-    {
-        activeCategory = null;
-    }
-
-    private void OnCategoryClick(string categoryName)
-    {
-        if (string.Equals(activeCategory, categoryName, StringComparison.OrdinalIgnoreCase))
-        {
-            activeCategory = null;
-        }
-        else
-        {
-            activeCategory = categoryName;
-        }
-    }
-
-    private bool IsCategoryActive(string categoryName)
-        => string.Equals(activeCategory, categoryName, StringComparison.OrdinalIgnoreCase);
-
     [Inject]
     private AuthenticationStateProvider AuthStateProvider { get; set; } = default!;
 
@@ -280,14 +214,11 @@
                 .AsNoTracking()
                 .OrderBy(c => c.Nome)
                 .ToListAsync();
-            
-            _categoriaIdsPorNome = _categorias.ToDictionary(c => c.Nome, c => c.Id);
         }
         catch
         {
             // Se houver erro ao carregar categorias, mantém lista vazia
             _categorias = Array.Empty<Category>();
-            _categoriaIdsPorNome = new Dictionary<string, int>();
         }
     }
 
@@ -433,29 +364,10 @@
         return firstName;
     }
 
-    private string GetCategoryUrl(string categoryName, string? subcategory = null)
+    private void IrParaCategoria(int categoriaId)
     {
-        // Redirecionar para /produtos com filtro de categoria
-        if (string.IsNullOrEmpty(subcategory))
-        {
-            // Buscar o ID da categoria principal no banco
-            if (_categoriaIdsPorNome.TryGetValue(categoryName, out var categoriaId))
-            {
-                return $"/produtos?categoria={categoriaId}";
-            }
-            // Se não encontrar a categoria, retorna para produtos sem filtro
-            return "/produtos";
-        }
-
-        // Para subcategorias, buscar o ID da subcategoria no banco e aplicar como filtro
-        if (_categoriaIdsPorNome.TryGetValue(subcategory, out var subcategoriaId))
-        {
-            return $"/produtos?categoria={subcategoriaId}";
-        }
-
-        // Se não encontrar a subcategoria no banco, usar como busca
-        var subcategoriaEscapada = Uri.EscapeDataString(subcategory);
-        return $"/produtos?search={subcategoriaEscapada}";
+        CollapseNavMenu();
+        Navigation.NavigateTo($"/produtos?categoria={categoriaId}", forceLoad: false);
     }
 
     private void SubmitHeaderSearch()
@@ -482,36 +394,4 @@
         }
     }
 
-    private static string ToSlug(string text)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return string.Empty;
-        }
-
-        var normalized = text.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
-        var builder = new StringBuilder();
-
-        foreach (var c in normalized)
-        {
-            var category = CharUnicodeInfo.GetUnicodeCategory(c);
-            if (category == UnicodeCategory.NonSpacingMark)
-            {
-                continue;
-            }
-
-            if (char.IsLetterOrDigit(c))
-            {
-                builder.Append(c);
-            }
-            else if (builder.Length > 0 && builder[^1] != '-')
-            {
-                builder.Append('-');
-            }
-        }
-
-        return builder.ToString().Trim('-');
-    }
-
-    private sealed record CategoryMenuItem(string Name, IReadOnlyList<string> Subcategories);
 }

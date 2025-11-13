@@ -1,0 +1,363 @@
+@using System.ComponentModel.DataAnnotations
+@using System.Linq
+@using System.Globalization
+@using System.IO
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Forms
+@using MudBlazor
+@inject ICategoryService CategoryService
+@inject IImageUploadService ImageUploadService
+@inject ILogger<ProductDialog> Logger
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" Model="_model">
+            <MudGrid Spacing="3">
+                <MudItem xs="12" md="8">
+                    <MudStack Spacing="3">
+                        <MudTextField @bind-Value="_model.Nome"
+                                      For="@(() => _model.Nome)"
+                                      Label="Nome"
+                                      Required="true"
+                                      Immediate="true"
+                                      MaxLength="150"
+                                      Variant="Variant.Outlined" />
+
+                        <MudTextField @bind-Value="_model.Descricao"
+                                      For="@(() => _model.Descricao)"
+                                      Label="Descrição"
+                                      Placeholder="Detalhes do produto"
+                                      Variant="Variant.Outlined"
+                                      Lines="5"
+                                      MaxLength="2000" />
+
+                        <MudGrid Spacing="2">
+                            <MudItem xs="12" md="6">
+                                <MudNumericField T="decimal"
+                                                 @bind-Value="_model.Preco"
+                                                 For="@(() => _model.Preco)"
+                                                 Label="Preço"
+                                                 Variant="Variant.Outlined"
+                                                 Immediate="true"
+                                                 Culture="@CulturaBrasileira"
+                                                 Format="N2"
+                                                 Adornment="Adornment.Start"
+                                                 AdornmentText="R$"
+                                                 Required="true"
+                                                 HideSpinButtons="true"
+                                                 @attributes="_selectOnFocusAttributes" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudNumericField T="int"
+                                                 @bind-Value="_model.Estoque"
+                                                 For="@(() => _model.Estoque)"
+                                                 Label="Estoque"
+                                                 Variant="Variant.Outlined"
+                                                 Immediate="true"
+                                                 Min="0"
+                                                 Required="true"
+                                                 HideSpinButtons="true"
+                                                 @attributes="_selectOnFocusAttributes" />
+                            </MudItem>
+                        </MudGrid>
+
+                        <MudSelect T="int?"
+                                   @bind-Value="_model.CategoriaId"
+                                   For="@(() => _model.CategoriaId)"
+                                   Label="Categoria"
+                                   Variant="Variant.Outlined"
+                                   Required="true"
+                                   Dense="true">
+                            <MudSelectItem T="int?" Value="null">Selecione...</MudSelectItem>
+                            @foreach (var categoria in _categorias)
+                            {
+                                <MudSelectItem T="int?" Value="@categoria.Id">@categoria.Nome</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudStack>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.subtitle2">Imagem do Produto</MudText>
+                        @if (!string.IsNullOrWhiteSpace(_imagemPreview))
+                        {
+                            <MudPaper Class="pa-2">
+                                <img src="@_imagemPreview"
+                                     alt="Preview da imagem"
+                                     style="width: 100%; height: 200px; object-fit: cover; border-radius: 0.75rem;" />
+                            </MudPaper>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(_imagemAtual))
+                        {
+                            <MudPaper Class="pa-2">
+                                <img src="@_imagemAtual"
+                                     alt="Imagem atual"
+                                     style="width: 100%; height: 200px; object-fit: cover; border-radius: 0.75rem;" />
+                            </MudPaper>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Imagem atual do produto</MudText>
+                        }
+                        else
+                        {
+                            <MudPaper Class="pa-8 d-flex align-center justify-center" Outlined="true">
+                                <MudStack AlignItems="AlignItems.Center" Spacing="1">
+                                    <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Large" />
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Nenhuma imagem enviada</MudText>
+                                </MudStack>
+                            </MudPaper>
+                        }
+
+                        <MudPaper Class="pa-2" Outlined="true">
+                            <InputFile OnChange="HandleFileSelected"
+                                       accept="image/jpeg,image/png,image/webp"
+                                       class="w-100" />
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                Formatos aceitos: JPG, PNG, WEBP. Tamanho máximo: 5 MB.
+                            </MudText>
+                        </MudPaper>
+
+                        @if (!string.IsNullOrEmpty(_erroUpload))
+                        {
+                            <MudAlert Severity="Severity.Error" Variant="Variant.Filled">@_erroUpload</MudAlert>
+                        }
+                    </MudStack>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Secondary"
+                   Disabled="_salvando"
+                   OnClick="Cancelar">
+            Cancelar
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="_salvando"
+                   OnClick="Salvar">
+            @if (_salvando)
+            {
+                <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+                <span>Salvando...</span>
+            }
+            else
+            {
+                <span>Salvar</span>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private const long MaxFileSize = 5 * 1024 * 1024;
+    private static readonly CultureInfo CulturaBrasileira = new("pt-BR");
+
+    [Parameter]
+    public Product? Produto { get; set; }
+
+    [CascadingParameter]
+    private IMudDialogInstance? MudDialog { get; set; }
+
+    private MudForm? _form;
+    private readonly ProductDialogModel _model = new();
+    private readonly List<Category> _categorias = new();
+    private readonly Dictionary<string, object> _selectOnFocusAttributes = new()
+    {
+        ["onfocus"] = "this.select()"
+    };
+    private IBrowserFile? _arquivoSelecionado;
+    private string? _imagemPreview;
+    private string? _imagemAtual;
+    private string? _erroUpload;
+    private bool _salvando;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregarCategoriasAsync();
+
+        if (Produto is not null)
+        {
+            _model.Id = Produto.Id;
+            _model.Nome = Produto.Nome;
+            _model.Descricao = Produto.Descricao ?? string.Empty;
+            _model.Preco = Produto.Preco;
+            _model.Estoque = Produto.Estoque;
+            _model.CategoriaId = Produto.CategoriaId;
+            _imagemAtual = Produto.ImagemUrl;
+        }
+    }
+
+    private async Task CarregarCategoriasAsync()
+    {
+        try
+        {
+            var categorias = await CategoryService.ListarAsync();
+            _categorias.Clear();
+            _categorias.AddRange(categorias.OrderBy(c => c.Nome));
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Erro ao carregar categorias para o diálogo de produtos");
+        }
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        _arquivoSelecionado = null;
+        _erroUpload = null;
+
+        var file = e.File;
+        if (file is null)
+        {
+            _imagemPreview = _imagemAtual;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        if (file.Size > MaxFileSize)
+        {
+            _erroUpload = "Arquivo muito grande. Tamanho máximo permitido: 5 MB.";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        var extensoesPermitidas = new[] { "image/jpeg", "image/jpg", "image/png", "image/webp" };
+        if (!extensoesPermitidas.Contains(file.ContentType))
+        {
+            _erroUpload = "Formato de arquivo inválido. Utilize JPG, PNG ou WEBP.";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        _arquivoSelecionado = file;
+
+        try
+        {
+            _imagemPreview = await GerarPreviewAsync(file);
+            _imagemAtual = null;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Erro ao gerar preview da imagem");
+            _erroUpload = "Não foi possível gerar o preview da imagem.";
+            _imagemPreview = _imagemAtual;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Salvar()
+    {
+        if (_form is null)
+        {
+            return;
+        }
+
+        _salvando = true;
+        await _form.Validate();
+
+        if (!_form.IsValid)
+        {
+            _salvando = false;
+            return;
+        }
+
+        if (!_model.CategoriaId.HasValue)
+        {
+            _salvando = false;
+            return;
+        }
+
+        try
+        {
+            string? imagemUrl = _imagemAtual;
+
+            if (_arquivoSelecionado is not null)
+            {
+                try
+                {
+                    await using var stream = _arquivoSelecionado.OpenReadStream(MaxFileSize);
+                    var caminhoImagem = await ImageUploadService.UploadProductImageAsync(
+                        stream,
+                        _arquivoSelecionado.Name,
+                        _arquivoSelecionado.Size);
+
+                    if (string.IsNullOrWhiteSpace(caminhoImagem))
+                    {
+                        _erroUpload = "Erro ao enviar a imagem. Tente novamente.";
+                        _salvando = false;
+                        return;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(_imagemAtual))
+                    {
+                        await ImageUploadService.DeleteProductImageAsync(_imagemAtual);
+                    }
+
+                    imagemUrl = caminhoImagem;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Falha ao fazer upload da imagem");
+                    _erroUpload = $"Erro ao enviar a imagem: {ex.Message}";
+                    _salvando = false;
+                    return;
+                }
+            }
+
+            var produto = new Product
+            {
+                Id = _model.Id ?? 0,
+                Nome = _model.Nome.Trim(),
+                Descricao = string.IsNullOrWhiteSpace(_model.Descricao) ? null : _model.Descricao.Trim(),
+                Preco = _model.Preco,
+                Estoque = _model.Estoque,
+                CategoriaId = _model.CategoriaId.Value,
+                ImagemUrl = imagemUrl
+            };
+
+            MudDialog?.Close(DialogResult.Ok(produto));
+        }
+        finally
+        {
+            _salvando = false;
+        }
+    }
+
+    private void Cancelar()
+        => MudDialog?.Cancel();
+
+    private sealed class ProductDialogModel
+    {
+        public int? Id { get; set; }
+
+        [Required(ErrorMessage = "O nome é obrigatório")]
+        [StringLength(150, ErrorMessage = "O nome deve ter no máximo 150 caracteres")]
+        public string Nome { get; set; } = string.Empty;
+
+        [StringLength(2000, ErrorMessage = "A descrição deve ter no máximo 2000 caracteres")]
+        public string? Descricao { get; set; }
+
+        [Required(ErrorMessage = "O preço é obrigatório")]
+        [Range(typeof(decimal), "0,01", "9999999", ErrorMessage = "Informe um preço válido")]
+        public decimal Preco { get; set; } = 0m;
+
+        [Required(ErrorMessage = "O estoque é obrigatório")]
+        [Range(0, int.MaxValue, ErrorMessage = "O estoque deve ser maior ou igual a 0")]
+        public int Estoque { get; set; } = 0;
+
+        [Required(ErrorMessage = "Selecione uma categoria válida")]
+        public int? CategoriaId { get; set; }
+    }
+
+    private static async Task<string> GerarPreviewAsync(IBrowserFile file)
+    {
+        await using var stream = file.OpenReadStream(MaxFileSize);
+        using var memoryStream = new MemoryStream();
+        await stream.CopyToAsync(memoryStream);
+        var base64 = Convert.ToBase64String(memoryStream.ToArray());
+        return $"data:{file.ContentType};base64,{base64}";
+    }
+}
+
