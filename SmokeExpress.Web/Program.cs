@@ -173,7 +173,10 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// Endpoints de API
 app.MapAccountEndpoints();
+app.MapProductEndpoints();
+app.MapOrderEndpoints();
 
 app.MapGet("/antiforgery/token", (IAntiforgery antiforgery, HttpContext httpContext) =>
     {

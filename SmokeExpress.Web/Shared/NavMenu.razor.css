@@ -214,6 +214,14 @@
     border-radius: 0;
 }
 
+.user-dropdown-menu .dropdown-item.active,
+.user-dropdown-menu .dropdown-item.active:focus,
+.user-dropdown-menu .dropdown-item.active:hover {
+    background: transparent;
+    color: #0f5132;
+    font-weight: 600;
+}
+
 .user-dropdown-menu .dropdown-item:hover {
     background: rgba(27, 119, 77, 0.08);
     color: #0f5132;
