@@ -2,15 +2,386 @@
 
 @using Microsoft.AspNetCore.Components.Web
 @using SmokeExpress.Web.Shared.Components
+@using SmokeExpress.Web.Models
+@using SmokeExpress.Web.Services
+@using MudBlazor
+
+@inject IProductService ProductService
+@inject IReviewService ReviewService
+@inject NavigationManager Navigation
 
 @* Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto *@
 
 <PageTitle>Smoke Express</PageTitle>
 
-<div class="home-page">
-    <HeroCarousel />
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="home-page">
+    <!-- Hero / Banner principal -->
+    <section class="home-hero">
+        <MudPaper Class="home-section-card" Elevation="1" Style="margin-bottom: 1rem; padding: 4rem;">
+            <div class="home-hero-inner">
+                <div class="home-hero-content">
+                    <MudChip T="string" Color="Color.Secondary" Size="Size.Small" Class="home-hero-chip">
+                        Loja online de confiança
+                    </MudChip>
+                    <MudText Typo="Typo.h3" Class="home-hero-title">
+                        Tudo para a sua experiência premium de fumo em um só lugar.
+                    </MudText>
+                    <MudText Typo="Typo.subtitle1" Class="home-hero-subtitle">
+                        Produtos selecionados, envio rápido e embalagens discretas. Compre seus artigos de tabacaria
+                        acessórios e muito mais sem sair de casa.
+                    </MudText>
 
-    <StoreHighlights />
+                    <div class="home-hero-actions">
 
-    <SecurePaymentSection />
-</div>
+                        <MudButton Color="Color.Primary"
+                                   Variant="Variant.Outlined"
+                                   Size="Size.Large"
+                                   StartIcon="@Icons.Material.Filled.Storefront"
+                                   OnClick="@(() => Navigation.NavigateTo("/produtos"))">
+                            Ver todos os produtos
+                        </MudButton>
+                    </div>
+
+                    <div class="home-hero-badges">
+                        <div class="home-hero-badge">
+                            <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Color="Color.Primary" />
+                            <span>Entrega rápida e discreta</span>
+                        </div>
+                        <div class="home-hero-badge">
+                            <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Color="Color.Primary" />
+                            <span>Produtos 100% originais</span>
+                        </div>
+                        <div class="home-hero-badge">
+                            <MudIcon Icon="@Icons.Material.Filled.Lock" Color="Color.Primary" />
+                            <span>Pagamento seguro</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="home-hero-banner">
+                    <div class="home-hero-banner-content">
+                        <MudText Typo="Typo.overline" Class="home-hero-banner-label">
+                            Promoção especial
+                        </MudText>
+                        <MudText Typo="Typo.h4" Class="home-hero-banner-title">
+                            Semana da Black Smoke
+                        </MudText>
+                        <MudText Typo="Typo.subtitle2" Class="home-hero-banner-subtitle">
+                            Até 30% OFF em produtos de tabacaria.
+                        </MudText>
+                        <MudText Typo="Typo.caption" Class="home-hero-banner-caption">
+                            Válido até domingo ou enquanto durarem os estoques.
+                        </MudText>
+                    </div>
+                </div>
+            </div>
+        </MudPaper>
+    </section>
+
+    <!-- Benefícios rápidos -->
+    <section class="home-benefits">
+        <MudPaper Class="home-section-card" Elevation="1" Style="margin-bottom: 2rem; padding: 2rem 4rem;">
+            <MudGrid GutterBottom="true" Spacing="3">
+                <MudItem xs="12" md="4">
+                    <MudPaper Class="home-benefit-card" Elevation="1">
+                        <MudIcon Icon="@Icons.Material.Filled.ThumbUp" Color="Color.Primary" Size="Size.Large" />
+                        <MudText Typo="Typo.h6">Curadoria premium</MudText>
+                        <MudText Typo="Typo.body2">
+                            Marcas confiáveis e produtos com alto padrão de qualidade, testados pelos
+                            especialistas da Smoke Express.
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudPaper Class="home-benefit-card" Elevation="1">
+                        <MudIcon Icon="@Icons.Material.Filled.Schedule" Color="Color.Primary" Size="Size.Large" />
+                        <MudText Typo="Typo.h6">Envio no mesmo dia</MudText>
+                        <MudText Typo="Typo.body2">
+                            Pedidos aprovados até as 16h são postados no mesmo dia útil, para você aproveitar o quanto antes.
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudPaper Class="home-benefit-card" Elevation="1">
+                        <MudIcon Icon="@Icons.Material.Filled.SupportAgent" Color="Color.Primary" Size="Size.Large" />
+                        <MudText Typo="Typo.h6">Atendimento humano</MudText>
+                        <MudText Typo="Typo.body2">
+                            Nossa equipe está sempre pronta para te ajudar a escolher o produto perfeito para o seu momento.
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </section>
+
+    <!-- Produtos em destaque -->
+    <section class="home-featured-products">
+        <MudPaper Class="home-section-card" Elevation="1" Style="margin-bottom: 3rem; padding: 2rem 4rem;">
+            <div class="home-section-header">
+                <MudText Typo="Typo.h5">
+                    Escolhas favoritas da nossa comunidade
+                </MudText>
+                <MudText Typo="Typo.body2" Class="home-section-subtitle">
+                    Veja alguns dos produtos mais amados pelos clientes da Smoke Express.
+                </MudText>
+            </div>
+
+            @if (!string.IsNullOrEmpty(_erroProdutosDestaque))
+            {
+                <MudAlert Severity="Severity.Error" Class="mb-4">
+                    @_erroProdutosDestaque
+                </MudAlert>
+            }
+            else if (_carregandoProdutosDestaque)
+            {
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-2" />
+                <MudText Typo="Typo.body2">Carregando produtos em destaque...</MudText>
+            }
+            else if (_produtosDestaque.Count == 0)
+            {
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    Ainda não há produtos cadastrados para exibição, mas em breve você verá novidades por aqui.
+                </MudText>
+            }
+            else
+            {
+                <MudGrid Spacing="3">
+                    @foreach (var produto in _produtosDestaque)
+                    {
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudCard Elevation="2"
+                                     Class="home-product-card"
+                                     Style="cursor: pointer;"
+                                     OnClick="@(() => Navigation.NavigateTo($"/produtos/{produto.Id}"))">
+                                @if (!string.IsNullOrWhiteSpace(produto.ImagemUrl))
+                                {
+                                    <div class="home-product-image-wrapper">
+                                        <img src="@produto.ImagemUrl"
+                                             alt="@produto.Nome"
+                                             class="home-product-image" />
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="home-product-image-placeholder">
+                                        <MudIcon Icon="@Icons.Material.Filled.Image"
+                                                 Size="Size.Large"
+                                                 Color="Color.Default" />
+                                    </div>
+                                }
+
+                                <MudCardContent>
+                                    <MudStack Spacing="2">
+                                        <MudText Typo="Typo.subtitle1" Class="mb-0">
+                                            @produto.Nome
+                                        </MudText>
+
+                                        @if (!string.IsNullOrWhiteSpace(produto.Categoria?.Nome))
+                                        {
+                                            <MudChip T="string"
+                                                     Size="Size.Small"
+                                                     Color="Color.Secondary"
+                                                     Variant="Variant.Outlined">
+                                                @produto.Categoria!.Nome
+                                            </MudChip>
+                                        }
+
+                                        @if (_mediasAvaliacoesDestaque.TryGetValue(produto.Id, out var mediaAvaliacao) && mediaAvaliacao.HasValue)
+                                        {
+                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                                <RatingDisplay Rating="@mediaAvaliacao" StarSize="1rem" />
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary" Style="font-size: 0.875rem;">
+                                                    (@mediaAvaliacao.Value.ToString("F1"))
+                                                </MudText>
+                                            </MudStack>
+                                        }
+
+                                        <MudText Typo="Typo.body2"
+                                                 Class="text-muted home-product-description">
+                                            @ObterResumo(produto.Descricao)
+                                        </MudText>
+
+                                        <MudDivider />
+
+                                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                            <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-0">
+                                                @produto.Preco.ToString("C")
+                                            </MudText>
+
+                                            @if (produto.Estoque > 0)
+                                            {
+                                                <MudChip T="string"
+                                                         Size="Size.Small"
+                                                         Color="Color.Success"
+                                                         Variant="Variant.Filled">
+                                                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle"
+                                                             Size="Size.Small"
+                                                             Class="mr-1" />
+                                                    Em estoque
+                                                </MudChip>
+                                            }
+                                            else
+                                            {
+                                                <MudChip T="string"
+                                                         Size="Size.Small"
+                                                         Color="Color.Error"
+                                                         Variant="Variant.Filled">
+                                                    <MudIcon Icon="@Icons.Material.Filled.Cancel"
+                                                             Size="Size.Small"
+                                                             Class="mr-1" />
+                                                    Sem estoque
+                                                </MudChip>
+                                            }
+                                        </MudStack>
+
+                                        <MudButton Variant="Variant.Filled"
+                                                   Color="Color.Primary"
+                                                   FullWidth="true"
+                                                   StartIcon="@Icons.Material.Filled.Visibility"
+                                                   OnClick="@(() => Navigation.NavigateTo($"/produtos/{produto.Id}"))">
+                                            Ver detalhes
+                                        </MudButton>
+                                    </MudStack>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+                    }
+                </MudGrid>
+
+                <div class="home-featured-footer">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               EndIcon="@Icons.Material.Filled.ArrowForward"
+                               OnClick="@(() => Navigation.NavigateTo("/produtos"))">
+                        Ver todos os produtos
+                    </MudButton>
+                </div>
+            }
+        </MudPaper>
+    </section>
+
+    <!-- Depoimentos fictícios -->
+    <section class="home-testimonials">
+        <MudPaper Class="home-section-card" Elevation="1" Style="margin-bottom: 2rem; padding: 2rem 4rem;">
+            <div class="home-section-header">
+                <MudText Typo="Typo.overline" Color="Color.Secondary">
+                    Feedbacks da comunidade
+                </MudText>
+                <MudText Typo="Typo.h5">
+                    Quem compra com a Smoke Express recomenda
+                </MudText>
+                <MudText Typo="Typo.body2" Class="home-section-subtitle">
+                    Depoimentos fictícios para ilustrar a experiência que queremos entregar para cada pedido.
+                </MudText>
+            </div>
+
+            <MudGrid Spacing="3">
+                <MudItem xs="12" md="4">
+                    <MudPaper Class="home-testimonial-card" Elevation="1">
+                        <MudStack Spacing="1">
+                            <RatingDisplay Rating="@(5m)" StarSize="1.1rem" />
+                            <MudText Typo="Typo.body1">
+                                “Entrega super rápida, pacote discreto e tudo muito bem embalado. Virou minha loja
+                                de confiança.”
+                            </MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                João, 28 anos - São Paulo/SP
+                            </MudText>
+                        </MudStack>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudPaper Class="home-testimonial-card" Elevation="1">
+                        <MudStack Spacing="1">
+                            <RatingDisplay Rating="@(4.5m)" StarSize="1.1rem" />
+                            <MudText Typo="Typo.body1">
+                                “Achei vários sabores que não encontro nas lojas físicas aqui perto. Atendimento pelo
+                                chat foi excelente.”
+                            </MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                Beatriz, 24 anos - Campinas/SP
+                            </MudText>
+                        </MudStack>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudPaper Class="home-testimonial-card" Elevation="1">
+                        <MudStack Spacing="1">
+                            <RatingDisplay Rating="@(5m)" StarSize="1.1rem" />
+                            <MudText Typo="Typo.body1">
+                                “Gostei da transparência sobre estoque e prazo de entrega. Tudo chegou no tempo
+                                certo e em perfeito estado.”
+                            </MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                Rafael, 31 anos - Santo André/SP
+                            </MudText>
+                        </MudStack>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </section>
+
+    <!-- Rodapé informativo da home -->
+    <section class="home-info">
+        <MudPaper Class="home-section-card home-info-card" Elevation="0">
+            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                Smoke Express é um projeto acadêmico fictício, criado para fins de estudo e demonstração.
+                Nenhum pedido realizado aqui é real e nenhum produto é de fato comercializado.
+            </MudText>
+        </MudPaper>
+    </section>
+</MudContainer>
+
+@code {
+    private IReadOnlyCollection<Product> _produtosDestaque = Array.Empty<Product>();
+    private Dictionary<int, decimal?> _mediasAvaliacoesDestaque = new();
+    private bool _carregandoProdutosDestaque = true;
+    private string? _erroProdutosDestaque;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregarProdutosDestaqueAsync();
+    }
+
+    private async Task CarregarProdutosDestaqueAsync()
+    {
+        _carregandoProdutosDestaque = true;
+        _erroProdutosDestaque = null;
+
+        try
+        {
+            var resultado = await ProductService.ListarPaginadoAsync(pageNumber: 1, pageSize: 4);
+            _produtosDestaque = resultado.Items;
+
+            if (_produtosDestaque.Count > 0)
+            {
+                var ids = _produtosDestaque.Select(p => p.Id).ToList();
+                _mediasAvaliacoesDestaque = await ReviewService.ObterMediasAvaliacoesPorProdutosAsync(ids);
+            }
+        }
+        catch (Exception ex)
+        {
+            _erroProdutosDestaque = $"Não foi possível carregar os produtos em destaque: {ex.Message}";
+        }
+        finally
+        {
+            _carregandoProdutosDestaque = false;
+        }
+    }
+
+    private static string ObterResumo(string? descricao)
+    {
+        if (string.IsNullOrWhiteSpace(descricao))
+        {
+            return "Produto premium da Smoke Express.";
+        }
+
+        var textoPlano = descricao.Replace("<", " ").Replace(">", " ");
+        return textoPlano.Length > 120
+            ? textoPlano[..120] + "..."
+            : textoPlano;
+    }
+}

@@ -21,51 +21,30 @@
         <MudExpansionPanels MultiExpansion="false" Class="mb-2">
                 <MudExpansionPanel Text="Filtros de Busca" Icon="@Icons.Material.Filled.FilterList" isExpanded="@_filtrosExpandidos">
                     <MudGrid Spacing="3">
-                        <!-- Busca e Categoria -->
-                        <MudItem xs="12" md="6">
-                            <MudTextField @bind-Value="_filtros.TermoBusca" 
-                                        Label="Buscar produtos" 
-                                        variant="Variant.Outlined"
-                                        Adornment="Adornment.Start"
-                                        AdornmentIcon="@Icons.Material.Filled.Search"
-                                        Placeholder="Digite o nome ou descrição..."
-                                        @onkeypress="HandleSearchKeyPress"
-                                        Immediate="false" />
-                        </MudItem>
-                        <MudItem xs="12" md="6">
-                            <MudSelect @bind-Value="_filtros.CategoriaId" 
-                                     Label="Categoria" 
-                                     variant="Variant.Outlined"
-                                     T="int?"
-                                     Clearable="true">
-                                <MudSelectItem T="int?" Value="@((int?)null)">Todas as categorias</MudSelectItem>
-                                @foreach (var categoria in _categorias)
-                                {
-                                    <MudSelectItem T="int?" Value="@((int?)categoria.Id)">@categoria.Nome</MudSelectItem>
-                                }
-                            </MudSelect>
-                        </MudItem>
-
                         <!-- Faixa de Preço -->
                         <MudItem xs="12" md="6">
-                            <MudNumericField @bind-Value="_filtros.PrecoMin" 
-                                            Label="Preço Mínimo" 
-                                            variant="Variant.Outlined"
-                                            Adornment="Adornment.Start"
-                                            AdornmentIcon="@Icons.Material.Filled.AttachMoney"
-                                            Min="0"
-                                            Format="C"
-                                            HelperText="Deixe em branco para sem limite" />
+                            <MudNumericField @bind-Value="_filtros.PrecoMin"
+                                             Label="Preço Mínimo"
+                                             variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             Dense="true"
+                                             Adornment="Adornment.Start"
+                                             AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                             Min="0"
+                                             Format="C"
+                                             HelperText="Deixe em branco para sem limite" />
                         </MudItem>
                         <MudItem xs="12" md="6">
-                            <MudNumericField @bind-Value="_filtros.PrecoMax" 
-                                            Label="Preço Máximo" 
-                                            variant="Variant.Outlined"
-                                            Adornment="Adornment.Start"
-                                            AdornmentIcon="@Icons.Material.Filled.AttachMoney"
-                                            Min="0"
-                                            Format="C"
-                                            HelperText="Deixe em branco para sem limite" />
+                            <MudNumericField @bind-Value="_filtros.PrecoMax"
+                                             Label="Preço Máximo"
+                                             variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             Dense="true"
+                                             Adornment="Adornment.Start"
+                                             AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                             Min="0"
+                                             Format="C"
+                                             HelperText="Deixe em branco para sem limite" />
                         </MudItem>
 
                         <!-- Estoque e Ordenação -->
@@ -76,10 +55,12 @@
                                      Class="mt-4" />
                         </MudItem>
                         <MudItem xs="12" md="6">
-                            <MudSelect @bind-Value="_filtros.Ordenacao" 
-                                     Label="Ordenar por" 
-                                     variant="Variant.Outlined"
-                                     T="ProductSortOrder">
+                            <MudSelect @bind-Value="_filtros.Ordenacao"
+                                       Label="Ordenar por"
+                                       variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                       Dense="true"
+                                       T="ProductSortOrder">
                                 <MudSelectItem Value="@ProductSortOrder.Nome">
                                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                         <MudIcon Icon="@Icons.Material.Filled.SortByAlpha" Size="Size.Small" />
@@ -120,7 +101,7 @@
                                           Color="Color.Default"
                                           StartIcon="@Icons.Material.Filled.Clear"
                                           onClick="LimparFiltros"
-                                          Disabled="@TemFiltrosAtivos()">
+                                          Disabled="@(!TemFiltrosAtivos())">
                                     Limpar Filtros
                                 </MudButton>
                                 <MudButton variant="Variant.Filled" 
@@ -149,10 +130,27 @@
                     }
                     @if (_filtros.CategoriaId.HasValue)
                     {
-                        var categoriaNome = _categorias.FirstOrDefault(c => c.Id == _filtros.CategoriaId.Value)?.Nome ?? "Categoria";
-                        <MudChip T="string" Size="Size.Small" Color="Color.Secondary" onClose="@(() => { _filtros.CategoriaId = null; AplicarFiltros(); })">
-                            @categoriaNome
-                        </MudChip>
+                        string? categoriaNome = null;
+
+                        var categoria = _categorias.FirstOrDefault(c => c.Id == _filtros.CategoriaId.Value);
+                        if (categoria is not null)
+                        {
+                            categoriaNome = categoria.Nome;
+                        }
+                        else if (_resultado?.Items is not null)
+                        {
+                            var produtoComCategoria = _resultado.Items
+                                .FirstOrDefault(p => p.CategoriaId == _filtros.CategoriaId.Value
+                                                     || (p.Categoria != null && p.Categoria.Id == _filtros.CategoriaId.Value));
+                            categoriaNome = produtoComCategoria?.Categoria?.Nome;
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(categoriaNome))
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Secondary" onClose="@(() => { _filtros.CategoriaId = null; AplicarFiltros(); })">
+                                Categoria: @categoriaNome
+                            </MudChip>
+                        }
                     }
                     @if (_filtros.PrecoMin.HasValue)
                     {
@@ -339,7 +337,6 @@
     protected override async Task OnInitializedAsync()
     {
         await CarregarCategoriasAsync();
-        await CarregarProdutosAsync();
     }
 
     protected override async Task OnParametersSetAsync()
@@ -375,11 +372,7 @@
         // Expandir filtros se houver algum ativo
         _filtrosExpandidos = TemFiltrosAtivos();
 
-        if (PageQuery.HasValue || SearchQuery != null || CategoriaQuery.HasValue || 
-            PrecoMinQuery.HasValue || PrecoMaxQuery.HasValue || EstoqueQuery.HasValue || !string.IsNullOrWhiteSpace(OrdenacaoQuery))
-        {
-            await CarregarProdutosAsync();
-        }
+        await CarregarProdutosAsync();
     }
 
     private async Task CarregarCategoriasAsync()
