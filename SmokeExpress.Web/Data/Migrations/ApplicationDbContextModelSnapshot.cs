@@ -47,6 +47,22 @@ namespace SmokeExpress.Web.Data.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "c1c4c1c5-d9c1-46d0-a242-6d4832f758fd",
+                            ConcurrencyStamp = "a79a2da7-61fc-402f-9c5a-7b2af970eada",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "5f0f43f2-6ae6-4b8e-93d8-acff54f9b89a",
+                            ConcurrencyStamp = "be3fda52-8c88-4f0a-9120-a317b9e9e3bb",
+                            Name = "User",
+                            NormalizedName = "USER"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -136,6 +152,18 @@ namespace SmokeExpress.Web.Data.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = "a8c0d5f5-5c6b-4fba-8825-8dc28c166a51",
+                            RoleId = "c1c4c1c5-d9c1-46d0-a242-6d4832f758fd"
+                        },
+                        new
+                        {
+                            UserId = "a8c0d5f5-5c6b-4fba-8825-8dc28c166a51",
+                            RoleId = "5f0f43f2-6ae6-4b8e-93d8-acff54f9b89a"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -323,6 +351,34 @@ namespace SmokeExpress.Web.Data.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "a8c0d5f5-5c6b-4fba-8825-8dc28c166a51",
+                            AccessFailedCount = 0,
+                            Bairro = "Centro",
+                            Cidade = "São Paulo",
+                            ConcurrencyStamp = "6ba93fc8-6631-4e0d-a37f-d3095fe3f81d",
+                            ConsentiuMarketing = false,
+                            DataNascimento = new DateTime(1990, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DocumentoFiscal = "12345678901",
+                            Email = "admin@smokeexpress.com",
+                            EmailConfirmed = true,
+                            LockoutEnabled = true,
+                            NomeCompleto = "Administrador Smoke Express",
+                            NormalizedEmail = "ADMIN@SMOKEEXPRESS.COM",
+                            NormalizedUserName = "ADMIN@SMOKEEXPRESS.COM",
+                            Numero = "1000",
+                            PasswordHash = "$2a$11$Xauk1xFDGHsoG1B3vBcsHOzklVT1Ahn8ULHMaJIerLR6j5KhBT.lG",
+                            PhoneNumberConfirmed = false,
+                            Rua = "Avenida Central",
+                            SecurityStamp = "2c80a39d-7a62-4c1f-95a5-3f8a61d557f6",
+                            TermosAceitosEm = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            TipoCliente = "PF",
+                            TwoFactorEnabled = false,
+                            UserName = "admin@smokeexpress.com"
+                        });
                 });
 
             modelBuilder.Entity("SmokeExpress.Web.Models.Category", b =>

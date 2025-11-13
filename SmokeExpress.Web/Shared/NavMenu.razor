@@ -22,16 +22,24 @@
             <a class="brand-link" href="">Smoke Express</a>
         </div>
 
+        <div class="header-search" role="search">
+            <span class="oi oi-magnifying-glass search-icon" aria-hidden="true"></span>
+            <input class="search-input"
+                   type="search"
+                   placeholder="Buscar produtos, categorias ou marcas..."
+                   @bind="headerSearchTerm"
+                   @bind:event="oninput"
+                   @onkeydown="HandleHeaderSearchKeyDown"
+                   aria-label="Buscar produtos" />
+            <button type="button"
+                    class="search-button"
+                    @onclick="SubmitHeaderSearch"
+                    aria-label="Executar busca">
+                Buscar
+            </button>
+        </div>
+
         <div class="header-actions">
-            <MudButton Variant="Variant.Filled" 
-                      Color="Color.Primary" 
-                      Href="/produtos"
-                      StartIcon="@Icons.Material.Filled.Store"
-                      Size="Size.Medium"
-                      Class="header-products-button"
-                      OnClick="CollapseNavMenu">
-                Ver Todos os Produtos
-            </MudButton>
             <a class="cart-button" href="/checkout" @onclick="CollapseNavMenu">
                 <span class="oi oi-cart" aria-hidden="true"></span>
                 <span class="cart-label">Carrinho</span>
@@ -40,7 +48,10 @@
 
             <AuthorizeView>
                 <Authorized Context="auth">
-                    @{ var effectiveName = currentUserDisplayName ?? GetDisplayName(auth.User); }
+                    @{ 
+                        var effectiveName = currentUserDisplayName ?? GetDisplayName(auth.User);
+                        var firstNameForDisplay = GetFirstNameForDisplay(effectiveName);
+                    }
                     <div class="dropdown user-dropdown @(isUserMenuOpen ? "show" : string.Empty)"
                          @onfocusin="HandleUserMenuFocusIn"
                          @onfocusout="HandleUserMenuFocusOut">
@@ -53,7 +64,7 @@
                                 @onblur="HandleUserMenuBlur"
                                 @onfocus="HandleUserMenuFocusIn">
                             <span class="oi oi-person" aria-hidden="true"></span>
-                            <span class="user-name">Olá, @effectiveName</span>
+                            <span class="user-name">Olá, @firstNameForDisplay</span>
                         </button>
                         <div class="dropdown-menu user-dropdown-menu @(isUserMenuOpen ? "show" : string.Empty)"
                              tabindex="-1"
@@ -151,6 +162,7 @@
     private AuthenticationState? cachedAuthState;
     private CancellationTokenSource? userMenuCloseCts;
     private string? activeCategory;
+    private string headerSearchTerm = string.Empty;
     private IReadOnlyList<Category> _categorias = Array.Empty<Category>();
     private Dictionary<string, int> _categoriaIdsPorNome = new();
 
@@ -402,6 +414,25 @@
         return "Usuário";
     }
 
+    private static string GetFirstNameForDisplay(string? fullName)
+    {
+        if (string.IsNullOrWhiteSpace(fullName))
+        {
+            return "Usuário";
+        }
+
+        // Extrair apenas o primeiro nome (antes do primeiro espaço)
+        var firstName = fullName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? fullName.Trim();
+        
+        // Limitar a 16 caracteres
+        if (firstName.Length > 16)
+        {
+            return firstName[..16];
+        }
+
+        return firstName;
+    }
+
     private string GetCategoryUrl(string categoryName, string? subcategory = null)
     {
         // Redirecionar para /produtos com filtro de categoria
@@ -425,6 +456,30 @@
         // Se não encontrar a subcategoria no banco, usar como busca
         var subcategoriaEscapada = Uri.EscapeDataString(subcategory);
         return $"/produtos?search={subcategoriaEscapada}";
+    }
+
+    private void SubmitHeaderSearch()
+    {
+        var termo = headerSearchTerm?.Trim();
+
+        CollapseNavMenu();
+
+        if (string.IsNullOrWhiteSpace(termo))
+        {
+            Navigation.NavigateTo("/produtos");
+            return;
+        }
+
+        var encoded = Uri.EscapeDataString(termo);
+        Navigation.NavigateTo($"/produtos?search={encoded}");
+    }
+
+    private void HandleHeaderSearchKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            SubmitHeaderSearch();
+        }
     }
 
     private static string ToSlug(string text)

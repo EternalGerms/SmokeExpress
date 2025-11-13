@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace SmokeExpress.Web.Data.Migrations
 {
     /// <inheritdoc />
@@ -93,6 +95,31 @@ namespace SmokeExpress.Web.Data.Migrations
                         name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
                         column: x => x.RoleId,
                         principalTable: "AspNetRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Addresses",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Rua = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Numero = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    Cidade = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Bairro = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Complemento = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    IsDefault = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Addresses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Addresses_AspNetUsers_ApplicationUserId",
+                        column: x => x.ApplicationUserId,
+                        principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -289,6 +316,70 @@ namespace SmokeExpress.Web.Data.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Reviews",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    OrderId = table.Column<int>(type: "int", nullable: true),
+                    Rating = table.Column<int>(type: "int", nullable: false),
+                    Comment = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    DataAvaliacao = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Reviews", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Reviews_AspNetUsers_ApplicationUserId",
+                        column: x => x.ApplicationUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Reviews_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Reviews_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[,]
+                {
+                    { "5f0f43f2-6ae6-4b8e-93d8-acff54f9b89a", "be3fda52-8c88-4f0a-9120-a317b9e9e3bb", "User", "USER" },
+                    { "c1c4c1c5-d9c1-46d0-a242-6d4832f758fd", "a79a2da7-61fc-402f-9c5a-7b2af970eada", "Admin", "ADMIN" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "AspNetUsers",
+                columns: new[] { "Id", "AccessFailedCount", "Bairro", "Cidade", "Complemento", "ConcurrencyStamp", "DataNascimento", "DocumentoFiscal", "Email", "EmailConfirmed", "Genero", "LockoutEnabled", "LockoutEnd", "NomeCompleto", "NormalizedEmail", "NormalizedUserName", "Numero", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "Rua", "SecurityStamp", "TermosAceitosEm", "TipoCliente", "TwoFactorEnabled", "UserName" },
+                values: new object[] { "a8c0d5f5-5c6b-4fba-8825-8dc28c166a51", 0, "Centro", "São Paulo", null, "6ba93fc8-6631-4e0d-a37f-d3095fe3f81d", new DateTime(1990, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "12345678901", "admin@smokeexpress.com", true, null, true, null, "Administrador Smoke Express", "ADMIN@SMOKEEXPRESS.COM", "ADMIN@SMOKEEXPRESS.COM", "1000", "$2a$11$Xauk1xFDGHsoG1B3vBcsHOzklVT1Ahn8ULHMaJIerLR6j5KhBT.lG", null, false, "Avenida Central", "2c80a39d-7a62-4c1f-95a5-3f8a61d557f6", new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "PF", false, "admin@smokeexpress.com" });
+
+            migrationBuilder.InsertData(
+                table: "AspNetUserRoles",
+                columns: new[] { "RoleId", "UserId" },
+                values: new object[,]
+                {
+                    { "5f0f43f2-6ae6-4b8e-93d8-acff54f9b89a", "a8c0d5f5-5c6b-4fba-8825-8dc28c166a51" },
+                    { "c1c4c1c5-d9c1-46d0-a242-6d4832f758fd", "a8c0d5f5-5c6b-4fba-8825-8dc28c166a51" }
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Addresses_ApplicationUserId_IsDefault",
+                table: "Addresses",
+                columns: new[] { "ApplicationUserId", "IsDefault" });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -364,11 +455,29 @@ namespace SmokeExpress.Web.Data.Migrations
                 table: "Referrals",
                 columns: new[] { "ReferrerUserId", "ReferredUserId" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reviews_ApplicationUserId",
+                table: "Reviews",
+                column: "ApplicationUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reviews_OrderId",
+                table: "Reviews",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reviews_ProductId",
+                table: "Reviews",
+                column: "ProductId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Addresses");
+
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
@@ -389,6 +498,9 @@ namespace SmokeExpress.Web.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Referrals");
+
+            migrationBuilder.DropTable(
+                name: "Reviews");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

@@ -1,18 +1,27 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
+using System.Linq;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
 using MudBlazor.Services;
 using SmokeExpress.Web.Data;
 using SmokeExpress.Web.Models;
+using SmokeExpress.Web.Middleware;
+using SmokeExpress.Web.Routing;
 using SmokeExpress.Web.Security;
 using SmokeExpress.Web.Services;
-using SmokeExpress.Web.Routing;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var isDevelopment = builder.Environment.IsDevelopment();
 
 // Configuração da conexão com o SQL Server
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -27,24 +36,34 @@ builder.Services
     .AddDefaultIdentity<ApplicationUser>(options =>
     {
         // Regras de segurança básicas para senhas e contas
-        options.SignIn.RequireConfirmedAccount = false;
+        options.SignIn.RequireConfirmedAccount = true;
         options.User.RequireUniqueEmail = true;
         options.Password.RequireDigit = true;
         options.Password.RequireLowercase = true;
-        options.Password.RequireUppercase = false;
-        options.Password.RequireNonAlphanumeric = false;
-        options.Password.RequiredLength = 8;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireNonAlphanumeric = true;
+        options.Password.RequiredLength = 10;
+        options.Password.RequiredUniqueChars = 4;
+        
+        // Configurações de lockout para prevenir ataques de força bruta
+        options.Lockout.AllowedForNewUsers = true;
+        options.Lockout.MaxFailedAccessAttempts = 5; // Bloqueia após 5 tentativas falhadas
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15); // Bloqueio por 15 minutos
     })
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddScoped<IPasswordHasher<ApplicationUser>, BcryptPasswordHasher>();
+builder.Services.AddMemoryCache();
+
+// Registrar o descritor de erros customizado em português
+builder.Services.AddScoped<IdentityErrorDescriber, PortugueseIdentityErrorDescriber>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
     // Garante cookies seguros e HttpOnly de acordo com o requisito
     options.Cookie.HttpOnly = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SecurePolicy = isDevelopment ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
     options.SlidingExpiration = true;
     options.Cookie.SameSite = SameSiteMode.Strict;
     options.LoginPath = "/account/login";
@@ -53,181 +72,104 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ReturnUrlParameter = "returnUrl";
 });
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddMudServices();
-builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddHttpClient();
 
-// Serviços de domínio
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("AuthEndpoints", context =>
+        RateLimitPartition.GetTokenBucketLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+            factory: _ => new TokenBucketRateLimiterOptions
+            {
+                TokenLimit = 10,
+                TokensPerPeriod = 10,
+                ReplenishmentPeriod = TimeSpan.FromMinutes(1),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+});
+
+// Configurar Antiforgery para proteção CSRF
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "RequestVerificationToken";
+    options.Cookie.Name = "__RequestVerificationToken";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = isDevelopment ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+});
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient();
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10 MB
+});
+
+builder.Services.AddMudServices();
+builder.Services.AddCascadingAuthenticationState();
+
+// Configurar HttpClient com handler de notificação de erros (se necessário no futuro)
+builder.Services.AddHttpClient("DefaultClient")
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler())
+    .AddHttpMessageHandler<ErrorNotificationHttpHandler>();
+
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<AntiforgeryTokenStore>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAddressService, AddressService>();
-builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IAgeVerificationService, AgeVerificationService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+
+// Serviço de notificação de erros
+builder.Services.AddScoped<IErrorNotificationService, ErrorNotificationService>();
+
+// Handler HTTP para notificação de erros
+builder.Services.AddScoped<ErrorNotificationHttpHandler>();
 
 var app = builder.Build();
 
-// Seed inicial: criar roles e usuário administrador
-try
+// Executar migrações pendentes automaticamente (com proteção para bancos já provisionados manualmente)
+using (var scope = app.Services.CreateScope())
 {
-    using (var scope = app.Services.CreateScope())
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    try
     {
-        var services = scope.ServiceProvider;
-        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-        var logger = services.GetRequiredService<ILogger<Program>>();
+        var pendingMigrations = dbContext.Database.GetPendingMigrations();
 
-        // Criar roles se não existirem
-        const string adminRole = "Admin";
-        const string userRole = "User";
-
-        if (!await roleManager.RoleExistsAsync(adminRole))
+        if (pendingMigrations.Any())
         {
-            await roleManager.CreateAsync(new IdentityRole(adminRole));
-            logger.LogInformation("Role '{Role}' criada com sucesso.", adminRole);
+            dbContext.Database.Migrate();
+            logger.LogInformation("Migrações aplicadas: {Migrations}", string.Join(", ", pendingMigrations));
         }
-
-        if (!await roleManager.RoleExistsAsync(userRole))
-        {
-            await roleManager.CreateAsync(new IdentityRole(userRole));
-            logger.LogInformation("Role '{Role}' criada com sucesso.", userRole);
-        }
-
-        // Criar usuário administrador se não existir
-        const string adminEmail = "admin@smokeexpress.com";
-        const string adminPassword = "Admin@123";
-
-        var adminUser = await userManager.FindByEmailAsync(adminEmail);
-        if (adminUser == null)
-        {
-            adminUser = new ApplicationUser
-            {
-                UserName = adminEmail,
-                Email = adminEmail,
-                EmailConfirmed = true,
-                NomeCompleto = "Administrador Smoke Express",
-                DocumentoFiscal = "00000000000", // CPF genérico para admin
-                TipoCliente = "PF",
-                DataNascimento = DateTime.UtcNow.AddYears(-30),
-                Rua = "Rua Administrativa",
-                Numero = "1",
-                Cidade = "São Paulo",
-                Bairro = "Centro",
-                ConsentiuMarketing = false,
-                TermosAceitosEm = DateTime.UtcNow
-            };
-
-            var result = await userManager.CreateAsync(adminUser, adminPassword);
-            if (result.Succeeded)
-            {
-                await userManager.AddToRoleAsync(adminUser, adminRole);
-                await userManager.AddToRoleAsync(adminUser, userRole);
-                logger.LogInformation("Usuário administrador '{Email}' criado com sucesso.", adminEmail);
-            }
-            else
-            {
-                logger.LogError("Erro ao criar usuário administrador: {Errors}",
-                    string.Join(", ", result.Errors.Select(e => e.Description)));
-            }
-        }
-        else
-        {
-            logger.LogInformation("Usuário administrador '{Email}' já existe no sistema.", adminEmail);
-        }
-
-        // Seed de categorias: criar categorias principais e subcategorias
-        var context = services.GetRequiredService<ApplicationDbContext>();
-        
-        var categoriasParaCriar = new[]
-        {
-            // Categorias principais
-            new Category { Nome = "Bong", Descricao = "Bongs em diversos tamanhos e estilos para uma experiência premium." },
-            new Category { Nome = "Pipe", Descricao = "Pipes de alta qualidade em diferentes materiais e designs." },
-            new Category { Nome = "Seda", Descricao = "Sedas profissionais em vários tamanhos e sabores." },
-            new Category { Nome = "Piteira", Descricao = "Piteiras reutilizáveis e descartáveis para maior conforto." },
-            new Category { Nome = "Dichavador", Descricao = "Dichavadores práticos e eficientes de diversos materiais." },
-            new Category { Nome = "Isqueiro e Cinzeiro", Descricao = "Isqueiros e cinzeiros para completar sua experiência." },
-            new Category { Nome = "Acessórios", Descricao = "Acessórios essenciais para conservação e uso de produtos." },
-            new Category { Nome = "Caixa", Descricao = "Caixas e kits selecionados com produtos especiais." },
-            new Category { Nome = "Marca", Descricao = "Produtos das principais marcas do mercado." },
-            new Category { Nome = "Promoções", Descricao = "Ofertas especiais e produtos em promoção." },
-            
-            // Subcategorias - Bong
-            new Category { Nome = "Percolator", Descricao = "Bongs com sistema de percolação para filtragem aprimorada." },
-            new Category { Nome = "Mini Bong", Descricao = "Bongs compactos e portáteis ideais para viagens." },
-            new Category { Nome = "Bong de Silicone", Descricao = "Bongs flexíveis e resistentes de silicone." },
-            
-            // Subcategorias - Pipe
-            new Category { Nome = "Pipes de Metal", Descricao = "Pipes duráveis e resistentes de metal." },
-            new Category { Nome = "Pipes de Vidro", Descricao = "Pipes de vidro transparente com designs únicos." },
-            new Category { Nome = "Pipes de Madeira", Descricao = "Pipes clássicos de madeira com acabamento artesanal." },
-            
-            // Subcategorias - Seda
-            new Category { Nome = "Seda King Size", Descricao = "Sedas no formato King Size para baseados maiores." },
-            new Category { Nome = "Seda Slim", Descricao = "Sedas Slim para baseados mais finos e elegantes." },
-            new Category { Nome = "Seda Flavor", Descricao = "Sedas saborizadas para uma experiência aromática." },
-            
-            // Subcategorias - Piteira
-            new Category { Nome = "Piteira de Vidro", Descricao = "Piteiras reutilizáveis de vidro com filtro integrado." },
-            new Category { Nome = "Piteira de Papel", Descricao = "Piteiras descartáveis de papel biodegradável." },
-            new Category { Nome = "Piteira Reutilizável", Descricao = "Piteiras ecológicas reutilizáveis de diversos materiais." },
-            
-            // Subcategorias - Dichavador
-            new Category { Nome = "Dichavador de Metal", Descricao = "Dichavadores robustos de metal com dentes afiados." },
-            new Category { Nome = "Dichavador Acrílico", Descricao = "Dichavadores leves e coloridos de acrílico." },
-            new Category { Nome = "Dichavador 4 Partes", Descricao = "Dichavadores com compartimento para coleta de kief." },
-            
-            // Subcategorias - Isqueiro e Cinzeiro
-            new Category { Nome = "Isqueiros Recarregáveis", Descricao = "Isqueiros econômicos e ecológicos recarregáveis." },
-            new Category { Nome = "Isqueiros Jet", Descricao = "Isqueiros à prova de vento para uso externo." },
-            new Category { Nome = "Cinzeiros Portáteis", Descricao = "Cinzeiros compactos e práticos para uso em qualquer lugar." },
-            
-            // Subcategorias - Acessórios
-            new Category { Nome = "Caixas Herméticas", Descricao = "Caixas herméticas para conservação de produtos." },
-            new Category { Nome = "Filtros", Descricao = "Filtros para pipes e bongs para uma experiência mais suave." },
-            new Category { Nome = "Bolsas e Cases", Descricao = "Bolsas e cases para transporte seguro de seus produtos." },
-            
-            // Subcategorias - Caixa
-            new Category { Nome = "Club Mensal", Descricao = "Caixas do clube mensal com produtos selecionados." },
-            new Category { Nome = "Kits Selecionados", Descricao = "Kits especiais com combinações de produtos." },
-            new Category { Nome = "Presentes", Descricao = "Kits presentes perfeitos para presentear." },
-            
-            // Subcategorias - Marca
-            new Category { Nome = "Smoke Express", Descricao = "Produtos exclusivos da marca Smoke Express." },
-            new Category { Nome = "Raw", Descricao = "Produtos da marca Raw, líder mundial em sedas." },
-            new Category { Nome = "Lion Rolling Circus", Descricao = "Produtos da marca Lion Rolling Circus." }
-        };
-
-        foreach (var categoria in categoriasParaCriar)
-        {
-            var existe = await context.Categories
-                .AnyAsync(c => c.Nome.ToLower() == categoria.Nome.ToLower());
-            
-            if (!existe)
-            {
-                context.Categories.Add(categoria);
-                logger.LogInformation("Categoria '{Nome}' criada com sucesso.", categoria.Nome);
-            }
-        }
-
-        await context.SaveChangesAsync();
-        logger.LogInformation("Seed de categorias concluído.");
     }
-}
-catch (Exception ex)
-{
-    var logger = app.Services.GetRequiredService<ILogger<Program>>();
-    logger.LogError(ex, "Erro ao executar seed inicial do banco de dados.");
-    // Não lança a exceção para não impedir a inicialização da aplicação
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Falha ao aplicar migrações automaticamente. Considere executar 'dotnet ef database update' manualmente.");
+        throw;
+    }
 }
 
 app.MapAccountEndpoints();
-app.MapProductEndpoints();
-app.MapAddressEndpoints();
-app.MapOrderEndpoints();
+
+app.MapGet("/antiforgery/token", (IAntiforgery antiforgery, HttpContext httpContext) =>
+    {
+        var tokens = antiforgery.GetAndStoreTokens(httpContext);
+        httpContext.Response.Headers.CacheControl = "no-store";
+        return Results.Json(new { requestToken = tokens.RequestToken });
+    })
+    .AllowAnonymous();
 
 // Pipeline de requisições HTTP
 if (app.Environment.IsDevelopment())
@@ -240,11 +182,49 @@ else
     app.UseHsts();
 }
 
+// Middleware de tratamento de erros (deve vir antes do UseRouting)
+app.UseMiddleware<ErrorHandlingMiddleware>();
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.MapStaticAssets();
 
 app.UseRouting();
+
+app.Use(async (context, next) =>
+{
+    if (!context.Request.Cookies.ContainsKey("__RequestVerificationToken"))
+    {
+        var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
+        var tokens = antiforgery.GetAndStoreTokens(context);
+        context.RequestServices.GetRequiredService<AntiforgeryTokenStore>().SetToken(tokens.RequestToken);
+    }
+    else
+    {
+        var tokenStore = context.RequestServices.GetRequiredService<AntiforgeryTokenStore>();
+        if (string.IsNullOrEmpty(tokenStore.RequestToken))
+        {
+            var tokenSet = context.RequestServices.GetRequiredService<IAntiforgery>().GetTokens(context);
+            tokenStore.SetToken(tokenSet.RequestToken);
+        }
+    }
+
+    await next();
+});
+
+app.UseRateLimiter();
+app.UseAntiforgery();
+
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.TryAdd("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.TryAdd("X-Frame-Options", "DENY");
+    context.Response.Headers.TryAdd("X-XSS-Protection", "1; mode=block");
+    context.Response.Headers.TryAdd("Referrer-Policy", "strict-origin-when-cross-origin");
+    context.Response.Headers.TryAdd("Permissions-Policy", "geolocation=(), microphone=(), camera=(), payment=()");
+    context.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https://images.unsplash.com https://placehold.co data:; connect-src 'self' wss:;";
+    await next();
+});
 
 app.UseAuthentication();
 app.UseAuthorization();
