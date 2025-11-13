@@ -149,101 +149,12 @@
                     @foreach (var produto in _produtosDestaque)
                     {
                         <MudItem xs="12" sm="6" md="3">
-                            <MudCard Elevation="2"
-                                     Class="home-product-card"
-                                     Style="cursor: pointer;"
-                                     OnClick="@(() => Navigation.NavigateTo($"/produtos/{produto.Id}"))">
-                                @if (!string.IsNullOrWhiteSpace(produto.ImagemUrl))
-                                {
-                                    <div class="home-product-image-wrapper">
-                                        <img src="@produto.ImagemUrl"
-                                             alt="@produto.Nome"
-                                             class="home-product-image" />
-                                    </div>
-                                }
-                                else
-                                {
-                                    <div class="home-product-image-placeholder">
-                                        <MudIcon Icon="@Icons.Material.Filled.Image"
-                                                 Size="Size.Large"
-                                                 Color="Color.Default" />
-                                    </div>
-                                }
-
-                                <MudCardContent>
-                                    <MudStack Spacing="2">
-                                        <MudText Typo="Typo.subtitle1" Class="mb-0">
-                                            @produto.Nome
-                                        </MudText>
-
-                                        @if (!string.IsNullOrWhiteSpace(produto.Categoria?.Nome))
-                                        {
-                                            <MudChip T="string"
-                                                     Size="Size.Small"
-                                                     Color="Color.Secondary"
-                                                     Variant="Variant.Outlined">
-                                                @produto.Categoria!.Nome
-                                            </MudChip>
-                                        }
-
-                                        @if (_mediasAvaliacoesDestaque.TryGetValue(produto.Id, out var mediaAvaliacao) && mediaAvaliacao.HasValue)
-                                        {
-                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                                                <RatingDisplay Rating="@mediaAvaliacao" StarSize="1rem" />
-                                                <MudText Typo="Typo.body2" Color="Color.Secondary" Style="font-size: 0.875rem;">
-                                                    (@mediaAvaliacao.Value.ToString("F1"))
-                                                </MudText>
-                                            </MudStack>
-                                        }
-
-                                        <MudText Typo="Typo.body2"
-                                                 Class="text-muted home-product-description">
-                                            @ObterResumo(produto.Descricao)
-                                        </MudText>
-
-                                        <MudDivider />
-
-                                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                            <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-0">
-                                                @produto.Preco.ToString("C")
-                                            </MudText>
-
-                                            @if (produto.Estoque > 0)
-                                            {
-                                                <MudChip T="string"
-                                                         Size="Size.Small"
-                                                         Color="Color.Success"
-                                                         Variant="Variant.Filled">
-                                                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle"
-                                                             Size="Size.Small"
-                                                             Class="mr-1" />
-                                                    Em estoque
-                                                </MudChip>
-                                            }
-                                            else
-                                            {
-                                                <MudChip T="string"
-                                                         Size="Size.Small"
-                                                         Color="Color.Error"
-                                                         Variant="Variant.Filled">
-                                                    <MudIcon Icon="@Icons.Material.Filled.Cancel"
-                                                             Size="Size.Small"
-                                                             Class="mr-1" />
-                                                    Sem estoque
-                                                </MudChip>
-                                            }
-                                        </MudStack>
-
-                                        <MudButton Variant="Variant.Filled"
-                                                   Color="Color.Primary"
-                                                   FullWidth="true"
-                                                   StartIcon="@Icons.Material.Filled.Visibility"
-                                                   OnClick="@(() => Navigation.NavigateTo($"/produtos/{produto.Id}"))">
-                                            Ver detalhes
-                                        </MudButton>
-                                    </MudStack>
-                                </MudCardContent>
-                            </MudCard>
+                            <ProductCard Produto="produto"
+                                         CssClass="home-product-card"
+                                         MediaAvaliacao="@(_mediasAvaliacoesDestaque.TryGetValue(produto.Id, out var media) ? media : null)"
+                                         ResumoDescricao="@ObterResumo(produto.Descricao)"
+                                         DescricaoCssClass="home-product-description"
+                                         BotaoTexto="Ver detalhes" />
                         </MudItem>
                     }
                 </MudGrid>

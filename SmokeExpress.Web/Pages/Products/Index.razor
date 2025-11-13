@@ -23,28 +23,28 @@
                     <MudGrid Spacing="3">
                         <!-- Faixa de Preço -->
                         <MudItem xs="12" md="6">
-                            <MudNumericField @bind-Value="_filtros.PrecoMin"
-                                             Label="Preço Mínimo"
-                                             variant="Variant.Outlined"
+                            <MudNumericField @bind-Value="_filtros.PrecoMin" 
+                                            Label="Preço Mínimo" 
+                                            variant="Variant.Outlined"
                                              Margin="Margin.Dense"
                                              Dense="true"
-                                             Adornment="Adornment.Start"
-                                             AdornmentIcon="@Icons.Material.Filled.AttachMoney"
-                                             Min="0"
-                                             Format="C"
-                                             HelperText="Deixe em branco para sem limite" />
+                                            Adornment="Adornment.Start"
+                                            AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                            Min="0"
+                                            Format="C"
+                                            HelperText="Deixe em branco para sem limite" />
                         </MudItem>
                         <MudItem xs="12" md="6">
-                            <MudNumericField @bind-Value="_filtros.PrecoMax"
-                                             Label="Preço Máximo"
-                                             variant="Variant.Outlined"
+                            <MudNumericField @bind-Value="_filtros.PrecoMax" 
+                                            Label="Preço Máximo" 
+                                            variant="Variant.Outlined"
                                              Margin="Margin.Dense"
                                              Dense="true"
-                                             Adornment="Adornment.Start"
-                                             AdornmentIcon="@Icons.Material.Filled.AttachMoney"
-                                             Min="0"
-                                             Format="C"
-                                             HelperText="Deixe em branco para sem limite" />
+                                            Adornment="Adornment.Start"
+                                            AdornmentIcon="@Icons.Material.Filled.AttachMoney"
+                                            Min="0"
+                                            Format="C"
+                                            HelperText="Deixe em branco para sem limite" />
                         </MudItem>
 
                         <!-- Estoque e Ordenação -->
@@ -55,12 +55,12 @@
                                      Class="mt-4" />
                         </MudItem>
                         <MudItem xs="12" md="6">
-                            <MudSelect @bind-Value="_filtros.Ordenacao"
-                                       Label="Ordenar por"
-                                       variant="Variant.Outlined"
+                            <MudSelect @bind-Value="_filtros.Ordenacao" 
+                                     Label="Ordenar por" 
+                                     variant="Variant.Outlined"
                                        Margin="Margin.Dense"
                                        Dense="true"
-                                       T="ProductSortOrder">
+                                     T="ProductSortOrder">
                                 <MudSelectItem Value="@ProductSortOrder.Nome">
                                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                         <MudIcon Icon="@Icons.Material.Filled.SortByAlpha" Size="Size.Small" />
@@ -147,9 +147,9 @@
 
                         if (!string.IsNullOrWhiteSpace(categoriaNome))
                         {
-                            <MudChip T="string" Size="Size.Small" Color="Color.Secondary" onClose="@(() => { _filtros.CategoriaId = null; AplicarFiltros(); })">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Secondary" onClose="@(() => { _filtros.CategoriaId = null; AplicarFiltros(); })">
                                 Categoria: @categoriaNome
-                            </MudChip>
+                        </MudChip>
                         }
                     }
                     @if (_filtros.PrecoMin.HasValue)
@@ -215,70 +215,10 @@
             @foreach (var produto in _resultado.Items)
             {
                 <MudItem xs="12" sm="6" md="4" lg="3">
-                    <MudCard Elevation="2" Class="h-100" Style="cursor: pointer;" onClick="@(() => Navigation.NavigateTo($"/produtos/{produto.Id}"))">
-                        @if (!string.IsNullOrWhiteSpace(produto.ImagemUrl))
-                        {
-                            <div style="height: 200px; overflow: hidden;">
-                                <img src="@produto.ImagemUrl" 
-                                     alt="@produto.Nome" 
-                                     style="width: 100%; height: 100%; object-fit: cover;" />
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
-                                <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Large" Color="Color.Default" />
-                            </div>
-                        }
-                        <MudCardContent>
-                            <MudStack Spacing="2">
-                                <MudText Typo="Typo.h6" Class="mb-0">@produto.Nome</MudText>
-                                <MudChip T="string" Size="Size.Small" Color="Color.Secondary" variant="Variant.Outlined">
-                                    @produto.Categoria?.Nome
-                                </MudChip>
-                                @if (_mediasAvaliacoes.TryGetValue(produto.Id, out var mediaAvaliacao) && mediaAvaliacao.HasValue)
-                                {
-                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                                        <RatingDisplay Rating="@mediaAvaliacao" StarSize="1rem" />
-                                        <MudText Typo="Typo.body2" Color="Color.Secondary" Style="font-size: 0.875rem;">
-                                            (@mediaAvaliacao.Value.ToString("F1"))
-                                        </MudText>
-                                    </MudStack>
-                                }
-                                <MudText Typo="Typo.body2" Class="text-muted" Style="min-height: 60px;">
-                                    @ObterResumo(produto.Descricao)
-                                </MudText>
-                                <MudDivider />
-                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                    <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-0">
-                                        @produto.Preco.ToString("C")
-                                    </MudText>
-                                    @if (produto.Estoque > 0)
-                                    {
-                                        <MudChip T="string" Size="Size.Small" Color="Color.Success" variant="Variant.Filled">
-                                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Class="mr-1" />
-                                            Em estoque
-                                        </MudChip>
-                                    }
-                                    else
-                                    {
-                                        <MudChip T="string" Size="Size.Small" Color="Color.Error" variant="Variant.Filled">
-                                            <MudIcon Icon="@Icons.Material.Filled.Cancel" Size="Size.Small" Class="mr-1" />
-                                            Sem estoque
-                                        </MudChip>
-                                    }
-                                </MudStack>
-                                <MudButton variant="Variant.Filled" 
-                                         Color="Color.Primary" 
-                                         FullWidth="true"
-                                         StartIcon="@Icons.Material.Filled.Visibility"
-                                         onClick="@(() => Navigation.NavigateTo($"/produtos/{produto.Id}"))"
-                                         Href="@($"/produtos/{produto.Id}")">
-                                    Ver Detalhes
-                                </MudButton>
-                            </MudStack>
-                        </MudCardContent>
-                    </MudCard>
+                    <ProductCard Produto="produto"
+                                 MediaAvaliacao="@(_mediasAvaliacoes.TryGetValue(produto.Id, out var media) ? media : null)"
+                                 ResumoDescricao="@ObterResumo(produto.Descricao)"
+                                 DescricaoStyle="height: 72px; overflow: hidden;" />
                 </MudItem>
             }
         </MudGrid>
@@ -287,11 +227,12 @@
         @if (_resultado.TotalPages > 1)
         {
             <MudStack Spacing="2" AlignItems="AlignItems.Center" Class="mt-4">
-                <MudPagination Count="@_resultado.TotalPages" 
-                             Selected="@(_resultado.PageNumber - 1)"
-                             SelectedChanged="@OnPageChanged"
-                             ShowFirstButton="true"
-                             ShowLastButton="true" />
+                <MudPagination Color="Color.Primary"
+                               Count="@_resultado.TotalPages"
+                               Selected="@PageNumber"
+                               SelectedChanged="@OnPageChanged"
+                               ShowFirstButton="true"
+                               ShowLastButton="true" />
                 <MudText Typo="Typo.body2" Color="Color.Secondary">
                     Exibindo @((_resultado.PageNumber - 1) * _pageSize + 1) até @Math.Min(_resultado.PageNumber * _pageSize, _resultado.TotalCount) de @_resultado.TotalCount produtos
                 </MudText>
@@ -329,7 +270,7 @@
     private IReadOnlyList<Category> _categorias = Array.Empty<Category>();
     private bool _carregando = true;
     private string? _mensagemErro;
-    private const int _pageSize = 12;
+    private const int _pageSize = 16;
     private Dictionary<int, decimal?> _mediasAvaliacoes = new();
 
     private int PageNumber => PageQuery ?? 1;
@@ -372,7 +313,7 @@
         // Expandir filtros se houver algum ativo
         _filtrosExpandidos = TemFiltrosAtivos();
 
-        await CarregarProdutosAsync();
+            await CarregarProdutosAsync();
     }
 
     private async Task CarregarCategoriasAsync()
@@ -487,9 +428,9 @@
             queryParams.Add($"ordenacao={(int)_filtros.Ordenacao}");
         }
         
-        if (page > 0)
+        if (page > 1)
         {
-            queryParams.Add($"page={page + 1}");
+            queryParams.Add($"page={page}");
         }
 
         var query = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";

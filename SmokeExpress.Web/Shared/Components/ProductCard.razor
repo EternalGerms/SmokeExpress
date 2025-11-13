@@ -1,0 +1,127 @@
+@using SmokeExpress.Web.Models
+@using MudBlazor
+@inject NavigationManager Navigation
+
+<MudCard Elevation="2"
+         Class="@CssClass"
+         Style="cursor: pointer;"
+         OnClick="@(() => Navigation.NavigateTo($"/produtos/{Produto.Id}"))">
+    @if (!string.IsNullOrWhiteSpace(Produto.ImagemUrl))
+    {
+        <div style="height: 200px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            <img src="@Produto.ImagemUrl"
+                 alt="@Produto.Nome"
+                 style="height: 100%; width: auto; object-fit: contain; display: block;" />
+        </div>
+    }
+    else
+    {
+        <div class="d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
+            <MudIcon Icon="@Icons.Material.Filled.Image" Size="Size.Large" Color="Color.Default" />
+        </div>
+    }
+
+    <MudCardContent>
+        <MudStack Spacing="2">
+            <MudText Typo="Typo.subtitle1"
+                     Class="mb-0"
+                     Style="font-size: 1rem; line-height: 1.25; min-height: 2.5rem; max-height: 2.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                @Produto.Nome
+            </MudText>
+
+            @if (MostrarCategoria && !string.IsNullOrWhiteSpace(Produto.Categoria?.Nome))
+            {
+                <MudChip T="string"
+                         Size="Size.Small"
+                         Color="Color.Secondary"
+                         Variant="Variant.Outlined">
+                    @Produto.Categoria!.Nome
+                </MudChip>
+            }
+
+            @if (MediaAvaliacao.HasValue)
+            {
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                    <RatingDisplay Rating="@MediaAvaliacao" StarSize="1rem" />
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Style="font-size: 0.875rem;">
+                        (@MediaAvaliacao.Value.ToString("F1"))
+                    </MudText>
+                </MudStack>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(ResumoDescricao))
+            {
+                <MudText Typo="Typo.body2"
+                         Class="@($"text-muted {DescricaoCssClass}")"
+                         Style="@DescricaoStyle">
+                    @ResumoDescricao
+                </MudText>
+            }
+
+            <MudDivider />
+
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-0">
+                    @Produto.Preco.ToString("C")
+                </MudText>
+
+                @if (MostrarEstoque)
+                {
+                    @if (Produto.Estoque > 0)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Class="mr-1" />
+                            Em estoque
+                        </MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Filled">
+                            <MudIcon Icon="@Icons.Material.Filled.Cancel" Size="Size.Small" Class="mr-1" />
+                            Sem estoque
+                        </MudChip>
+                    }
+                }
+            </MudStack>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       FullWidth="true"
+                       StartIcon="@Icons.Material.Filled.Visibility"
+                       OnClick="@(() => Navigation.NavigateTo($"/produtos/{Produto.Id}"))">
+                @BotaoTexto
+            </MudButton>
+        </MudStack>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter]
+    public Product Produto { get; set; } = default!;
+
+    [Parameter]
+    public decimal? MediaAvaliacao { get; set; }
+
+    [Parameter]
+    public string ResumoDescricao { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool MostrarCategoria { get; set; } = true;
+
+    [Parameter]
+    public bool MostrarEstoque { get; set; } = true;
+
+    [Parameter]
+    public string CssClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string DescricaoCssClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string DescricaoStyle { get; set; } = string.Empty;
+
+    [Parameter]
+    public string BotaoTexto { get; set; } = "Ver Detalhes";
+}
+
+

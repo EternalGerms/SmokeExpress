@@ -104,26 +104,6 @@
                         }
                     </MudStack>
 
-                    <MudDivider />
-
-                    <!-- Descrição -->
-                    <MudCard Elevation="1" Class="pa-4">
-                        <MudText Typo="Typo.h6" Class="mb-3">
-                            <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Small" Class="mr-2" />
-                            Descrição
-                        </MudText>
-                        @if (!string.IsNullOrWhiteSpace(_produto.Descricao))
-                        {
-                            <MudText Typo="Typo.body1" Style="white-space: pre-wrap;">@_produto.Descricao</MudText>
-                        }
-                        else
-                        {
-                            <MudText Typo="Typo.body1" Color="Color.Secondary">
-                                Produto premium da Smoke Express com qualidade garantida.
-                            </MudText>
-                        }
-                    </MudCard>
-
                     <!-- Quantidade e Ações -->
                     <MudCard Elevation="1" Class="pa-4">
                         <MudStack Spacing="3">
@@ -188,33 +168,27 @@
                         </MudStack>
                     </MudCard>
 
-                    <!-- Informações Adicionais -->
+                    <MudDivider />
+
+                    <!-- Descrição -->
                     <MudCard Elevation="1" Class="pa-4">
                         <MudText Typo="Typo.h6" Class="mb-3">
-                            <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Class="mr-2" />
-                            Informações do Produto
+                            <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Small" Class="mr-2" />
+                            Descrição
                         </MudText>
-                        <MudStack Spacing="2">
-                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                                <MudIcon Icon="@Icons.Material.Filled.Category" Size="Size.Small" Color="Color.Secondary" />
-                                <MudText Typo="Typo.body2">
-                                    <strong>Categoria:</strong> @_produto.Categoria?.Nome
-                                </MudText>
-                            </MudStack>
-                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                                <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Small" Color="Color.Secondary" />
-                                <MudText Typo="Typo.body2">
-                                    <strong>Estoque:</strong> @_produto.Estoque unidades
-                                </MudText>
-                            </MudStack>
-                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                                <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Small" Color="Color.Secondary" />
-                                <MudText Typo="Typo.body2">
-                                    <strong>Preço:</strong> @_produto.Preco.ToString("C")
-                                </MudText>
-                            </MudStack>
-                        </MudStack>
+                        @if (!string.IsNullOrWhiteSpace(_produto.Descricao))
+                        {
+                            <MudText Typo="Typo.body1" Style="white-space: pre-wrap;">@_produto.Descricao</MudText>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                                Produto premium da Smoke Express com qualidade garantida.
+                            </MudText>
+                        }
                     </MudCard>
+                    
+                    
                 </MudStack>
             </MudItem>
         </MudGrid>
