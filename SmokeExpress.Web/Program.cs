@@ -1,5 +1,6 @@
 // Projeto Smoke Express - Autores: Bruno Bueno e Matheus Esposto
 using System.Linq;
+using System.Globalization;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
 using MudBlazor.Services;
+using MudBlazor.Translations;
 using SmokeExpress.Web.Data;
 using SmokeExpress.Web.Models;
 using SmokeExpress.Web.Middleware;
@@ -112,6 +114,7 @@ builder.Services.Configure<FormOptions>(options =>
 });
 
 builder.Services.AddMudServices();
+builder.Services.AddMudTranslations();
 builder.Services.AddCascadingAuthenticationState();
 
 // Configurar HttpClient com handler de notificação de erros (se necessário no futuro)
@@ -137,6 +140,10 @@ builder.Services.AddScoped<IErrorNotificationService, ErrorNotificationService>(
 builder.Services.AddScoped<ErrorNotificationHttpHandler>();
 
 var app = builder.Build();
+
+var culturaPadrao = CultureInfo.CreateSpecificCulture("pt-BR");
+CultureInfo.DefaultThreadCurrentCulture = culturaPadrao;
+CultureInfo.DefaultThreadCurrentUICulture = culturaPadrao;
 
 // Executar migrações pendentes automaticamente (com proteção para bancos já provisionados manualmente)
 using (var scope = app.Services.CreateScope())
