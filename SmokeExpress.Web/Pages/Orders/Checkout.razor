@@ -1,6 +1,8 @@
 @page "/checkout"
 @using SmokeExpress.Web.Models
 @using System.Text.Json
+@using MudBlazor
+@using Microsoft.AspNetCore.Components.Web
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 @inject IHttpClientFactory HttpClientFactory
@@ -9,187 +11,220 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject IOrderService OrderService
 
-<h3>Finalizar Pedido</h3>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.ShoppingCartCheckout" Size="Size.Large" Class="mr-2" />
+        Finalizar Pedido
+    </MudText>
 
-@if (_loading)
-{
-    <p>Carregando carrinho...</p>
-}
-else if (_itens is null || _itens.Count == 0)
-{
-    <div class="alert alert-warning">Seu carrinho está vazio.</div>
-}
-else
-{
-    <div class="row">
-        <div class="col-md-7">
-            <h5>Itens do Carrinho</h5>
-            <table class="table table-sm">
-                <thead>
-                    <tr>
-                        <th>Produto</th>
-                        <th class="text-end">Preço Unitário</th>
-                        <th class="text-end">Qtd</th>
-                        <th class="text-end">Subtotal</th>
-                        <th class="text-end">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in _vmItens)
-                    {
-                        <tr>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    @if (!string.IsNullOrWhiteSpace(item.ImagemUrl))
+    @if (_loading)
+    {
+        <MudStack Spacing="2" AlignItems="AlignItems.Center">
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mud-width-full" />
+            <MudText Typo="Typo.body1">Carregando carrinho...</MudText>
+        </MudStack>
+    }
+    else if (_itens is null || _itens.Count == 0)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Elevation="1">
+            Seu carrinho está vazio.
+        </MudAlert>
+    }
+    else
+    {
+        <MudGrid Spacing="3">
+            <MudItem xs="12" md="7">
+                <MudPaper Elevation="1" Class="pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-3">Itens do Carrinho</MudText>
+
+                    <MudTable T="CartItemViewModel"
+                              Items="_vmItens"
+                              Dense="true"
+                              Hover="true"
+                              FixedHeader="true"
+                              Elevation="0"
+                              Class="mud-width-full">
+                        <HeaderContent>
+                            <MudTh>Produto</MudTh>
+                            <MudTh Class="text-end">Preço Unitário</MudTh>
+                            <MudTh Class="text-end">Qtd</MudTh>
+                            <MudTh Class="text-end">Subtotal</MudTh>
+                            <MudTh Class="text-end">Ações</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                    @if (!string.IsNullOrWhiteSpace(context.ImagemUrl))
                                     {
-                                        <img src="@item.ImagemUrl" alt="@item.Nome" style="width:40px;height:40px;object-fit:cover;border-radius:4px;" />
+                                        <img src="@context.ImagemUrl"
+                                             alt="@context.Nome"
+                                             style="width:40px;height:40px;object-fit:cover;border-radius:4px;" />
                                     }
-                                    <span>@item.Nome</span>
-                                </div>
-                            </td>
-                            <td class="text-end">@item.PrecoUnitario.ToString("C")</td>
-                            <td class="text-end" style="width:160px;">
-                                <div class="input-group input-group-sm">
-                                    <button class="btn btn-outline-secondary"
-                                            type="button"
-                                            @onclick="() => OnQuantityChanged(item.ProductId, item.Quantidade - 1)">−</button>
-                                    <InputNumber Value="@item.Quantidade"
-                                                 ValueChanged="(int v) => OnQuantityChanged(item.ProductId, v)"
-                                                 ValueExpression="() => item.Quantidade"
-                                                 class="form-control text-end"
-                                                 min="1" />
-                                    <button class="btn btn-outline-secondary"
-                                            type="button"
-                                            @onclick="() => OnQuantityChanged(item.ProductId, item.Quantidade + 1)">+</button>
-                                </div>
-                            </td>
-                            <td class="text-end">@item.Subtotal.ToString("C")</td>
-                            <td class="text-end" style="width:90px;">
-                                <button type="button" class="btn btn-sm btn-outline-danger" title="Remover"
-                                        @onclick="() => RemoverItemAsync(item.ProductId)">
+                                    <MudText Typo="Typo.body2">@context.Nome</MudText>
+                                </MudStack>
+                            </MudTd>
+                            <MudTd Class="text-end">
+                                <MudText Typo="Typo.body2">@context.PrecoUnitario.ToString("C")</MudText>
+                            </MudTd>
+                            <MudTd Class="text-end">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexEnd" Spacing="1">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Remove"
+                                                   Size="Size.Small"
+                                                   Color="Color.Primary"
+                                                   OnClick="@(() => OnQuantityChanged(context.ProductId, context.Quantidade - 1))" />
+                                    <MudNumericField T="int"
+                                                     Value="context.Quantidade"
+                                                     ValueChanged="(int v) => OnQuantityChanged(context.ProductId, v)"
+                                                     Min="1"
+                                                     Dense="true"
+                                                     Class="mud-width-xs-4"
+                                                     HideSpinButtons="true"
+                                                     Variant="Variant.Outlined" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Add"
+                                                   Size="Size.Small"
+                                                   Color="Color.Primary"
+                                                   OnClick="@(() => OnQuantityChanged(context.ProductId, context.Quantidade + 1))" />
+                                </MudStack>
+                            </MudTd>
+                            <MudTd Class="text-end">
+                                <MudText Typo="Typo.body2">@context.Subtotal.ToString("C")</MudText>
+                            </MudTd>
+                            <MudTd Class="text-end">
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Error"
+                                           Size="Size.Small"
+                                           OnClick="() => RemoverItemAsync(context.ProductId)">
                                     Remover
-                                </button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-                        <tfoot>
-                    <tr>
-                                <th colspan="3" class="text-end">Subtotal</th>
-                                <th class="text-end">@_total.ToString("C")</th>
-                        <th></th>
-                    </tr>
-                            <tr>
-                                <th colspan="3" class="text-end">Frete</th>
-                                <th class="text-end">@_frete.ToString("C")</th>
-                                <th></th>
-                            </tr>
-                            <tr>
-                                <th colspan="3" class="text-end">Total</th>
-                                <th class="text-end">@((_total + _frete).ToString("C"))</th>
-                                <th></th>
-                            </tr>
-                </tfoot>
-            </table>
-        </div>
-        <div class="col-md-5">
-            <AuthorizeView>
-                <Authorized>
-                    <h5>Endereço de Entrega</h5>
-                    <div class="mb-2">
-                        <label class="form-label">Usar endereço salvo</label>
-                        <div class="d-flex gap-2">
-                            <select class="form-select" @onchange="OnEnderecoSelecionado">
-                                <option value="">Selecionar...</option>
-                                @foreach (var a in _enderecosSalvos)
+                                </MudButton>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+
+                    <MudDivider Class="my-3" />
+
+                    <MudStack Spacing="1" AlignItems="AlignItems.End">
+                        <MudText Typo="Typo.body2">
+                            <strong>Subtotal:</strong> @_total.ToString("C")
+                        </MudText>
+                        <MudText Typo="Typo.body2">
+                            <strong>Frete:</strong> @_frete.ToString("C")
+                        </MudText>
+                        <MudText Typo="Typo.h6">
+                            <strong>Total:</strong> @((_total + _frete).ToString("C"))
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="5">
+                <AuthorizeView>
+                    <Authorized>
+                        <MudPaper Elevation="1" Class="pa-4">
+                            <MudText Typo="Typo.h6" Class="mb-3">Endereço de Entrega</MudText>
+
+                            <MudStack Spacing="2">
+                                <div>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-1 d-block">
+                                        Usar endereço salvo
+                                    </MudText>
+                                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                                        <MudSelect T="int?" Value="_enderecoSelecionadoId" ValueChanged="OnEnderecoSelecionadoMud"
+                                                   Label="Endereços"
+                                                   Variant="Variant.Outlined"
+                                                   Dense="true"
+                                                   Class="flex-grow-1"
+                                                   Style="min-width:0;">
+                                            <MudSelectItem T="int?" Value="@null">Selecionar...</MudSelectItem>
+                                            @foreach (var a in _enderecosSalvos)
+                                            {
+                                                <MudSelectItem T="int?" Value="@a.Id">@TruncarEndereco(FormatEndereco(a))</MudSelectItem>
+                                            }
+                                        </MudSelect>
+
+                                        <MudButton Variant="Variant.Outlined"
+                                                   Color="Color.Primary"
+                                                   Size="Size.Small"
+                                                   OnClick="AbrirNovoEndereco">
+                                            Adicionar
+                                        </MudButton>
+                                        <MudButton Variant="Variant.Outlined"
+                                                   Color="Color.Default"
+                                                   Size="Size.Small"
+                                                   Href="/account/addresses">
+                                            Gerenciar
+                                        </MudButton>
+                                    </MudStack>
+                                </div>
+
+                                @if (EnderecoSelecionado())
                                 {
-                                    <option value="@a.Id" selected="@(_enderecoSelecionadoId == a.Id)">@FormatEndereco(a)</option>
+                                    <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
+                                        <MudText Typo="Typo.caption" Color="Color.Success" Class="text-truncate"
+                                                 Style="max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                            @FormatEnderecoSelecionado()
+                                        </MudText>
+                                    </MudStack>
                                 }
-                            </select>
-                            <button type="button" class="btn btn-outline-primary" @onclick="AbrirNovoEndereco">Adicionar</button>
-                            <a class="btn btn-outline-secondary" href="/account/addresses">Gerenciar</a>
-                        </div>
-                        @if (EnderecoSelecionado())
-                        {
-                            <div class="alert alert-success mt-2 mb-0">
-                                <small>✓ Endereço selecionado: @FormatEnderecoSelecionado()</small>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="alert alert-warning mt-2 mb-0">
-                                <small>⚠ Por favor, selecione um endereço de entrega para continuar</small>
-                            </div>
-                        }
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-primary" @onclick="AbrirPagamento" disabled="@(_submitting || !EnderecoSelecionado())">Finalizar Pedido</button>
-                        <a href="/produtos" class="btn btn-outline-secondary">Continuar comprando</a>
-                        <button type="button" class="btn btn-outline-danger" @onclick="LimparCarrinhoAsync">Limpar carrinho</button>
-                    </div>
-                    @if (!string.IsNullOrWhiteSpace(_error))
-                    {
-                        <div class="alert alert-danger mt-2">@_error</div>
-                    }
-                </Authorized>
-                <NotAuthorized>
-                    <div class="alert alert-info">Você precisa entrar para finalizar o pedido.</div>
-                    <a class="btn btn-outline-primary" href="/account/login?returnUrl=%2Fcheckout">Entrar</a>
-                </NotAuthorized>
-            </AuthorizeView>
-        </div>
-    </div>
-}
+                                else
+                                {
+                                    <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                                        <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Size="Size.Small" />
+                                        <MudText Typo="Typo.caption" Color="Color.Warning">
+                                            Selecione um endereço de entrega para continuar.
+                                        </MudText>
+                                    </MudStack>
+                                }
 
-@* Modal de novo endereço *@
-@if (_showNovoEndereco)
-{
-    <div class="modal fade show" style="display:block;" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Novo endereço</h5>
-                    <button type="button" class="btn-close" aria-label="Close" @onclick="CancelarNovoEndereco"></button>
-                </div>
-                <div class="modal-body">
-                    <EditForm Model="_novoEndereco" OnValidSubmit="SalvarNovoEnderecoAsync">
-                        <DataAnnotationsValidator />
-                        <div class="mb-2">
-                            <label class="form-label">Rua</label>
-                            <InputText class="form-control" @bind-Value="_novoEndereco.Rua" />
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Número</label>
-                            <input class="form-control" @bind="NovoNumeroBinding" @bind:event="oninput" inputmode="numeric" />
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Cidade</label>
-                            <InputText class="form-control" @bind-Value="_novoEndereco.Cidade" />
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Bairro</label>
-                            <InputText class="form-control" @bind-Value="_novoEndereco.Bairro" />
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Complemento</label>
-                            <InputText class="form-control" @bind-Value="_novoEndereco.Complemento" />
-                        </div>
-                        <div class="form-check mb-2">
-                            <InputCheckbox class="form-check-input" @bind-Value="_novoEndereco.IsDefault" />
-                            <label class="form-check-label">Marcar como padrão</label>
-                        </div>
+                                <MudStack Row="true" Spacing="2">
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Primary"
+                                               OnClick="AbrirPagamento"
+                                               Disabled="@(_submitting || !EnderecoSelecionado())">
+                                        Finalizar Pedido
+                                    </MudButton>
+                                    <MudButton Variant="Variant.Outlined"
+                                               Color="Color.Default"
+                                               Href="/produtos">
+                                        Continuar comprando
+                                    </MudButton>
+                                    <MudButton Variant="Variant.Outlined"
+                                               Color="Color.Error"
+                                               OnClick="LimparCarrinhoAsync">
+                                        Limpar carrinho
+                                    </MudButton>
+                                </MudStack>
 
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">Salvar</button>
-                            <button type="button" class="btn btn-secondary" @onclick="CancelarNovoEndereco">Cancelar</button>
-                        </div>
-                    </EditForm>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal-backdrop fade show"></div>
-}
+                                @if (!string.IsNullOrWhiteSpace(_error))
+                                {
+                                    <MudAlert Severity="Severity.Error" Variant="Variant.Filled">
+                                        @_error
+                                    </MudAlert>
+                                }
+                            </MudStack>
+                        </MudPaper>
+                    </Authorized>
+                    <NotAuthorized>
+                        <MudPaper Elevation="1" Class="pa-4">
+                            <MudAlert Severity="Severity.Info" Class="mb-3">
+                                Você precisa entrar para finalizar o pedido.
+                            </MudAlert>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Primary"
+                                       Href="/account/login?returnUrl=%2Fcheckout">
+                                Entrar
+                            </MudButton>
+                        </MudPaper>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+<NewAddressDialog Visible="_showNovoEndereco"
+                  OnClose="OnNovoEnderecoFechado"
+                  OnSaved="@(async id => await OnNovoEnderecoSalvo(id))" />
 
 @* Modal de pagamento *@
 @if (_showPagamento)
@@ -290,7 +325,6 @@ else
 
     private IReadOnlyList<AddressDto> _enderecosSalvos = Array.Empty<AddressDto>();
     private bool _showNovoEndereco;
-    private AddressDto _novoEndereco = new();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -380,6 +414,17 @@ else
         public string Bairro { get; set; } = string.Empty;
         public string? Complemento { get; set; }
         public bool IsDefault { get; set; }
+        public string? Cep { get; set; }
+    }
+
+    private sealed class ViaCepResponse
+    {
+        public string? Cep { get; set; }
+        public string? Logradouro { get; set; }
+        public string? Bairro { get; set; }
+        public string? Localidade { get; set; }
+        public string? Uf { get; set; }
+        public bool Erro { get; set; }
     }
 
     private sealed class OrderCreatedDto
@@ -481,63 +526,25 @@ else
 
     private void AbrirNovoEndereco()
     {
-        _novoEndereco = new AddressDto();
         _showNovoEndereco = true;
     }
 
-    private void CancelarNovoEndereco()
+    private void OnNovoEnderecoFechado()
     {
         _showNovoEndereco = false;
     }
 
-    private async Task SalvarNovoEnderecoAsync()
+    private async Task OnNovoEnderecoSalvo(int enderecoId)
     {
-        try
+        _showNovoEndereco = false;
+        await CarregarEnderecosAsync();
+
+        _enderecoSelecionadoId = enderecoId;
+        var sel = _enderecosSalvos.FirstOrDefault(a => a.Id == enderecoId);
+        if (sel is not null)
         {
-            var userId = await GetUserIdAsync();
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                Nav.NavigateTo("/account/login?returnUrl=%2Fcheckout");
-                return;
-            }
-
-            var entity = new Address
-            {
-                Rua = _novoEndereco.Rua,
-                Numero = _novoEndereco.Numero,
-                Cidade = _novoEndereco.Cidade,
-                Bairro = _novoEndereco.Bairro,
-                Complemento = _novoEndereco.Complemento,
-                IsDefault = _novoEndereco.IsDefault
-            };
-
-            var created = await AddressService.CreateAsync(userId, entity);
-            _showNovoEndereco = false;
-            await CarregarEnderecosAsync();
-            var dto = new AddressDto
-            {
-                Id = created.Id,
-                Rua = created.Rua,
-                Numero = created.Numero,
-                Cidade = created.Cidade,
-                Bairro = created.Bairro,
-                Complemento = created.Complemento,
-                IsDefault = created.IsDefault
-            };
-            _enderecoSelecionadoId = dto.Id;
-            PreencherEndereco(dto);
-            await DefinirFreteParaEnderecoAsync(dto.Id);
-        }
-        catch { }
-    }
-
-    private string NovoNumeroBinding
-    {
-        get => _novoEndereco.Numero ?? string.Empty;
-        set
-        {
-            var digits = new string((value ?? string.Empty).Where(char.IsDigit).ToArray());
-            _novoEndereco.Numero = string.IsNullOrEmpty(digits) ? null : digits;
+            PreencherEndereco(sel);
+            await DefinirFreteParaEnderecoAsync(sel.Id);
         }
     }
 
@@ -554,25 +561,22 @@ else
 
     
 
-    private async void OnEnderecoSelecionado(ChangeEventArgs e)
+    private async Task OnEnderecoSelecionadoMud(int? id)
     {
-        if (e?.Value is null || string.IsNullOrWhiteSpace(e.Value.ToString()))
+        if (!id.HasValue)
         {
             _enderecoSelecionadoId = null;
             _endereco = new EnderecoEntregaDto();
             StateHasChanged();
             return;
         }
-        
-        if (int.TryParse(e.Value.ToString(), out var id))
+
+        _enderecoSelecionadoId = id;
+        var sel = _enderecosSalvos.FirstOrDefault(a => a.Id == id.Value);
+        if (sel is not null)
         {
-            _enderecoSelecionadoId = id;
-            var sel = _enderecosSalvos.FirstOrDefault(a => a.Id == id);
-            if (sel is not null)
-            {
-                PreencherEndereco(sel);
-                await DefinirFreteParaEnderecoAsync(sel.Id);
-            }
+            PreencherEndereco(sel);
+            await DefinirFreteParaEnderecoAsync(sel.Id);
         }
     }
 
@@ -611,6 +615,11 @@ else
 
     private static string FormatEndereco(AddressDto a)
         => $"{a.Rua}, {a.Numero} - {a.Bairro}, {a.Cidade} {a.Complemento}";
+
+    private static string TruncarEndereco(string texto, int maxLen = 33)
+        => string.IsNullOrWhiteSpace(texto) || texto.Length <= maxLen
+            ? texto
+            : texto[..maxLen] + "...";
 
     private async Task DefinirFreteParaEnderecoAsync(int addressId)
     {

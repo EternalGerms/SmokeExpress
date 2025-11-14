@@ -1,0 +1,262 @@
+@using SmokeExpress.Web.Models
+@using MudBlazor
+@inject IAddressService AddressService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Nav
+@inject IHttpClientFactory HttpClientFactory
+
+@if (Visible)
+{
+    <MudOverlay Visible="true" DarkBackground="true">
+        <div class="d-flex justify-content-center align-items-center" style="height:100%;">
+            <MudPaper Elevation="6" Class="pa-4 mud-width-full" Style="max-width:520px;" @onclick:stopPropagation="true">
+                <MudStack Spacing="3">
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.h6">Novo endereço</MudText>
+                        <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                       Color="Color.Default"
+                                       OnClick="@(()=> CloseAsync())" />
+                    </MudStack>
+
+                    <MudForm @ref="_form" Model="_model">
+                        <MudStack Spacing="2">
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudTextField @bind-Value="_model.Cep"
+                                                  Label="CEP"
+                                                  Variant="Variant.Outlined"
+                                                  Adornment="Adornment.Start"
+                                                  AdornmentIcon="@Icons.Material.Filled.LocationOn"
+                                                  Immediate="true"
+                                                  OnBlur="@(async (_)=> await BuscarEnderecoPorCepAsync())"
+                                                  HelperText="@(_cepMensagemErro ?? "Digite o CEP e saia do campo para buscar automaticamente")"
+                                                  Error="@( !string.IsNullOrEmpty(_cepMensagemErro) )" />
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudCheckBox @bind-Value="_model.IsDefault"
+                                                 Label="Marcar como padrão"
+                                                 Color="Color.Primary" />
+                                </MudItem>
+                            </MudGrid>
+
+                            <MudTextField @bind-Value="_model.Rua"
+                                          Label="Rua"
+                                          Variant="Variant.Outlined"
+                                          Required="true"
+                                          RequiredError="Rua é obrigatória" />
+
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="4">
+                                    <MudTextField @bind-Value="_numeroBinding"
+                                                  Label="Número"
+                                                  Variant="Variant.Outlined"
+                                                  Immediate="true"
+                                                  OnBlur="@( (_) => FiltrarNumero() )" />
+                                </MudItem>
+                                <MudItem xs="12" sm="8">
+                                    <MudTextField @bind-Value="_model.Bairro"
+                                                  Label="Bairro"
+                                                  Variant="Variant.Outlined"
+                                                  Required="true"
+                                                  RequiredError="Bairro é obrigatório" />
+                                </MudItem>
+                            </MudGrid>
+
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudTextField @bind-Value="_model.Cidade"
+                                                  Label="Cidade"
+                                                  Variant="Variant.Outlined"
+                                                  Required="true"
+                                                  RequiredError="Cidade é obrigatória" />
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudTextField @bind-Value="_model.Complemento"
+                                                  Label="Complemento"
+                                                  Variant="Variant.Outlined" />
+                                </MudItem>
+                            </MudGrid>
+
+                            <MudStack Row="true" Spacing="2" Justify="Justify.FlexEnd" Class="mt-2">
+                                <MudButton Variant="Variant.Text"
+                                           Color="Color.Default"
+                                           OnClick="@(()=> CloseAsync())">
+                                    Cancelar
+                                </MudButton>
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           OnClick="SalvarAsync"
+                                           Disabled="_saving">
+                                    @(_saving ? "Salvando..." : "Salvar")
+                                </MudButton>
+                            </MudStack>
+                        </MudStack>
+                    </MudForm>
+                </MudStack>
+            </MudPaper>
+        </div>
+    </MudOverlay>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    /// <summary>Retorna o Id do endereço criado.</summary>
+    [Parameter] public EventCallback<int> OnSaved { get; set; }
+
+    private const string CepMask = "00000-000";
+    private MudForm? _form;
+    private AddressFormModel _model = new();
+    private string? _cepMensagemErro;
+    private string _numeroBinding = string.Empty;
+    private bool _saving;
+    private bool _wasVisible;
+
+    protected override void OnParametersSet()
+    {
+        // Quando abrir (Visible muda de false -> true), reseta o formulário
+        if (Visible && !_wasVisible)
+        {
+            _model = new AddressFormModel();
+            _cepMensagemErro = null;
+            _numeroBinding = string.Empty;
+        }
+        _wasVisible = Visible;
+    }
+
+    private async Task CloseAsync()
+    {
+        await OnClose.InvokeAsync();
+    }
+
+    private void FiltrarNumero()
+    {
+        var digits = new string((_numeroBinding ?? string.Empty).Where(char.IsDigit).ToArray());
+        _numeroBinding = digits;
+        _model.Numero = string.IsNullOrEmpty(digits) ? null : digits;
+    }
+
+    private async Task BuscarEnderecoPorCepAsync()
+    {
+        _cepMensagemErro = null;
+
+        var cepDigits = new string((_model.Cep ?? string.Empty).Where(char.IsDigit).ToArray());
+        if (cepDigits.Length != 8)
+        {
+            if (!string.IsNullOrWhiteSpace(_model.Cep))
+            {
+                _cepMensagemErro = "CEP deve ter 8 dígitos.";
+            }
+            StateHasChanged();
+            return;
+        }
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient();
+            var response = await client.GetAsync($"https://viacep.com.br/ws/{cepDigits}/json/");
+            if (!response.IsSuccessStatusCode)
+            {
+                _cepMensagemErro = "Não foi possível buscar o CEP.";
+                StateHasChanged();
+                return;
+            }
+
+            var data = await response.Content.ReadFromJsonAsync<ViaCepResponse>();
+            if (data is null || data.Erro)
+            {
+                _cepMensagemErro = "CEP não encontrado.";
+                StateHasChanged();
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(data.Logradouro))
+                _model.Rua = data.Logradouro;
+            if (!string.IsNullOrWhiteSpace(data.Bairro))
+                _model.Bairro = data.Bairro;
+            if (!string.IsNullOrWhiteSpace(data.Localidade))
+                _model.Cidade = data.Localidade;
+
+            StateHasChanged();
+        }
+        catch
+        {
+            _cepMensagemErro = "Erro ao buscar CEP.";
+            StateHasChanged();
+        }
+    }
+
+    private async Task SalvarAsync()
+    {
+        if (_form is not null)
+        {
+            await _form.Validate();
+            if (!_form.IsValid)
+                return;
+        }
+
+        _saving = true;
+        try
+        {
+            var userId = await GetUserIdAsync();
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                Nav.NavigateTo("/account/login?returnUrl=%2Fcheckout");
+                return;
+            }
+
+            var entity = new Address
+            {
+                Rua = _model.Rua,
+                Numero = _model.Numero,
+                Cidade = _model.Cidade,
+                Bairro = _model.Bairro,
+                Complemento = _model.Complemento,
+                IsDefault = _model.IsDefault
+            };
+
+            var created = await AddressService.CreateAsync(userId, entity);
+
+            await OnSaved.InvokeAsync(created.Id);
+            await OnClose.InvokeAsync();
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task<string> GetUserIdAsync()
+    {
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+        if (user?.Identity?.IsAuthenticated == true)
+        {
+            return user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+        }
+        return string.Empty;
+    }
+
+    private sealed class AddressFormModel
+    {
+        public string? Cep { get; set; }
+        public string Rua { get; set; } = string.Empty;
+        public string? Numero { get; set; }
+        public string Cidade { get; set; } = string.Empty;
+        public string Bairro { get; set; } = string.Empty;
+        public string? Complemento { get; set; }
+        public bool IsDefault { get; set; }
+    }
+
+    private sealed class ViaCepResponse
+    {
+        public string? Cep { get; set; }
+        public string? Logradouro { get; set; }
+        public string? Bairro { get; set; }
+        public string? Localidade { get; set; }
+        public string? Uf { get; set; }
+        public bool Erro { get; set; }
+    }
+}
+
+
