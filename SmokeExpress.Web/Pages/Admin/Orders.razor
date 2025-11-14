@@ -1,62 +1,112 @@
 @page "/admin/pedidos"
 @attribute [Authorize(Roles = "Admin")]
+@using MudBlazor
 @inject IOrderService OrderService
 
-<h3>Gestão de Pedidos</h3>
+<MudPaper Class="pa-6">
+    <MudStack Spacing="4">
+        <MudText Typo="Typo.h5" Class="fw-bold">Gestão de Pedidos</MudText>
 
-@if (_loading)
-{
-    <p>Carregando...</p>
-}
-else if (!string.IsNullOrEmpty(_erro))
-{
-    <div class="alert alert-danger">@_erro</div>
-}
-else
-{
-    <div class="mb-2 d-flex gap-2">
-        <input class="form-control" style="max-width:320px" placeholder="Filtrar por id, cliente ou e-mail" @bind="_filtro" @bind:event="oninput" />
-        <button class="btn btn-outline-secondary" @onclick="RecarregarAsync">Atualizar</button>
-    </div>
+        @if (_loading)
+        {
+            <MudStack Spacing="2">
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                <MudText Typo="Typo.body1" Class="text-center">Carregando pedidos...</MudText>
+            </MudStack>
+        }
+        else if (!string.IsNullOrEmpty(_erro))
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">
+                @_erro
+            </MudAlert>
+        }
+        else
+        {
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mb-2">
+                <MudTextField @bind-Value="_filtro"
+                              Placeholder="Filtrar por id, cliente ou e-mail"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Immediate="true"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Class="mud-width-full" />
 
-    <table class="table table-sm">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Cliente</th>
-                <th>Data</th>
-                <th class="text-end">Total</th>
-                <th>Status</th>
-                <th class="text-end">Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var p in Filtrar(_pedidos))
-            {
-                <tr>
-                    <td>@p.Id</td>
-                    <td>
-                        <div>@p.ClienteNome</div>
-                        <div class="text-muted small">@p.ClienteEmail</div>
-                    </td>
-                    <td>@p.DataLocal</td>
-                    <td class="text-end">@p.TotalTexto</td>
-                    <td style="min-width:180px">
-                        <select class="form-select form-select-sm" @bind="p.Status" @bind:after="() => OnStatusChangedAsync(p)">
-                            @foreach (var s in _statusOptions)
-                            {
-                                <option value="@s.Value">@s.Label</option>
-                            }
-                        </select>
-                    </td>
-                    <td class="text-end">
-                        <button class="btn btn-sm btn-outline-primary" @onclick="() => AbrirDetalhesAsync(p.Id)">Ver</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+                <MudSelect T="OrderStatus?" @bind-Value="_statusFiltro"
+                           Label="Status"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Style="min-width: 220px;">
+                    <MudSelectItem T="OrderStatus?" Value="@( (OrderStatus?)null )">Todos os status</MudSelectItem>
+                    @foreach (var s in _statusOptions)
+                    {
+                        <MudSelectItem T="OrderStatus?" Value="@s.Value">@s.Label</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Refresh"
+                           OnClick="RecarregarAsync">
+                    Atualizar
+                </MudButton>
+            </MudStack>
+
+            <MudPaper Elevation="1">
+                <MudDataGrid T="OrderRow"
+                             Items="Filtrar(_pedidos)"
+                             Hover="true"
+                             Dense="true"
+                             RowStyleFunc="GetRowStyle">
+                    <Columns>
+                        <PropertyColumn Property="@(p => p.Id)" Title="#" />
+                        <TemplateColumn Title="Cliente" Width="35%">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body2" Class="text-truncate">@context.Item.ClienteNome</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="text-truncate">@context.Item.ClienteEmail</MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="@(p => p.DataLocal)" Title="Data" />
+                        <TemplateColumn Title="Total">
+                            <CellTemplate>
+                                <MudText Typo="Typo.body2">@context.Item.TotalTexto</MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Status">
+                            <CellTemplate>
+                                <MudSelect T="OrderStatus"
+                                           Value="context.Item.Status"
+                                           ValueChanged="async s => { context.Item.Status = s; await OnStatusChangedAsync(context.Item); }"
+                                           Dense="true"
+                                           Variant="Variant.Outlined"
+                                           Style="min-width: 180px;">
+                                    @foreach (var s in _statusOptions)
+                                    {
+                                        <MudSelectItem T="OrderStatus" Value="@s.Value">@s.Label</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Ações">
+                            <CellTemplate>
+                                <MudButton Size="Size.Small"
+                                           Variant="Variant.Text"
+                                           Color="Color.Primary"
+                                           OnClick="@(async () => await AbrirDetalhesAsync(context.Item.Id))"
+                                           StartIcon="@Icons.Material.Filled.Visibility">
+                                    Ver
+                                </MudButton>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                    <PagerContent>
+                        <MudDataGridPager T="OrderRow" PageSizeOptions="new int[] { 10, 20, 50 }" />
+                    </PagerContent>
+                </MudDataGrid>
+            </MudPaper>
+        }
+    </MudStack>
+</MudPaper>
 
 @if (_detalhes is not null)
 {
@@ -129,6 +179,7 @@ else
     private bool _loading = true;
     private string? _erro;
     private string _filtro = string.Empty;
+    private OrderStatus? _statusFiltro = null;
     private IReadOnlyList<OrderRow> _pedidos = Array.Empty<OrderRow>();
     private OrderDetails? _detalhes;
 
@@ -176,7 +227,14 @@ else
 
     private IEnumerable<OrderRow> Filtrar(IEnumerable<OrderRow> source)
     {
-        if (string.IsNullOrWhiteSpace(_filtro)) return source;
+        if (_statusFiltro.HasValue)
+        {
+            source = source.Where(p => p.Status == _statusFiltro.Value);
+        }
+
+        if (string.IsNullOrWhiteSpace(_filtro))
+            return source;
+
         var f = _filtro.Trim().ToLowerInvariant();
         return source.Where(p => p.Id.ToString().Contains(f)
             || (p.ClienteNome?.ToLowerInvariant().Contains(f) ?? false)
@@ -229,6 +287,9 @@ else
     }
 
     private void FecharDetalhes() => _detalhes = null;
+
+    private string GetRowStyle(OrderRow _, int __)
+        => "height: 26px;";
 
     private sealed class OrderRow
     {

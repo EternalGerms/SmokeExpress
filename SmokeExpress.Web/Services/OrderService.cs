@@ -135,6 +135,7 @@ public class OrderService(ApplicationDbContext dbContext, ILogger<OrderService> 
         CancellationToken cancellationToken = default)
     {
         return await dbContext.Orders
+            .Include(o => o.Cliente)
             .OrderByDescending(o => o.DataPedido)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
